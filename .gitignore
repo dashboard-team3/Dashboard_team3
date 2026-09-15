@@ -1,0 +1,15 @@
+# ── GDELT 원본 데이터: 용량이 커서 올리지 않음 (각자 GDELT_folder/download_gdelt_month.py로 받기)
+GDELT_folder/data/
+*.export.CSV
+*.export.CSV.zip
+*.part
+
+# ── GDELT 날짜별 결과: 올리지 않음 (월간 결과 GDELT_folder/output/YYYY.M/월간/ 만 공유)
+GDELT_folder/output/*/[0-9]*/
+
+# ── 파이썬 · 주피터 · 편집기
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+desktop.ini
