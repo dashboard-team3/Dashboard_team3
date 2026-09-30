@@ -70,6 +70,7 @@ def live_kpis():
     days, totals = daily_totals()
     slot = realtime.last_slot()
     y_same, y_all = yesterday_same_time(slot)
+
     if y_same is not None:
         sub = (f"어제 같은 시각({slot[8:10]}:{slot[10:12]} UTC)까지 {y_same:,}건 · 어제 하루 {y_all:,}건 · "
                f"최근 {len(totals)}일 추이")
@@ -85,6 +86,7 @@ def live_kpis():
     c2.markdown(live_card("최근 수신", f"+{k['recent']}", "직전 15분 배치",
                           label_tip="가장 최근 15분 구간에 새로 들어온 사건 수 (수집기가 15분마다 GDELT 를 받음)"),
                 unsafe_allow_html=True)
+    
     if k["top"]:
         name, count, partner = k["top"]
         c3.markdown(live_card("최다 관여국", name, f"{count}건 · 최다 상대 {partner}", "red",
