@@ -1384,7 +1384,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
     font-size: 19px;
     font-weight: 700;
     color: #ffffff;
-    margin: 26px 0 10px;
+    margin: 80px 0 10px;
 }
 
 .rk-card {
@@ -1792,4 +1792,36 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
     color: #8b98ad;
     line-height: 1.5;
     margin: -4px 2px 14px;
+}
+
+
+
+/* -----------------홈 시작하기 페이지----------------- */
+/* 홈 메뉴 카드: 기본 4열 */
+[data-testid="stHorizontalBlock"]:has(.mn-card) {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px !important;
+}
+
+/* Streamlit 컬럼의 기본 너비 제한 해제 */
+[data-testid="stHorizontalBlock"]:has(.mn-card)
+> [data-testid="stColumn"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+
+/* 1200px 이하: 2열 */
+@media (max-width: 1200px) {
+    [data-testid="stHorizontalBlock"]:has(.mn-card) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* 640px 이하: 1열 */
+@media (max-width: 640px) {
+    [data-testid="stHorizontalBlock"]:has(.mn-card) {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
