@@ -114,6 +114,7 @@ def draw_trend(df, M, how, by):
     U = M["unit"]
     key = {M["cat_label"]: "cat", "대상국": "target_name", M["exporter_label"]: "exporter"}[by]
     t, months, need = arms.series(df, how, key)
+
     if key != "cat":                                  # 항목이 많으면 상위 8개 + 기타
         keep = t.sum().sort_values(ascending=False).index[:8]
         other = t.drop(columns=keep).sum(axis=1)
@@ -121,11 +122,13 @@ def draw_trend(df, M, how, by):
         if other.sum() > 0:
             t["기타"] = other
     fig = go.Figure()
+
     for col in t.columns:
         fig.add_trace(go.Bar(
             x=t.index, y=t[col], name=col, marker_color=M["colors"].get(col) if key == "cat" else None,
             hovertemplate=f"{col} %{{y:,.1f}} {U}<extra></extra>"))
     monthly_source = M["periods"] != ["연간"]
+
     if monthly_source:                                  # 월 단위 자료만 관측 월 수를 툴팁에 실음
         fig.add_trace(go.Scatter(x=t.index, y=t.sum(axis=1), mode="lines", line=dict(width=0), showlegend=False,
                                  customdata=[f"{m}/{need}" for m in months],
@@ -138,11 +141,13 @@ def draw_trend(df, M, how, by):
     fig.update_xaxes(tickformat=fmt, hoverformat=fmt)
     fig.update_yaxes(title_text=f"{M['value_label']} ({U}, {how})")
     st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
+
     if monthly_source and how != "월별":
         short = int((months < need).sum())
         if short:
             st.caption(f"관측 월이 부족한 기간 {short}개(툴팁의 '관측 n/{need}개월' 참고)는 합계가 실제보다 작을 수 있습니다. "
                        "신고가 없는 달은 0이 아니라 '관측 없음'입니다.")
+            
     if not monthly_source:                              # SIPRI: 계약 건수 추이
         n = df.groupby("year")["obs"].nunique()
         fig2 = go.Figure(go.Scatter(x=n.index, y=n.values, mode="lines+markers", line=dict(color=GOLD, width=2),
@@ -170,6 +175,7 @@ def target_cat_heatmap(df, M, highlight=None, title=None):
     """대상국(행) × 품목(열) 히트맵. highlight 나라는 맨 위로 올리고 이름에 ▶ 표시."""
     h = df.pivot_table(index="target_name", columns="cat", values="value", aggfunc="sum", fill_value=0)
     h = h.loc[h.sum(axis=1).sort_values(ascending=False).index]
+
     if highlight in h.index:
         h = pd.concat([h.loc[[highlight]], h.drop(index=highlight)])
     labels = [f"▶ {n}" if n == highlight else n for n in h.index]
@@ -185,6 +191,7 @@ def target_cat_heatmap(df, M, highlight=None, title=None):
 def draw_rank(df, M):
     U = M["unit"]
     c1, c2 = st.columns(2)
+
     with c1:
         hbar(df.groupby("exporter")["value"].sum(), ctitle(f"{M['exporter_label']} TOP 12", f"단위 {U} · 필터 조건의 합계"), GOLD, U)
     with c2:
@@ -213,6 +220,7 @@ def draw_country_compare(df, M, country, how):
     t, months, need = arms.series(df, how, "target_name")
     fig = go.Figure()
     name = COUNTRIES[country]
+
     for col in t.columns:
         me = col == name
         fig.add_trace(go.Scatter(
@@ -235,6 +243,7 @@ def draw_rank_country(df, M, country):
     name = COUNTRIES[country]
     total = one["value"].sum()
     st.markdown(f"**{name}** · {total:,.0f} {U} · {M['exporter_label']} {one['exporter_iso3'].nunique()}개국 · {M['obs_label']} {one['obs'].nunique()}")
+
     if one.empty:
         st.info("이 나라의 기록이 없습니다.")
         return
@@ -279,6 +288,7 @@ def _filters(box, vertical, f, M, k, y0, y1, cats_all, targets_all, exp_opts, ex
         else:
             c1, c2 = st.columns([1.2, 3])
             c3, c4 = st.columns(2)
+
         if months is not None:
             opts = [d.strftime("%Y-%m") for d in months]
             lo, hi = f.get("period", (f"{f['years'][0]}-01", opts[-1]))
@@ -322,29 +332,35 @@ def page(filter_box=None, on_open=None, compact=False, show_title=True):
     f = st.session_state.setdefault(f"arms_f_{k}", {"years": (max(y0, M["default_start"]), y1), "cats": cats_all,
                                                     "targets": targets_all, "exporters": []})
     months = pd.date_range(df["date"].min(), df["date"].max(), freq="MS") if source == "Comtrade" else None   # 월별 자료
+
     if filter_box is not None:
         _filters(filter_box, True, f, M, k, y0, y1, cats_all, targets_all, exp_opts, exp_name, months)
         # 접힌 필터 아래 '현재 조건' 한 줄 (리뷰 2순위)
         st.sidebar.markdown(f'<div class="side-note">현재 · {f["years"][0]}–{f["years"][1]} · {M["cat_label"]} {len(f["cats"])}/{len(cats_all)} · '
                             f'대상국 {len(f["targets"])}곳 · {M["exporter_label"]} {"전체" if not f["exporters"] else str(len(f["exporters"])) + "곳"}</div>',
                             unsafe_allow_html=True)
+        
     elif on_open is None:
         _filters(st.container(border=True), False, f, M, k, y0, y1, cats_all, targets_all, exp_opts, exp_name, months)
+
     else:
         a, b = st.columns([5, 1])
         a.caption(f"현재 조건 · {f['years'][0]}–{f['years'][1]} · {M['cat_label']} {len(f['cats'])}/{len(cats_all)} · "
                   f"대상국 {len(f['targets'])}개 · {M['exporter_label']} {'전체' if not f['exporters'] else str(len(f['exporters'])) + '개'}")
         b.button("필터 열기 ▸", on_click=on_open, key=f"arms_open_{k}", use_container_width=True)
     years, cats, targets, exporters = f["years"], f["cats"], f["targets"], f["exporters"]
+
     if source == "Comtrade" and years[0] < arms.FULL_START_YEAR:
         st.warning(f"{arms.FULL_START_YEAR}년 이전은 신고 수출국이 연 8~11개국뿐이라(2010년부터 41개국 이상) 금액이 실제보다 훨씬 작게 잡힙니다. "
                    "시기 비교에는 쓰지 마세요.")
     sub = arms.apply_filters(df, years, cats, targets, exporters)
     per_txt = f"{years[0]}–{years[1]}"
+
     if months is not None and "period" in f:           # 월 단위로 고른 기간이면 달까지 자른다
         m0, m1 = pd.Timestamp(f["period"][0] + "-01"), pd.Timestamp(f["period"][1] + "-01")
         sub = sub[(sub["date"] >= m0) & (sub["date"] <= m1)]
         per_txt = f"{f['period'][0]}–{f['period'][1]}"
+
     if sub.empty:
         st.warning("조건에 맞는 기록이 없습니다.")
         return
@@ -355,6 +371,7 @@ def page(filter_box=None, on_open=None, compact=False, show_title=True):
     items = [(f"{M['value_label']} 합계", f"{total:,.0f}", f"{U} · {per_txt}", "blue"),
              (f"최대 {M['exporter_label']}", top_exp.index[0], f"{top_exp.iloc[0] / total:.0%} · {top_exp.iloc[0]:,.0f} {U}", "red"),
              (f"최대 {M['cat_label']}", top_cat.index[0], f"{top_cat.iloc[0] / total:.0%} · {top_cat.iloc[0]:,.0f} {U}", "")]
+    
     if source == "Comtrade":
         if "period" in f:                               # 고른 달 수 (파일 끝보다 뒤는 셈에서 뺀다)
             m_end = min(pd.Timestamp(f["period"][1] + "-01"), df["date"].max())
@@ -364,11 +381,14 @@ def page(filter_box=None, on_open=None, compact=False, show_title=True):
             span = (years[1] - years[0] + 1) * 12 - ((12 - last_month) if years[1] == y1 else 0)
         items.append(("관측 월", f"{sub['period'].nunique()}/{span}",
                       f"수출국 {sub['exporter_iso3'].nunique()}개국 · 흐름 {len(arms.flows(sub))}개", ""))
+        
     else:
         items.append(("계약", f"{sub['obs'].nunique():,}건",
                       f"공급국 {sub['exporter_iso3'].nunique()}개국 · 흐름 {len(arms.flows(sub))}개", ""))
+        
     if compact:
         st.markdown(strip(items), unsafe_allow_html=True)
+        
     else:
         for col, (label, value, sub_, tone) in zip(st.columns(4), items):
             col.markdown(card(label, value, sub_, tone), unsafe_allow_html=True)
