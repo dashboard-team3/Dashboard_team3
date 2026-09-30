@@ -49,6 +49,17 @@ def grade_legend():
 HOW = "12개월 이동평균"          # 선은 12개월 이동평균으로 고정 (월별 원값·연평균 옵션은 뺐다)
 
 
+CARD_N = 5                        # 등급 카드는 5장 고정 (상대국 · 나라는 몇 곳이든 고를 수 있음)
+
+
+def _card_items(items, avg, focus):
+    """카드에 올릴 5곳: 고른 것 가운데 기간 평균 높은 순 5곳. 강조한 곳은 5위 밖이어도 마지막 자리에 넣는다."""
+    top = sorted(items, key=lambda x: -avg[x])[:CARD_N]
+    if focus in items and focus not in top:
+        top = top[:CARD_N - 1] + [focus]
+    return top
+
+
 def _line_colors(items, focus):
     """나라마다 다른 선 색. 강조한 나라가 첫 색(로즈)을 쓰고, 나머지는 뒤 색을 차례로 돌려 쓴다."""
     rest = LINE_COLORS[1:]
@@ -111,9 +122,9 @@ def _pair_filters(risk, names, months):
     # 상대국 목록과 기본 선택은 기간과 무관하게 전 구간 평균 순 (기간을 바꿔도 선택이 안 바뀌게)
     rank_all = series.mean().sort_values(ascending=False)
     kept = [q for q in (f["partners"] or []) if q in rank_all.index] if f["partners_for"] == country else []
-    # 선이 5개를 넘으면 회색끼리 뒤엉켜 강조한 선을 못 따라간다 → 최대 5곳 (2026-09-30)
-    f["partners"] = c2.multiselect("상대국", list(rank_all.index), default=(kept or list(rank_all.index[:5]))[:5],
-                                   format_func=names.get, key=f"rel_partners_{country}", max_selections=5)
+    # 기본은 평균 상위 5곳, 선택 수 제한은 없음 (등급 카드만 5장 고정 — _card_items)
+    f["partners"] = c2.multiselect("상대국", list(rank_all.index), default=kept or list(rank_all.index[:5]),
+                                   format_func=names.get, key=f"rel_partners_{country}")
     f["partners_for"] = country
     opts = f["partners"] or list(rank_all.index)
     # 강조: 고른 상대국만 진하게, 나머지는 회색 (선이 색으로 뒤엉키지 않게)
@@ -133,8 +144,8 @@ def _country_filters(cmat_full, names, months):
     box = page_filters("국가별 리스크")                   # v2: 본문 맨 위 접이식
     c1, c2 = box.columns(2, gap="medium")                 # 나라 · 강조는 한 줄에 둘, 기간만 아래 한 줄
     c3 = box.container()
-    f["countries"] = c1.multiselect("나라", list(rank.index), default=[c for c in f["countries"] if c in rank.index][:5],
-                                    format_func=names.get, key="cty_countries", max_selections=5)
+    f["countries"] = c1.multiselect("나라", list(rank.index), default=[c for c in f["countries"] if c in rank.index],
+                                    format_func=names.get, key="cty_countries")   # 선택 수 제한 없음 (카드만 5장)
     opts = f["countries"] or list(rank.index)
     f["focus"] = c2.selectbox("강조할 나라", opts, index=opts.index(f["focus"]) if f["focus"] in opts else 0,
                               format_func=names.get, key="cty_focus") if f["countries"] else None
@@ -205,10 +216,12 @@ def page():
             with right:
                 last_m = in_range.index.max()
                 # 카드마다 같은 내용(마지막 달 · 기간 · 순위 기준)은 소제목에 한 번만, 카드에는 평균 · 상위 %만
-                grade_pills([(q, names[q], in_range[q].iloc[-1], in_range[q].mean()) for q in partners],
+                grade_pills([(q, names[q], in_range[q].iloc[-1], in_range[q].mean())
+                             for q in _card_items(partners, in_range.mean(), focus)],
                             dists["pair"], f"{names[country]} → 상대국 · {last_m:%Y-%m} 기준", hi=focus, layer="국가쌍",
                             title_tip=f"마지막 달 {last_m:%Y-%m}의 상태 · 평균 = {_pstr(p0, p1)} 평균 · "
-                                      "상위 % = 국가쌍 1980년 이후 모든 달 중 순위 · 빨간 테두리 = 강조한 상대국",
+                                      "상위 % = 국가쌍 1980년 이후 모든 달 중 순위 · 빨간 테두리 = 강조한 상대국 · "
+                                      "카드는 고른 상대국 중 기간 평균 상위 5곳",
                             month=f"{last_m:%Y-%m}", period=_pstr(p0, p1))
                 grade_legend()
             # (v2, 2026-09-30) 국가쌍 아래 '계산 기준' 팝오버 · 평균/최고 리스크 표는 뺐다
@@ -257,10 +270,12 @@ def page():
 
             with right:
                 last_c = cmat.index.max()
-                grade_pills([(c, names[c], cmat[c].iloc[-1], cmat[c].mean()) for c in clist],
+                grade_pills([(c, names[c], cmat[c].iloc[-1], cmat[c].mean())
+                             for c in _card_items(clist, cmat.mean(), cfocus)],
                             dists[ccol], f"국가별 리스크 · {last_c:%Y-%m} 기준", hi=cfocus, layer="국가별",
                             title_tip=f"마지막 달 {last_c:%Y-%m}의 상태 · 평균 = {_pstr(q0, q1)} 평균 · "
-                                      "상위 % = 같은 층(국가별·중동 전체) 1980년 이후 모든 달 중 순위 · 빨간 테두리 = 강조한 나라",
+                                      "상위 % = 같은 층(국가별·중동 전체) 1980년 이후 모든 달 중 순위 · 빨간 테두리 = 강조한 나라 · "
+                                      "카드는 고른 나라 중 기간 평균 상위 5곳",
                             month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
                 grade_pills([("__region__", "중동 전체", reg.iloc[-1], reg.mean())], dists["region"], layer="중동 전체",
                             month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
