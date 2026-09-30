@@ -24,12 +24,9 @@ def menu():
     with st.sidebar:
         st.title("Conflict Risk & Arms Dashboard")
         st.caption("중동 지역 갈등 편중도와 무기 거래")   # 아래 구분선은 style2.css (.sb-foot 근처)
-        # 리뷰 3순위: 누가 · 무엇에 쓰는 메뉴인지 한 줄 (① 은 실무 감시, ②~④ 는 과거 분석, ⑤ 는 문서)
-        st.markdown('<div class="sb-guide"><b>①</b> 지금 감시 · <b>②~④</b> 과거(1980~) 분석 · <b>⑤</b> 자료 설명</div>',
-                    unsafe_allow_html=True)
-        # 맨 앞 '시작하기' = 처음 보는 사람용 첫 화면 (주소에 ?page= 가 없으면 여기로)
-        MENU = ['시작하기', '실시간 모니터링', '리스크 분석', '무기 거래 추이', '리스크와 무기 거래', '데이터 소개']   # '메뉴' 글자는 숨김 (collapsed)
-        NUM = dict(zip(MENU, ['▶', '①', '②', '③', '④', '⑤']))
+
+        # 홈 = 주소에 ?page= 가 없으면 여기로)
+        MENU = ['홈', '실시간 모니터링', '리스크 분석', '무기 거래 추이', '리스크와 무기 거래', '데이터 소개']   # '메뉴' 글자는 숨김 (collapsed)
         # 예전 메뉴 이름으로 된 주소·저장 상태도 새 이름으로 연다 (결론 · 분석 결과는 데이터 소개로)
         OLD = {'개요': '실시간 모니터링', '분석 결과': '데이터 소개', '결론': '데이터 소개'}
         # 주소 뒤에 ?page=리스크 분석 처럼 붙이면 그 메뉴로 바로 열린다 (발표 자료 캡처·링크 공유용)
@@ -40,7 +37,7 @@ def menu():
         if st.session_state.get("menu_page") not in (None, *MENU):
             st.session_state["menu_page"] = OLD.get(st.session_state["menu_page"], MENU[0])
         page = st.radio('메뉴', MENU, index=MENU.index(keep) if keep in MENU else 0, key="menu_page", label_visibility="collapsed",
-                        format_func=lambda p: f"{NUM[p]}  {p}")   # 보이는 이름에만 번호 (값 · 주소는 그대로)
+                        format_func=lambda p: f"{p}")   # 보이는 이름에만 번호 (값 · 주소는 그대로)
         st.session_state["page_keep"] = page
         # 주소의 ?page= 도 지금 페이지로 맞춘다 (안 그러면 메뉴로 옮긴 뒤 새로고침·링크 공유 때 처음 페이지가 열린다)
         if st.query_params.get("page") != page:

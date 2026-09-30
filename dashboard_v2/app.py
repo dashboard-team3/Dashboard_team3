@@ -17,7 +17,7 @@ page = sidebar.menu()                  # 2. 사이드바 제목 · 메뉴
 from views import start_view, realtime_view, risk_view, arms_view, risk_arms_view, data_intro_view   # noqa: E402
 
 PAGES = {                              # 3. 메뉴 이름 → 그 페이지를 그리는 함수
-    "시작하기": start_view.page,         #    처음 보는 사람용 첫 화면 (리스크 풀이 · 메뉴 안내 · 찾은 것)
+    "홈": start_view.page,         #    처음 보는 사람용 첫 화면 (리스크 풀이 · 메뉴 안내 · 찾은 것)
     "실시간 모니터링": realtime_view.page,
     "리스크 분석": risk_view.page,
     "무기 거래 추이": lambda: arms_view.page(filter_box=sidebar.sidebar_filters("무기 거래 추이"), compact=True),
