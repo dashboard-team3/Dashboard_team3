@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 
 from core.ui import ctitle, tip, info_icon, page_sub, term
 from core import theme
-from core.sidebar import sidebar_filters, filter_note
+from core.sidebar import page_filters, filter_note
 from core.ui import C_RISK, C_MUTE, C_TEXT, LINE_COLORS, CHART_CONFIG, DARK_LAYOUT, section_head, info
 from sources import relations
 
@@ -101,7 +101,7 @@ def _pair_filters(risk, names, months):
     """국가쌍 탭 필터: [행위 주체][상대국][강조할 상대국][기간(월)]. 값은 session_state['rel_f']에 보관."""
     f = st.session_state.setdefault("rel_f", {"country": "ISR", "partners": None, "partners_for": None, "focus": None})
     f.setdefault("period", (months[0].strftime("%Y-%m"), months[-1].strftime("%Y-%m")))
-    c1 = c2 = c3 = c4 = sidebar_filters("국가쌍 리스크")      # v2: 사이드바에 세로로
+    c1 = c2 = c3 = c4 = page_filters("국가쌍 리스크")        # v2: 본문 맨 위 접이식
     f["country"] = c1.selectbox("행위 주체", list(names), index=list(names).index(f["country"]),
                                 format_func=names.get, key="rel_country")
     country = f["country"]
@@ -128,7 +128,7 @@ def _country_filters(cmat_full, names, months):
     rank = cmat_full.mean().sort_values(ascending=False)
     f = st.session_state.setdefault("cty_f", {"countries": list(rank.index[:5]), "focus": None})
     f.setdefault("period", (months[0].strftime("%Y-%m"), months[-1].strftime("%Y-%m")))
-    c1 = c2 = c3 = sidebar_filters("국가별 리스크")          # v2: 사이드바에 세로로
+    c1 = c2 = c3 = page_filters("국가별 리스크")          # v2: 본문 맨 위 접이식
     f["countries"] = c1.multiselect("나라", list(rank.index), default=[c for c in f["countries"] if c in rank.index][:5],
                                     format_func=names.get, key="cty_countries", max_selections=5)
     opts = f["countries"] or list(rank.index)

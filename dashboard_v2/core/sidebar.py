@@ -7,16 +7,19 @@ from sources import realtime
 # v2: 사이드바 = 제목(맨 위) · 메뉴 · 그 페이지의 필터(세로). 본문은 핵심 요약과 그래프부터 (F 패턴).
 
 
-def sidebar_filters(label):
-    """그 페이지 필터를 사이드바 메뉴 아래 접이식 상자에 세로로 그린다 (기본은 접힘 — 리뷰 2순위).
-    화면 위는 결론 · 그래프에 양보하고, 필요할 때만 편다. 돌려준 상자에 위젯을 그리면 된다.
-    접혀 있어도 지금 조건이 보이게, 필터를 다 그린 뒤 filter_note() 로 한 줄 적는다."""
-    return st.sidebar.expander(f"필터 · {label}", expanded=False)
+def page_filters(label):
+    """그 페이지 필터를 «본문 맨 위» 접이식 상자에 그린다 (기본은 접힘). (2026-09-30 사이드바 → 본문)
+    조건을 바꾸는 곳이 보는 화면과 같은 자리에 있어야 눈이 덜 옮겨 다닌다.
+    돌려준 상자에 위젯을 그리면 된다. 접혀 있어도 지금 조건이 보이게 filter_note() 로 한 줄 적는다."""
+    return st.expander(f"필터 · {label}", expanded=False)
 
 
 def filter_note(text):
     """접힌 필터 아래 '현재 조건' 한 줄."""
-    st.sidebar.markdown(f'<div class="side-note">현재 · {text}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="filter-note">현재 · {text}</div>', unsafe_allow_html=True)
+
+
+sidebar_filters = page_filters      # 예전 이름으로 부르던 곳을 위해 남겨 둔다
 
 
 def menu():
