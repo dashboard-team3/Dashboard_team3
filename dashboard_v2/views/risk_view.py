@@ -49,6 +49,19 @@ def grade_legend():
 HOW = "12개월 이동평균"          # 선은 12개월 이동평균으로 고정 (월별 원값·연평균 옵션은 뺐다)
 
 
+def _line_colors(items, focus):
+    """나라마다 다른 선 색. 강조한 나라가 첫 색(로즈)을 쓰고, 나머지는 뒤 색을 차례로 돌려 쓴다."""
+    rest = LINE_COLORS[1:]
+    out, i = {}, 0
+    for it in items:
+        if it == focus:
+            out[it] = LINE_COLORS[0]
+        else:
+            out[it] = rest[i % len(rest)]
+            i += 1
+    return out
+
+
 def _month_range(col, label, months, value, key):
     """월 단위 기간 슬라이더. months = 고를 수 있는 달(1일) 목록, value = ('YYYY-MM', 'YYYY-MM'). 돌려주는 값 = (시작일, 끝일)."""
     opts = [d.strftime("%Y-%m") for d in months]
@@ -164,13 +177,13 @@ def page():
                     fig.add_trace(go.Scatter(x=rs.index, y=rs.values, mode="lines", name="중동 전체",
                                              line=dict(color="#94a3b8", width=1.6, dash="dot"),
                                              hovertemplate="중동 전체 %{y:.3f}<extra></extra>"))
-                pcol = {q: LINE_COLORS[i % len(LINE_COLORS)] for i, q in enumerate(partners)}   # 나라마다 다른 색
-                for q in sorted(partners, key=lambda x: x == focus):          # 강조 선을 맨 위에
+                pcol = _line_colors(partners, focus)                           # 강조는 첫 색, 나머지는 돌려 쓴다
+                for q in sorted(partners, key=lambda x: x == focus):           # 강조 선을 맨 위에
                     sm = _in_period(relations.smooth(series[q], how), p0, p1)
                     fig.add_trace(go.Scatter(
                         x=sm.index, y=sm.values, mode="lines", name=names[q],
-                        line=dict(color=pcol[q], width=3.4 if q == focus else 1.8),
-                        opacity=1 if q == focus else 0.7,
+                        line=dict(color=pcol[q], width=3.4 if q == focus else 1.4),
+                        opacity=1 if q == focus else 0.45,
                         hovertemplate=f"{names[country]} → {names[q]} %{{y:.3f}}<extra></extra>"))
                 _gap_bands(fig, gaps, p0, p1)
                 fig.update_layout(**DARK_LAYOUT, height=440, hovermode="x unified",
@@ -221,12 +234,12 @@ def page():
                     fig_c.add_trace(go.Scatter(x=rs.index, y=rs.values, mode="lines", name="중동 전체",
                                                line=dict(color="#94a3b8", width=1.6, dash="dot"),
                                                hovertemplate="중동 전체 %{y:.3f}<extra></extra>"))
-                ccol_map = {c: LINE_COLORS[i % len(LINE_COLORS)] for i, c in enumerate(clist)}  # 나라마다 다른 색
-                for c in sorted(clist, key=lambda x: x == cfocus):            # 강조 나라를 맨 위에
+                ccol_map = _line_colors(clist, cfocus)                          # 강조는 첫 색, 나머지는 돌려 쓴다
+                for c in sorted(clist, key=lambda x: x == cfocus):             # 강조 나라를 맨 위에
                     sm = _in_period(relations.smooth(cmat_full[c], how), q0, q1)
                     fig_c.add_trace(go.Scatter(x=sm.index, y=sm.values, mode="lines", name=names[c],
-                                               line=dict(color=ccol_map[c], width=3.4 if c == cfocus else 1.8),
-                                               opacity=1 if c == cfocus else 0.7,
+                                               line=dict(color=ccol_map[c], width=3.4 if c == cfocus else 1.4),
+                                               opacity=1 if c == cfocus else 0.45,
                                                hovertemplate=f"{names[c]} %{{y:.3f}}<extra></extra>"))
                 _gap_bands(fig_c, gaps, q0, q1)
                 fig_c.update_layout(**DARK_LAYOUT, height=440, hovermode="x unified",
