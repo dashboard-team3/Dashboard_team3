@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from core.ui import ctitle, tip, info_icon, page_sub, term
 from core import theme
 from core.sidebar import sidebar_filters, filter_note
-from core.ui import C_RISK, C_MUTE, C_TEXT, CHART_CONFIG, DARK_LAYOUT, section_head, info
+from core.ui import C_RISK, C_MUTE, C_TEXT, LINE_COLORS, CHART_CONFIG, DARK_LAYOUT, section_head, info
 from sources import relations
 
 
@@ -47,6 +47,19 @@ def grade_legend():
 
 
 HOW = "12개월 이동평균"          # 선은 12개월 이동평균으로 고정 (월별 원값·연평균 옵션은 뺐다)
+
+
+def _line_colors(items, focus):
+    """나라마다 다른 선 색. 강조한 나라가 첫 색(로즈)을 쓰고, 나머지는 뒤 색을 차례로 돌려 쓴다."""
+    rest = LINE_COLORS[1:]
+    out, i = {}, 0
+    for it in items:
+        if it == focus:
+            out[it] = LINE_COLORS[0]
+        else:
+            out[it] = rest[i % len(rest)]
+            i += 1
+    return out
 
 
 def _month_range(col, label, months, value, key):
@@ -96,8 +109,9 @@ def _pair_filters(risk, names, months):
     # 상대국 목록과 기본 선택은 기간과 무관하게 전 구간 평균 순 (기간을 바꿔도 선택이 안 바뀌게)
     rank_all = series.mean().sort_values(ascending=False)
     kept = [q for q in (f["partners"] or []) if q in rank_all.index] if f["partners_for"] == country else []
-    f["partners"] = c2.multiselect("상대국", list(rank_all.index), default=kept or list(rank_all.index[:5]),
-                                   format_func=names.get, key=f"rel_partners_{country}")
+    # 선이 5개를 넘으면 회색끼리 뒤엉켜 강조한 선을 못 따라간다 → 최대 5곳 (2026-09-30)
+    f["partners"] = c2.multiselect("상대국", list(rank_all.index), default=(kept or list(rank_all.index[:5]))[:5],
+                                   format_func=names.get, key=f"rel_partners_{country}", max_selections=5)
     f["partners_for"] = country
     opts = f["partners"] or list(rank_all.index)
     # 강조: 고른 상대국만 진하게, 나머지는 회색 (선이 색으로 뒤엉키지 않게)
@@ -115,8 +129,8 @@ def _country_filters(cmat_full, names, months):
     f = st.session_state.setdefault("cty_f", {"countries": list(rank.index[:5]), "focus": None})
     f.setdefault("period", (months[0].strftime("%Y-%m"), months[-1].strftime("%Y-%m")))
     c1 = c2 = c3 = sidebar_filters("국가별 리스크")          # v2: 사이드바에 세로로
-    f["countries"] = c1.multiselect("나라", list(rank.index), default=[c for c in f["countries"] if c in rank.index],
-                                    format_func=names.get, key="cty_countries")
+    f["countries"] = c1.multiselect("나라", list(rank.index), default=[c for c in f["countries"] if c in rank.index][:5],
+                                    format_func=names.get, key="cty_countries", max_selections=5)
     opts = f["countries"] or list(rank.index)
     f["focus"] = c2.selectbox("강조할 나라", opts, index=opts.index(f["focus"]) if f["focus"] in opts else 0,
                               format_func=names.get, key="cty_focus") if f["countries"] else None
@@ -153,9 +167,7 @@ def page():
             ranking = in_range.mean().sort_values(ascending=False)
             top = ranking.index[0]
             peak = in_range[top].idxmax()
-            # v2: 핵심 요약(결론)을 좌상단에 → 그 아래 [그래프 | 등급 카드] 2단
-            st.markdown(f'<div class="summary"><b>{names[country]}</b> → 상대국 리스크는 <b>{names[top]}</b>{relations.jo(names[top])} 가장 높습니다 '
-                        f'(기간 평균 {ranking.iloc[0]:.2f}, 최고 {peak:%Y년 %m월}) · {_pstr(p0, p1)}</div>', unsafe_allow_html=True)
+            # v2: [그래프 | 등급 카드] 2단 · 핵심 요약(결론)은 그래프 바로 아래에 (2026-09-30)
             left, right = st.columns([2.3, 1], gap="medium")
             with left:
                 show_region = st.toggle("중동 전체 기준선", value=True, key="pair_region")
@@ -165,12 +177,13 @@ def page():
                     fig.add_trace(go.Scatter(x=rs.index, y=rs.values, mode="lines", name="중동 전체",
                                              line=dict(color="#94a3b8", width=1.6, dash="dot"),
                                              hovertemplate="중동 전체 %{y:.3f}<extra></extra>"))
-                for q in sorted(partners, key=lambda x: x == focus):          # 강조 선을 맨 위에
+                pcol = _line_colors(partners, focus)                           # 강조는 첫 색, 나머지는 돌려 쓴다
+                for q in sorted(partners, key=lambda x: x == focus):           # 강조 선을 맨 위에
                     sm = _in_period(relations.smooth(series[q], how), p0, p1)
                     fig.add_trace(go.Scatter(
                         x=sm.index, y=sm.values, mode="lines", name=names[q],
-                        line=dict(color=C_RISK if q == focus else C_MUTE, width=3 if q == focus else 1.4),
-                        opacity=1 if q == focus else 0.8,
+                        line=dict(color=pcol[q], width=3.4 if q == focus else 1.4),
+                        opacity=1 if q == focus else 0.45,
                         hovertemplate=f"{names[country]} → {names[q]} %{{y:.3f}}<extra></extra>"))
                 _gap_bands(fig, gaps, p0, p1)
                 fig.update_layout(**DARK_LAYOUT, height=440, hovermode="x unified",
@@ -183,6 +196,8 @@ def page():
                                   legend=dict(orientation="h", y=1.02, yanchor="bottom", x=0, font=dict(size=14)))
                 _time_axes(fig, p0, p1)
                 st.plotly_chart(theme.adapt(fig), width="stretch", config=CHART_CONFIG)
+                st.markdown(f'<div class="summary"><b>{names[country]}</b> → 상대국 리스크는 <b>{names[top]}</b>{relations.jo(names[top])} 가장 높습니다 '
+                            f'(기간 평균 {ranking.iloc[0]:.2f}, 최고 {peak:%Y년 %m월}) · {_pstr(p0, p1)}</div>', unsafe_allow_html=True)
 
             with right:
                 last_m = in_range.index.max()
@@ -219,11 +234,12 @@ def page():
                     fig_c.add_trace(go.Scatter(x=rs.index, y=rs.values, mode="lines", name="중동 전체",
                                                line=dict(color="#94a3b8", width=1.6, dash="dot"),
                                                hovertemplate="중동 전체 %{y:.3f}<extra></extra>"))
-                for c in sorted(clist, key=lambda x: x == cfocus):            # 강조 나라를 맨 위에
+                ccol_map = _line_colors(clist, cfocus)                          # 강조는 첫 색, 나머지는 돌려 쓴다
+                for c in sorted(clist, key=lambda x: x == cfocus):             # 강조 나라를 맨 위에
                     sm = _in_period(relations.smooth(cmat_full[c], how), q0, q1)
                     fig_c.add_trace(go.Scatter(x=sm.index, y=sm.values, mode="lines", name=names[c],
-                                               line=dict(color=C_RISK if c == cfocus else C_MUTE, width=3 if c == cfocus else 1.4),
-                                               opacity=1 if c == cfocus else 0.8,
+                                               line=dict(color=ccol_map[c], width=3.4 if c == cfocus else 1.4),
+                                               opacity=1 if c == cfocus else 0.45,
                                                hovertemplate=f"{names[c]} %{{y:.3f}}<extra></extra>"))
                 _gap_bands(fig_c, gaps, q0, q1)
                 fig_c.update_layout(**DARK_LAYOUT, height=440, hovermode="x unified",

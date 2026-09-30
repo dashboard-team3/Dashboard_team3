@@ -49,9 +49,10 @@ def adapt(fig):
     if fig.layout.title.text: fig.update_layout(title_font_size=19)
     t = fig.layout.title.text or ""
     if "<br>" in t:                        # 두 줄 제목(ctitle): 맨 위에 붙이고 범례와 안 겹치게 위 여백 확보
-        h = fig.layout.height or 450         # 맨 위에서 14px 아래에 제목 윗선 (pad 는 안 먹어서 비율로)
-        fig.update_layout(title_y=1 - 14 / h, title_yref="container", title_yanchor="top",
-                          margin_t=max(fig.layout.margin.t or 0, 96))
+        h = fig.layout.height or 450         # 맨 위에서 24px 아래에 제목 윗선 (pad 는 안 먹어서 비율로)
+        # 14px 로 두면 yanchor="top" 이 글자 윗선을 3px 밖으로 밀어 제목이 잘렸다 (2026-09-30)
+        fig.update_layout(title_y=1 - 24 / h, title_yref="container", title_yanchor="top",
+                          margin_t=max(fig.layout.margin.t or 0, 104))
     fig.update_xaxes(tickfont_size=14, title_font_size=16)
     fig.update_yaxes(tickfont_size=14, title_font_size=16)
     for ann in fig.layout.annotations or []:
