@@ -35,8 +35,8 @@ h1, h2, h3, .sec-t, .pill-v, .kpi .val, .strip .v, .verdict .v1, .note, .summary
 .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] div { color: #4a443b !important; }
 .stTabs [aria-selected="true"] p { color: #1c1a17 !important; }
 .stTabs [aria-selected="true"] { box-shadow: inset 0 -3px 0 #b91c1c !important; }
-[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) { background: #f3efe8 !important; border-left-color: #b91c1c !important; }
-[data-testid="stSidebar"] [role="radiogroup"] label:hover { background: #f7f5f0 !important; }
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) { background: #fcf7f7 !important; border-left-color: #b91c1c !important; }
+[data-testid="stSidebar"] [role="radiogroup"] label:hover { background: #f7f6f6 !important;}
 [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) span[data-testid="stIconMaterial"] { color: #b91c1c !important; }
 [data-testid="stSidebar"] [role="radiogroup"] label span[data-testid="stIconMaterial"] { color: #8a8175; }
 [data-testid="stSidebar"] button[kind="primary"] { background: #b91c1c !important; border-color: #b91c1c !important; }
@@ -115,8 +115,6 @@ button[kind="primary"] p, button[kind="primary"] { color: #ffffff !important; } 
 /* 최근 사건: 보도량 기준 한 줄 */
 .feed-legend { color: #6b6456 !important; }
 
-/* 사이드바: 부제와 메뉴 사이 구분선 (밝은 테마 색 = .sb-foot 선과 같게) */
-[data-testid="stSidebar"] [data-testid="stElementContainer"]:has([data-testid="stCaptionContainer"]) { border-bottom-color: #e5e0d5 !important; }
 
 /* ---------------------------------------------------------------- 세부 분석 결과 탭 (dashboard/surge_page.py)
    그 앱 CSS 는 어두운 색이 박혀 있어 밝은 테마에서 상자가 남색으로 남는다. 그 앱 상자만(.st-key-surge_app 안) 밝게 덮는다.
