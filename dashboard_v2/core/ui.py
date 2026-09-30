@@ -25,6 +25,10 @@ def info_icon(text, cls=""):
 
 # 색 규칙: 뜻 하나에 색 하나 (그래프마다 같은 뜻은 같은 색)
 C_RISK, C_COOP, C_ARMS, C_MUTE, C_TEXT = "#f87171", "#60a5fa", "#f5c542", "#475569", "#e5eaf3"
+
+# 리스크 분석 선 색 — 고른 나라마다 다른 색 (최대 5곳이라 다섯이면 충분하다).
+# 밝은 테마에서도 읽히는 값이라 theme.adapt 의 색 치환 목록에 넣지 않는다. (2026-09-30)
+LINE_COLORS = ["#f87171", "#3b82f6", "#10b981", "#f59e0b", "#a855f7"]
 CHART_CONFIG = {"displayModeBar": False}   # 지도 빼고는 카메라·줌 아이콘을 숨긴다
 
 
