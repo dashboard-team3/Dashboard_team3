@@ -645,3 +645,26 @@ button[kind="primary"] p, button[kind="primary"] {
     color: #111827 !important;
     border-bottom-color: rgba(17, 24, 39, 0.55) !important;
 }
+
+/* ---- 페이지 안 «세부 보기» 띠 (ui.tabbar) — 밝은 배경용 ---- */
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] > div {
+    border-color: #d8cfbd !important;
+    background: #f1ece1 !important;
+}
+
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button p {
+    color: #6b6255 !important;
+}
+
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button:hover p {
+    color: #1c1a17 !important;
+}
+
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] {
+    background: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .12) !important;
+}
+
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] p {
+    color: #1c1a17 !important;
+}

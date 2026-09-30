@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from core.ui import ctitle, tip, info_icon, page_sub, term
 from core import theme
 from core.sidebar import page_filters, filter_note
-from core.ui import C_RISK, C_MUTE, C_TEXT, LINE_COLORS, CHART_CONFIG, DARK_LAYOUT, section_head, info
+from core.ui import C_RISK, C_MUTE, C_TEXT, LINE_COLORS, CHART_CONFIG, DARK_LAYOUT, section_head, info, tabbar
 from sources import relations
 
 
@@ -101,7 +101,9 @@ def _pair_filters(risk, names, months):
     """국가쌍 탭 필터: [행위 주체][상대국][강조할 상대국][기간(월)]. 값은 session_state['rel_f']에 보관."""
     f = st.session_state.setdefault("rel_f", {"country": "ISR", "partners": None, "partners_for": None, "focus": None})
     f.setdefault("period", (months[0].strftime("%Y-%m"), months[-1].strftime("%Y-%m")))
-    c1 = c2 = c3 = c4 = page_filters("국가쌍 리스크")        # v2: 본문 맨 위 접이식
+    box = page_filters("국가쌍 리스크")                       # v2: 본문 맨 위 접이식
+    r1, r2 = box.columns(2, gap="medium"), box.columns(2, gap="medium")   # 한 줄씩이면 상자가 너무 길어진다 → 2 x 2
+    (c1, c2), (c3, c4) = r1, r2
     f["country"] = c1.selectbox("행위 주체", list(names), index=list(names).index(f["country"]),
                                 format_func=names.get, key="rel_country")
     country = f["country"]
@@ -128,7 +130,9 @@ def _country_filters(cmat_full, names, months):
     rank = cmat_full.mean().sort_values(ascending=False)
     f = st.session_state.setdefault("cty_f", {"countries": list(rank.index[:5]), "focus": None})
     f.setdefault("period", (months[0].strftime("%Y-%m"), months[-1].strftime("%Y-%m")))
-    c1 = c2 = c3 = page_filters("국가별 리스크")          # v2: 본문 맨 위 접이식
+    box = page_filters("국가별 리스크")                   # v2: 본문 맨 위 접이식
+    c1, c2 = box.columns(2, gap="medium")                 # 나라 · 강조는 한 줄에 둘, 기간만 아래 한 줄
+    c3 = box.container()
     f["countries"] = c1.multiselect("나라", list(rank.index), default=[c for c in f["countries"] if c in rank.index][:5],
                                     format_func=names.get, key="cty_countries", max_selections=5)
     opts = f["countries"] or list(rank.index)
@@ -152,8 +156,7 @@ def page():
     st.title('리스크 분석')
     page_sub("1980년부터 " + term("국가쌍") + " · " + term("국가별") + " 월별 " + term("리스크") + "를 " + term("12개월 이동평균") + "으로 보여 줍니다. 선이 높을수록 그 시기 갈등 쪽 보도가 많았다는 뜻입니다.")
     # v2: 탭 대신 보기 버튼. 고른 보기만 그려서 사이드바 필터도 그 보기 것만 나온다
-    view = st.segmented_control("보기", ["국가쌍 리스크", "국가별 리스크"], default="국가쌍 리스크", key="rel_view",
-                                label_visibility="collapsed") or "국가쌍 리스크"
+    view = tabbar("보기", ["국가쌍 리스크", "국가별 리스크"], key="rel_view")
 
     # ---------------------------------------------------------------- 탭 1: 국가쌍 리스크
     # 그래프 위를 가볍게 (2026-09-29 팀 의견): 소제목 · 한 줄 설명 → 필터 → 토글 → 그래프(제목 두 줄) → 요약 한 줄

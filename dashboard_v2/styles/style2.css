@@ -1825,3 +1825,62 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* ---------------------------------------------------------------- 페이지 안 «세부 보기» 띠 (2026-09-30)
+   ui.tabbar() 로 그린 것만 — 화면 폭을 꽉 채운 한 줄, 고른 칸만 진한 바탕.
+   작은 알약 여러 개보다 지금 어느 쪽을 보는지가 한눈에 들어온다.
+   구조: stButtonGroup > (숨은 라벨) + div(버튼들) — 띠 모양은 안쪽 div 에 준다. */
+[class*="st-key-tabbar-"] > [data-testid="stElementContainer"] {
+    width: 100% !important;
+}
+
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] {
+    display: block !important;
+    width: 100% !important;
+}
+
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] > div {
+    display: flex !important;
+    width: 100% !important;
+    max-width: none !important;   /* 스트림릿 기본은 max-width: fit-content 라 폭이 안 늘어난다 */
+    flex-wrap: nowrap !important;
+    gap: 0 !important;
+    padding: 5px !important;
+    margin: 2px 0 16px !important;
+    border: 1px solid #1f2b44 !important;
+    border-radius: 16px !important;
+    background: rgba(148, 163, 184, .07) !important;
+}
+
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    justify-content: center !important;
+    border: 0 !important;
+    background: transparent !important;
+    border-radius: 11px !important;
+    padding: 10px 12px !important;
+    box-shadow: none !important;
+    transition: background .15s ease, color .15s ease;
+}
+
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button p {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: #8b98ad !important;
+}
+
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button:hover p {
+    color: #cbd5e1 !important;
+}
+
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] {
+    background: #16223f !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .35) !important;
+}
+
+[class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] p {
+    color: #e5eaf3 !important;
+    font-weight: 700 !important;
+}

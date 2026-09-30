@@ -12,7 +12,7 @@ from plotly.subplots import make_subplots
 from core.ui import page_sub, term
 from core import theme
 from core.sidebar import page_filters, filter_note
-from core.ui import ctitle, info_icon, C_RISK, C_COOP, C_ARMS, C_TEXT, CHART_CONFIG, DARK_LAYOUT, section_head, info
+from core.ui import ctitle, info_icon, C_RISK, C_COOP, C_ARMS, C_TEXT, CHART_CONFIG, DARK_LAYOUT, section_head, info, tabbar
 from sources import relations
 from views import surge_view
 
@@ -20,7 +20,8 @@ from views import surge_view
 def _ra_filters(names, y0, y1):
     """리스크와 무기 거래 페이지 필터: 제목 아래 상자 한 줄에 [나라][기간]. 값은 session_state['ra_f']에 보관."""
     f = st.session_state.setdefault("ra_f", {"country": "SAU", "years": (max(y0, 1990), y1)})
-    c1 = c2 = page_filters("리스크와 무기 거래")          # v2: 본문 맨 위 접이식
+    box = page_filters("리스크와 무기 거래")              # v2: 본문 맨 위 접이식
+    c1, c2 = box.columns(2, gap="medium")                 # 나라 · 기간을 한 줄에 둘
     f["country"] = c1.selectbox("나라", list(names), index=list(names).index(f["country"]),
                                 format_func=names.get, key="ra_country")
     f["years"] = c2.slider("기간", y0, y1, f["years"], key="ra_years")
@@ -44,8 +45,7 @@ def page():
         f'<div class="ra-t">{name}</div><div class="ra-d">{d}</div></div>'
         for name, (k, d) in VIEWS.items())
     st.markdown(f'<div class="ra-cards">{cards}</div>', unsafe_allow_html=True)
-    choice = st.segmented_control("분석 고르기", list(VIEWS), default="국가별 리스크와 무기 거래", key="ra_view",
-                                  label_visibility="collapsed") or "국가별 리스크와 무기 거래"
+    choice = tabbar("분석 고르기", list(VIEWS), key="ra_view")
     if choice == "국가별 리스크와 무기 거래":
         _country()
     else:
