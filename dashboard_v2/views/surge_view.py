@@ -25,7 +25,7 @@ import streamlit as st
 
 from sources import surge as A      # 원본: import analysis as A
 from core import theme           # 그래프 글꼴 · 밝은 테마 색 (theme.adapt)
-from core.ui import ctitle
+from core.ui import ctitle, tabbar
 
 INK, RED, BLUE, GOLD, MUTE, GRID = "#e5eaf3", "#f87171", "#60a5fa", "#f5c542", "#8b98ad", "#16233c"
 BG, CARD, LINE = "#0b1220", "#111a2e", "#1f2b44"
@@ -440,8 +440,7 @@ def page():
     with st.container(key="surge_app"):    # CSS · 밝은 테마 규칙이 이 상자(.st-key-surge_app)만 골라 칠한다
         st.markdown(f"<style>{_scoped_css(CSS)}</style>", unsafe_allow_html=True)
         st.subheader("리스크의 변화와 무기 수입은 어떤 관계를 보이는가?")   # 원본: st.title
-        choice = st.segmented_control("쪽 고르기", list(PAGES), default=list(PAGES)[0], key="surge_page",
-                                      label_visibility="collapsed")
+        choice = tabbar("쪽 고르기", list(PAGES), key="surge_page")
         st.write("")
         PAGES[choice or list(PAGES)[0]]()          # 고른 쪽만 그린다
 

@@ -104,3 +104,13 @@ def ctitle(main, sub=""):
     """차트 제목: 무엇을 나타내는지 짧게(main) + 둘째 줄 작은 글자로 필터 · 기간 · 읽는 법(sub).
     두 줄 제목의 위치 · 위 여백은 core/theme.py adapt 가 맞춘다."""
     return main + (f"<br><span style='font-size:14px;color:#8b98ad'>{sub}</span>" if sub else "")
+
+
+def tabbar(label, options, key, default=None, **kw):
+    """페이지 안 «세부 보기» 고르기: 화면 폭을 꽉 채운 띠 모양 (고른 칸만 진하게). (2026-09-30)
+    작은 알약 여러 개보다, 지금 어느 쪽을 보고 있는지가 한눈에 들어온다.
+    모양은 style2.css 의 [class*="st-key-tabbar-"] 규칙이 맡는다 (상자 key 로 그 위젯만 고른다)."""
+    first = default or list(options)[0]
+    with st.container(key=f"tabbar-{key}"):
+        return st.segmented_control(label, options, default=first, key=key,
+                                    label_visibility="collapsed", **kw) or first
