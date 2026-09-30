@@ -1784,3 +1784,12 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
     font-size: 12px !important;
     padding: 1px 7px !important;
 }
+
+/* ---------------------------------------------------------------- 본문 맨 위 필터 (2026-09-30 사이드바 → 본문)
+   조건을 바꾸는 곳을 보는 화면과 같은 자리에 둔다. 접혀 있을 때 화면을 거의 안 먹게 얇게. */
+.filter-note {
+    font-size: 14px;
+    color: #8b98ad;
+    line-height: 1.5;
+    margin: -4px 2px 14px;
+}

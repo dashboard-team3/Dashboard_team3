@@ -6,6 +6,7 @@ import streamlit as st
 from sources import arms
 from core.ui import page_sub, term
 from core import theme
+from core.sidebar import page_filters, filter_note
 from core.ui import ctitle, info_icon          # 밝은 테마일 때 그래프 색 바꾸기
 from sources.relations import COUNTRIES, jo
 
@@ -341,7 +342,11 @@ def page(filter_box=None, on_open=None, compact=False, show_title=True):
                             unsafe_allow_html=True)
         
     elif on_open is None:
-        _filters(st.container(border=True), False, f, M, k, y0, y1, cats_all, targets_all, exp_opts, exp_name, months)
+        # v2: 필터는 «본문 맨 위» 접이식 상자 (2026-09-30 사이드바 -> 본문)
+        _filters(page_filters("무기 거래 추이"), False, f, M, k, y0, y1, cats_all, targets_all, exp_opts, exp_name, months)
+        filter_note(f'{f["years"][0]}-{f["years"][1]} · {M["cat_label"]} {len(f["cats"])}/{len(cats_all)} · '
+                    f'대상국 {len(f["targets"])}곳 · {M["exporter_label"]} '
+                    f'{"전체" if not f["exporters"] else str(len(f["exporters"])) + "곳"}')
 
     else:
         a, b = st.columns([5, 1])

@@ -20,7 +20,7 @@ PAGES = {                              # 3. 메뉴 이름 → 그 페이지를 �
     "홈": start_view.page,         #    처음 보는 사람용 첫 화면 (리스크 풀이 · 메뉴 안내 · 찾은 것)
     "실시간 모니터링": realtime_view.page,
     "리스크 분석": risk_view.page,
-    "무기 거래 추이": lambda: arms_view.page(filter_box=sidebar.sidebar_filters("무기 거래 추이"), compact=True),
+    "무기 거래 추이": lambda: arms_view.page(compact=True),   # 필터 상자는 제목 아래에서 직접 만든다
     "리스크와 무기 거래": risk_arms_view.page,
     "데이터 소개": data_intro_view.page,
 }
