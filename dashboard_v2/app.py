@@ -4,7 +4,7 @@
 
 이 파일은 순서만 정한다. 실제 화면은 페이지마다 views/ 의 한 파일이 그린다.
   core/     공통 — paths(경로) · setup(페이지 설정 · CSS · 테마) · ui(색 · 소제목 · ⓘ) · sidebar(메뉴 · 필터 · 수집 시각) · theme(그래프 글꼴 · 색)
-  views/    페이지 — realtime_view ① · risk_view ② · arms_view ③ · risk_arms_view ④ (+ surge_view 세부 분석) · data_intro_view ⑤
+  views/    페이지 — realtime_view ① · risk_view ② · arms_view ③ · risk_arms_view ④ · 중동 무기 거래 분석(surge_view) · data_intro_view ⑤
   sources/  자료 읽기 · 계산 — realtime · relations · arms · surge (자료는 원본 pjL/data 를 같이 씀)
   styles/   style2.css (기본 어두운) · style_light.css (밝은 테마)
 원본 pjL/app2.py 와 화면 내용은 같고, 디자인(글자 크기 4가지 · 카드 · 2단 · 필터는 사이드바)만 다르다.
@@ -21,7 +21,8 @@ PAGES = {                              # 3. 메뉴 이름 → 그 페이지를 �
     "실시간 모니터링": realtime_view.page,
     "리스크 분석": risk_view.page,
     "무기 거래 추이": lambda: arms_view.page(compact=True),   # 필터 상자는 제목 아래에서 직접 만든다
-    "리스크와 무기 거래": risk_arms_view.page,
+    "리스크와 무기 거래": risk_arms_view.page,          #    나라 하나
+    "중동 무기 거래 분석": risk_arms_view.region_page,   #    중동 16개국 전체 (급증 전후, views/surge_view.py)
     "데이터 소개": data_intro_view.page,
 }
 ui.brand()                             #    모든 페이지 맨 위: 대시보드 제목 · 부제

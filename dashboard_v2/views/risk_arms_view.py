@@ -1,9 +1,8 @@
-"""④ 리스크와 무기 거래 (원본 app2.py 의 7. 을 v2 에서 나눔, 2026-09-30).
+"""리스크와 무기 거래 · 중동 무기 거래 분석 (원본 app2.py 의 7. 을 v2 에서 나눔).
 
-page()      개요: 두 분석이 무엇이 다른지 카드 두 장 → 버튼으로 하나를 고른다
-  _country()  국가별 리스크와 무기 거래 — 나라 하나를 골라 연 리스크 · 무기 수입 · 시차 상관 (사이드바 필터 = 나라 · 기간)
-  _region()   중동 무기 거래 분석 — 나라 선택 없이 중동 16개국 전체, 갈등 급증 전후 무기 주문 (views/surge_view.py)
-예전에는 나라 필터 아래 두 탭이 함께 있어, 나라를 골라도 안 바뀌는 중동 전체 분석이 섞여 헷갈렸다."""
+page()         메뉴 '리스크와 무기 거래' — 나라 하나를 골라 연 리스크 · 무기 수입 · 시차 상관 (_country)
+region_page()  메뉴 '중동 무기 거래 분석' — 나라 선택 없이 중동 16개국 전체, 갈등 급증 전후 무기 주문 (views/surge_view.py)
+2026-09-30: 한 페이지 안 개요 카드 + 버튼으로 고르던 것을 사이드바 메뉴 두 개로 나눴다."""
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -12,7 +11,7 @@ from plotly.subplots import make_subplots
 from core.ui import page_sub, term
 from core import theme
 from core.sidebar import page_filters, filter_note
-from core.ui import ctitle, info_icon, C_RISK, C_COOP, C_ARMS, C_TEXT, CHART_CONFIG, DARK_LAYOUT, section_head, info, tabbar
+from core.ui import ctitle, info_icon, C_RISK, C_COOP, C_ARMS, C_TEXT, CHART_CONFIG, DARK_LAYOUT, section_head, info
 from sources import relations
 from views import surge_view
 
@@ -29,27 +28,22 @@ def _ra_filters(names, y0, y1):
     return f["country"], f["years"]
 
 
-VIEWS = {   # 버튼 이름 → (카드 제목 줄, 카드 설명)
-    "국가별 리스크와 무기 거래": ("나라 하나를 골라서", "고른 나라의 연 리스크(선)와 SIPRI 무기 수입(막대)을 1980년부터 나란히 보고, 리스크가 오른 뒤 몇 해 안에 수입이 늘었는지 시차 상관으로 견줍니다."),
-    "중동 무기 거래 분석": ("중동 16개국 전체", "나라를 고르지 않고 16개국 전체에서 갈등이 급증한 해를 찾아, 그 앞뒤로 무기 주문이 어떻게 바뀌었는지 사례로 봅니다. 증가 · 감소 사례와 결론."),
-}
-
-
 def page():
-    """리스크와 무기 거래 개요: 두 분석 소개 카드 → 버튼으로 하나를 골라 그 아래에 그린다."""
-    st.title("리스크와 무기 거래 개요")
-    page_sub("국가별·중동 전체의 " + term("리스크") + "와 무기 거래 흐름을 함께 살펴보고, 리스크의 " + term("급증") + " 전후의 거래 변화와 시차를 분석합니다.")
-    choice = st.session_state.get("ra_view") or "국가별 리스크와 무기 거래"
-    cards = "".join(
-        f'<div class="ra-card{" on" if name == choice else ""}"><div class="ra-k">{k}</div>'
-        f'<div class="ra-t">{name}</div><div class="ra-d">{d}</div></div>'
-        for name, (k, d) in VIEWS.items())
-    st.markdown(f'<div class="ra-cards">{cards}</div>', unsafe_allow_html=True)
-    choice = tabbar("분석 고르기", list(VIEWS), key="ra_view")
-    if choice == "국가별 리스크와 무기 거래":
-        _country()
-    else:
-        _region()
+    """리스크와 무기 거래: 나라 하나를 골라 연 리스크와 무기 수입을 본다.
+    (중동 전체 분석은 2026-09-30 부터 사이드바 메뉴 '중동 무기 거래 분석' 으로 따로 뺐다 → region_page)"""
+    st.title("리스크와 무기 거래")
+    page_sub("나라 하나를 골라 연 " + term("리스크") + "와 SIPRI 무기 수입을 1980년부터 나란히 보고, "
+             "리스크가 오른 뒤 몇 해 안에 수입이 늘었는지 시차 상관으로 견줍니다.")
+    _country()
+
+
+def region_page():
+    """중동 무기 거래 분석 (사이드바 메뉴): 나라 선택 없이 중동 16개국 전체, 갈등 급증 전후 무기 주문.
+    화면 = views/surge_view.py, 계산 = sources/surge.py (팀원의 급증과_무기거래 앱을 옮긴 것)."""
+    st.title("중동 무기 거래 분석")
+    page_sub("나라를 고르지 않고 중동 16개국 전체에서 " + term("리스크") + "가 " + term("급증") + "한 해를 찾아, "
+             "그 앞뒤로 무기 주문이 어떻게 바뀌었는지 사례로 봅니다.")
+    surge_view.page()
 
 
 def _country():
@@ -191,9 +185,3 @@ def _country():
           "나라 간 규모 차이를 걷어낸 값.\n\n"
           "**나라별 중앙값** = 나라마다 따로 잰 r의 중앙값. 몇 나라가 결과를 끌고 가는지 보는 용도.\n\n"
           "**표본** = 고른 기간 안에서 리스크(t)와 수입(t+k)이 모두 있는 해. 비교할 해가 5개 미만인 나라는 뺍니다.")
-
-
-def _region():
-    """중동 무기 거래 분석: 나라 선택 없이 중동 16개국 전체 (갈등 급증 전후 무기 주문). 사이드바 필터 없음.
-    화면 = views/surge_view.py, 계산 = sources/surge.py (팀원의 급증과_무기거래 앱을 옮긴 것)."""
-    surge_view.page()
