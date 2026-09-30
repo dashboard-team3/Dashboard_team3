@@ -1,0 +1,11 @@
+# 비밀 정보 — DB 비밀번호는 팀원끼리 직접 전달
+.env
+.streamlit/secrets.toml
+
+# 실시간 수집 결과 (수집기가 쌓는다, 커밋 안 함)
+data/realtime/
+
+# Python
+__pycache__/
+*.pyc
+console.txt

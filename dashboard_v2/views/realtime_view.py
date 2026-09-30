@@ -1,0 +1,535 @@
+"""① 실시간 모니터링 페이지 (원본 app2.py 의 4.). page() = KPI 카드 · 지도/네트워크 · 최근 사건."""
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+
+from core.ui import tip, info_icon, page_sub, term
+from core import theme
+from sources import realtime
+
+
+def spark_svg(values, color="#8b98ad", w=110, h=30):
+    """작은 추이선(SVG). 값이 2개 미만이면 빈 문자열."""
+    vals = [v for v in values if v is not None]
+    if len(vals) < 2:
+        return ""
+    lo, hi = min(vals), max(vals)
+    rng = (hi - lo) or 1
+    pts = " ".join(f"{i * w / (len(vals) - 1):.1f},{h - 3 - (v - lo) / rng * (h - 6):.1f}" for i, v in enumerate(vals))
+    lx, ly = pts.split()[-1].split(",")
+    return (f'<svg class="spark" width="{w}" height="{h}" viewBox="0 0 {w} {h}">'
+            f'<polyline fill="none" stroke="{color}" stroke-width="2" points="{pts}"/>'
+            f'<circle cx="{lx}" cy="{ly}" r="2.6" fill="{color}"/></svg>')
+
+
+def live_card(label, value, sub, tone="", delta=None, spark="", label_tip=""):
+    """KPI 카드: 라벨 / 큰 값(+전일 동시간대 대비) / 설명 한 줄 / 오른쪽 아래 작은 추이선."""
+    d = ""
+    if delta is not None:
+        cls = "up" if delta > 0 else "down" if delta < 0 else "flat"
+        d = tip(f'{"▲" if delta > 0 else "▼" if delta < 0 else "–"} {abs(delta):,}',
+                "어제 같은 시각까지의 건수와 비교한 차이", f"delta {cls}")
+    return f"""
+<div class="kpi live {tone}">
+  <div>
+    <div class="lbl">{tip(label, label_tip) if label_tip else label}</div>
+    <div class="val">{value}{d}</div>
+    <div class="sub">{sub}</div>
+  </div>{spark}
+</div>
+"""
+
+
+@st.cache_data(ttl=300)
+def daily_totals(n=7):
+    """최근 n일의 하루 총 사건 수 (실시간 폴더 기준, 오래된 날부터)."""
+    days = realtime.recent_days(n)                       # 자료가 있는 최근 n일 (DB, 안 되면 파일 폴더)
+    return days, [len(realtime.load_day(d)) for d in days]
+
+
+@st.cache_data(ttl=60)
+def yesterday_same_time(slot):
+    """어제 00:00(UTC)부터 오늘 마지막 수집 시각과 같은 시각까지의 건수, 어제 하루 전체 건수.
+    오늘은 하루가 다 차지 않았으므로 어제 하루 전체가 아니라 같은 시각까지와 견줘야 공정하다."""
+    from datetime import datetime, timedelta
+    if not slot:
+        return None, None
+    y = (datetime.strptime(slot[:8], "%Y%m%d") - timedelta(days=1)).strftime("%Y%m%d")
+    df = realtime.load_day(y)
+    if df.empty:
+        return None, None
+    upto = int((df["TIMESTAMP"].str[8:14] <= slot[8:14]).sum())      # 시·분·초가 오늘 마지막 수집 시각 이하
+    return upto, len(df)
+
+
+@st.fragment(run_every="60s")
+def live_kpis():
+    """run_realtime.py 결과로 카드 3개를 그린다. 이 부분만 60초마다 다시 실행된다."""
+    k = realtime.kpis()
+
+    days, totals = daily_totals()
+    slot = realtime.last_slot()
+    y_same, y_all = yesterday_same_time(slot)
+    if y_same is not None:
+        sub = (f"어제 같은 시각({slot[8:10]}:{slot[10:12]} UTC)까지 {y_same:,}건 · 어제 하루 {y_all:,}건 · "
+               f"최근 {len(totals)}일 추이")
+    else:
+        sub = f"중동 국가 간 · 최근 {len(totals)}일 추이"
+    c1, c2, c3 = st.columns(3)
+    c1.markdown(live_card("오늘(UTC) 누적 이벤트", f"{k['total']:,}", sub, "blue",
+                          label_tip="UTC 기준 오늘 0시(한국 오전 9시)부터 들어온 중동 16개국끼리의 갈등 사건 수. "
+                                    "오른쪽 작은 선 = 최근 7일 하루 건수",
+                          delta=(k["total"] - y_same) if y_same is not None else None,   # 전일 동시간대 대비
+                          spark=spark_svg(totals, "#93c5fd")),
+                unsafe_allow_html=True)
+    c2.markdown(live_card("최근 수신", f"+{k['recent']}", "직전 15분 배치",
+                          label_tip="가장 최근 15분 구간에 새로 들어온 사건 수 (수집기가 15분마다 GDELT 를 받음)"),
+                unsafe_allow_html=True)
+    if k["top"]:
+        name, count, partner = k["top"]
+        c3.markdown(live_card("최다 관여국", name, f"{count}건 · 최다 상대 {partner}", "red",
+                              label_tip="오늘 사건에 주체 · 대상으로 가장 많이 나온 나라와, 그 나라와 가장 많이 얽힌 상대국"),
+                    unsafe_allow_html=True)
+    else:
+        c3.markdown(live_card("최다 관여국", "-", "오늘 수집된 이벤트 없음", "red"),
+                    unsafe_allow_html=True)
+
+    if k["slot_kst"]:
+        st.caption(f"마지막 수신 구간 {k['slot_kst']} KST (UTC {k['slot_utc']}) · 60초마다 자동 갱신")
+    else:
+        st.caption("실시간 수집기 상태를 찾을 수 없습니다. pjL 폴더에서 python run_realtime.py 가 실행 중인지 확인하세요.")
+
+
+MAP_CENTER = dict(lat=27.2, lon=44.0)   # 튀르키예(북)와 예멘(남) 사이 가운데
+MAP_ZOOM = 4.15  # 처음 그릴 때의 배율. 실제 시작 배율은 FIT_SCRIPT가 패널 크기를 재서 다시 맞춘다
+
+
+LABEL_FONT = 19   # 지도 나라 이름 글자 크기(px)
+
+
+def _label_placement(radius, side):
+    """이름을 원 바깥에 붙이기 위한 (글자 기준점, 가로·세로 거리[em]).
+
+    브라우저 스크립트(FIT_SCRIPT)가 이 값을 지도 레이어의 text-anchor / text-offset 으로 넣는다.
+    거리는 글자 크기 단위(em)인데 원 반지름(px)으로 계산하므로, 화면 배율과 상관없이
+    이름이 항상 원 바로 바깥에 붙는다.
+    """
+    gap = (radius + 6) / LABEL_FONT
+    if side == "middle left":
+        return "right", [-gap, 0]
+    if side == "middle right":
+        return "left", [gap, 0]
+    if side == "top center":
+        return "bottom", [0, -gap]
+    if side == "bottom right":
+        d = (radius * 0.75 + 2) / LABEL_FONT
+        return "top-left", [d, d]
+    return "top", [0, gap]                     # bottom center (기본)
+
+
+# 패널 높이는 style2.css에서 화면 높이(100vh)에 맞춰 정하고, 차트는 그 안의 남은 높이를 채운다.
+
+
+def draw_map():
+    """오늘(UTC) 실시간 이벤트를 나라별 원으로 그린다. 타일 지도라 패널 폭을 꽉 채운다."""
+    df = realtime.load_day(realtime.today_utc())
+    stats = realtime.country_stats(df)
+    totals = realtime.category_totals(df)
+
+    # 원 크기(px): 건수의 제곱근에 비례 (168건과 2건이 둘 다 읽히도록)
+    stats["size"] = stats["count"].apply(lambda n: min(20 + 4 * n ** 0.5, 60) if n else 0)   # 숫자 15px가 들어가게
+    stats["color"] = stats["top_category"].map(
+        lambda c: realtime.CATEGORIES[c]["color"] if c in realtime.CATEGORIES else "rgba(0,0,0,0)")
+    stats["hover"] = stats.apply(lambda r: (
+        f"<b>{r['country']}</b> 오늘 {r['count']}건<br>"
+        + "<br>".join(f"{cat} {n}" for cat, n in r["by_category"].items() if n)
+        + (f"<br>최다 상대 {r['top_partner']}" if r["top_partner"] else "")
+    ) if r["count"] else f"<b>{r['country']}</b> 오늘 0건", axis=1)
+    active = stats[stats["count"] > 0]
+
+    fig = go.Figure()
+    # 1) 원
+    fig.add_trace(go.Scattermap(
+        lat=active["lat"], lon=active["lon"], mode="markers",
+        marker=dict(size=active["size"], color=active["color"], opacity=0.9),
+        customdata=active["hover"], hovertemplate="%{customdata}<extra></extra>",
+    ))
+    # 2) 원 안 숫자
+    fig.add_trace(go.Scattermap(
+        lat=active["lat"], lon=active["lon"], mode="text",
+        text=active["count"].astype(str), textfont=dict(color="#ffffff", size=15),
+        hoverinfo="skip",
+    ))
+    # 3) 나라 이름: Plotly 트레이스로 그리지 않는다. Plotly 는 다시 그릴 때마다 자기 레이어를 초기화해 이름이 원 한가운데로
+    #    튀었다(로딩 중 떨림). 이름 · 위치 · 붙일 방향 · 거리 · 색을 layout.meta 로 보내면, 브라우저 스크립트가 지도 엔진에
+    #    우리 이름표 레이어를 따로 올린다. 그 레이어는 Plotly 가 건드리지 않는다.
+    label_meta = {
+        "names": [{"name": r.label, "lat": float(r.lat), "lon": float(r.lon),
+                   "anchor": _label_placement(r.size / 2, r.side)[0], "offset": _label_placement(r.size / 2, r.side)[1]}
+                  for r in stats.itertuples()],
+        "color": "#e5eaf3", "base": LABEL_FONT,
+    }
+    fig.update_layout(
+        map=dict(style="carto-positron-nolabels" if theme.is_light() else "carto-darkmatter-nolabels", center=MAP_CENTER, zoom=MAP_ZOOM),
+        meta={"labels": label_meta},                    # 나라 이름표 자료 (브라우저 스크립트가 읽는다)
+        margin=dict(l=0, r=0, t=0, b=0), showlegend=False, autosize=True,
+        paper_bgcolor="rgba(0,0,0,0)",
+        uirevision="live-map",   # 1분마다 다시 그려도 사용자가 옮긴 확대·위치를 유지
+        hoverlabel=dict(bgcolor="#1e293b", bordercolor="#334155", font=dict(color="#e5eaf3", size=15)))
+
+    # 마우스를 올리면 오른쪽 위에 확대(+)·축소(−)·처음 위치 버튼만 보인다. 휠 확대는 스크롤과 충돌해서 끈다.
+    st.plotly_chart(theme.adapt(fig), key="live_map_chart", width="stretch", height="stretch",
+                    config={"responsive": True, "scrollZoom": False, "displaylogo": False,
+                            "modeBarButtons": [["zoomInMap", "zoomOutMap", "resetViewMap"]]})
+    legend = "".join(
+        f'<span><i style="background:{c["color"]}"></i>{cat} ({totals[cat]})</span>'
+        for cat, c in realtime.CATEGORIES.items())
+    st.markdown(
+        f'<div class="map-legend">{legend}'
+        '<em>원 크기 = 이벤트 수 · 색 = 그 나라에서 가장 많은 사건 유형 · '
+        '한 사건은 양쪽 나라에 모두 세므로 원 숫자의 합은 오늘 누적의 2배입니다</em></div>',
+        unsafe_allow_html=True)
+
+
+def draw_network(choice):
+    """오늘(UTC) 국가쌍 관계를 타원 네트워크로 그린다. choice는 '전체' 또는 사건 유형."""
+    df = realtime.load_day(realtime.today_utc())
+    pairs = realtime.pair_stats(df, None if choice == "전체" else choice)
+    pos = realtime.network_positions()
+
+    if pairs.empty:
+        st.info(f"오늘(UTC) '{choice}' 유형으로 연결된 국가쌍이 아직 없습니다.")
+        return
+
+    fig = go.Figure()
+    top = pairs["count"].max()
+
+    # 1) 국가쌍마다 선 하나. 굵기는 건수, 색은 그 쌍에서 가장 많은 유형
+    for r in pairs.itertuples():
+        (x0, y0), (x1, y1) = pos[r.a], pos[r.b]
+        fig.add_trace(go.Scatter(
+            x=[x0, x1], y=[y0, y1], mode="lines",
+            line=dict(color=realtime.CATEGORIES[r.top_category]["color"],
+                      width=1.5 + 8 * (r.count / top)),
+            opacity=0.85, hoverinfo="skip",
+        ))
+    # 선 가운데 보이지 않는 점을 두어 마우스를 올리면 상세가 뜨게 한다
+    fig.add_trace(go.Scatter(
+        x=[(pos[r.a][0] + pos[r.b][0]) / 2 for r in pairs.itertuples()],
+        y=[(pos[r.a][1] + pos[r.b][1]) / 2 for r in pairs.itertuples()],
+        mode="markers", marker=dict(size=18, color="rgba(0,0,0,0)"),
+        customdata=[
+            f"<b>{r.a} – {r.b}</b> 오늘 {r.count}건<br>"
+            f"{r.a} → {r.b}: {r.a_to_b}건<br>{r.b} → {r.a}: {r.b_to_a}건<br>"
+            + " · ".join(f"{c} {n}" for c, n in r.by_category.items() if n)
+            for r in pairs.itertuples()],
+        hovertemplate="%{customdata}<extra></extra>",
+    ))
+
+    # 2) 나라 점: 오늘 연결된 나라는 진하게(크기 = 관여 건수), 나머지는 흐리게
+    involved = pd.concat([
+        pairs[["a", "count"]].rename(columns={"a": "n"}),
+        pairs[["b", "count"]].rename(columns={"b": "n"}),
+    ]).groupby("n")["count"].sum()
+    names = list(pos)
+
+    def _outward(n):
+        """이름을 타원 바깥쪽에 붙인다: 위·아래 부분은 위·아래로, 옆·대각선 부분은 왼쪽·오른쪽으로.
+        위·아래로만 붙이면 아래쪽 나라(사우디·오만·UAE·카타르) 이름끼리 부딪힌다."""
+        x, y = pos[n][0] / 2.0, pos[n][1]                 # 2:1 타원을 원으로 되돌린 좌표
+        if abs(y) >= 0.75:
+            return "top center" if y > 0 else "bottom center"
+        return "middle right" if x > 0 else "middle left"
+    fig.add_trace(go.Scatter(
+        x=[pos[n][0] for n in names], y=[pos[n][1] for n in names],
+        mode="markers+text", cliponaxis=False,            # 가장자리 이름이 그래프 칸 밖으로 조금 나가도 자르지 않는다
+        text=[realtime.SHORT_NAME.get(n, n) for n in names],
+        textposition=[_outward(n) for n in names],
+        textfont=dict(color=["#e5eaf3" if n in involved else "#5b6578" for n in names], size=16),
+        marker=dict(
+            size=[16 + 6 * involved[n] ** 0.5 if n in involved else 9 for n in names],
+            color=["#e5eaf3" if n in involved else "#2b3444" for n in names],
+            line=dict(color="#0b1220", width=2)),
+        customdata=[f"<b>{n}</b> 오늘 {int(involved.get(n, 0))}건" for n in names],
+        hovertemplate="%{customdata}<extra></extra>",
+    ))
+
+    fig.update_layout(
+        showlegend=False, autosize=True, margin=dict(l=10, r=10, t=10, b=10),
+        # 비율을 묶지 않아서 타원이 패널 크기에 맞게 늘어나 빈 공간 없이 채운다
+        xaxis=dict(visible=False, range=[-2.8, 2.8]),     # 양옆 이름(이집트·이란) 자리
+        yaxis=dict(visible=False, range=[-1.45, 1.45]),   # 위아래 이름(레바논·UAE 등) 자리
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        hoverlabel=dict(bgcolor="#1e293b", bordercolor="#334155", font=dict(color="#e5eaf3", size=15)))
+    st.plotly_chart(theme.adapt(fig), key="live_network_chart", width="stretch", height="stretch",
+                    config={"displayModeBar": False, "responsive": True})
+
+    legend = "".join(
+        f'<span><i style="background:{c["color"]}"></i>{cat}</span>'
+        for cat, c in realtime.CATEGORIES.items())
+    st.markdown(
+        f'<div class="map-legend">{legend}'
+        f'<em>오늘 연결 {len(pairs)}쌍 · 선 굵기 = 사건 수 · 선 색 = 그 쌍에서 가장 많은 사건 유형 · '
+        f'흐린 점 = 오늘 사건 없음</em></div>',
+        unsafe_allow_html=True)
+
+
+FIT_SCRIPT = """
+(() => {
+  const w = window.parent, d = w.document;
+  // 패널 윗변 위치를 재서, 화면 아래 끝(여백 24px)까지 남은 높이를 패널 높이로 쓴다.
+  // 화면 크기·브라우저 확대 비율이 달라도 항상 아래 빈 공간 없이 맞는다.
+  const fit = () => {
+    const panel = d.querySelector('.st-key-main_panel');
+    const main = d.querySelector('[data-testid="stMain"]');
+    if (!panel || !main) return;
+    const top = panel.getBoundingClientRect().top + main.scrollTop;
+    const h = Math.max(560, w.innerHeight - top - 24) + 'px';
+    if (d.documentElement.style.getPropertyValue('--panel-h') === h) return;   // 그대로면 다시 그리지 않는다 (떨림 방지)
+    d.documentElement.style.setProperty('--panel-h', h);
+    w.dispatchEvent(new Event('resize'));   // Plotly가 새 높이에 맞춰 다시 그리게 한다
+  };
+  if (!w.__panelFitBound) {                 // 창 크기가 바뀔 때도 다시 맞춘다 (한 번만 등록)
+    w.__panelFitBound = true;
+    w.addEventListener('resize', () => {
+      clearTimeout(w.__panelFitTimer);
+      w.__panelFitTimer = setTimeout(() => {
+        const panel = d.querySelector('.st-key-main_panel');
+        const main = d.querySelector('[data-testid="stMain"]');
+        if (!panel || !main) return;
+        const top = panel.getBoundingClientRect().top + main.scrollTop;
+        const h = Math.max(560, w.innerHeight - top - 24) + 'px';
+        if (d.documentElement.style.getPropertyValue('--panel-h') !== h) {
+          d.documentElement.style.setProperty('--panel-h', h);
+          w.dispatchEvent(new Event('resize'));
+        }
+      }, 150);
+    });
+  }
+  // 지도 시작 배율: 패널 크기를 재서 이집트~오만(경도 약 30도), 튀르키예~예멘(위도 약 26도)이
+  // 딱 들어오는 배율로 맞춘다. 사용자가 직접 확대 · 이동한 뒤에는 건드리지 않는다.
+  // 돌려주는 값: 배율이 맞춰졌거나 사용자가 옮겼으면 true (= 더 바뀔 일 없음)
+  const fitMap = (gd, map) => {
+    // 사용자가 직접 확대·축소·이동하면(버튼·드래그 모두 plotly_relayout 발생) 그 뒤로는 자동 맞춤을 멈춘다
+    if (!gd.__mapWatch) {
+      gd.__mapWatch = true;
+      gd.on('plotly_relayout', () => {
+        if (w.__mapSelf) return;
+        // '배율 초기화' 버튼은 서버 배율(layout.map.zoom)로 되돌린다 → 사용자 조작이 아니라 다시 자동 맞춤
+        const z0 = gd.layout && gd.layout.map && gd.layout.map.zoom;
+        if (z0 != null && Math.abs(map.getZoom() - z0) < 0.001) { w.__mapUserMoved = false; setTimeout(tune, 50); return; }
+        w.__mapUserMoved = true;
+      });
+    }
+    if (w.__mapUserMoved) return true;
+    const cw = gd.clientWidth, ch = gd.clientHeight;
+    if (!cw || !ch) return false;                                  // 아직 크기가 안 잡힘
+    const pxPerDeg = Math.min(cw / 30, ch / (26 * 1.12));        // 메르카토르라 위도 1도가 약 1.12배 길다
+    const zoom = Math.max(2.5, Math.min(4.6, Math.log2(pxPerDeg * 360 / 512)));
+    if (Math.abs(map.getZoom() - zoom) < 0.01) return true;       // 이미 맞춰져 있음
+    // 1분마다 다시 그릴 때 Streamlit이 서버 배율로 되돌리므로, 그때마다 다시 맞춘다
+    w.__mapSelf = true;
+    map.jumpTo({zoom: zoom, center: [44.0, 27.2]}, {originalEvent: true});
+    setTimeout(() => { w.__mapSelf = false; }, 300);
+    return true;
+  };
+  // 지도 나라 이름: layout.meta.labels(이름 · 위치 · 방향 · 거리 · 색)로 지도 엔진에 '우리' 이름표 레이어를 올린다.
+  // Plotly 트레이스가 아니라서 Plotly 가 다시 그려도 초기화되지 않는다 → 로딩 중 이름이 튀거나 떨리지 않는다.
+  // 지도가 좁으면 글자를 줄이고(19px 그대로면 지도 엔진이 겹치는 이름을 숨긴다), 줄인 만큼 em 거리를 키워 원과의 px 거리는 그대로 둔다.
+  const placeLabels = (gd, map) => {
+    // 원 안 숫자(Plotly 레이어): 원 한가운데라 이름과 겹칠 일이 없으므로, 이름표 자리 다툼에서 뺀다
+    gd._fullData.forEach((tr, i) => {
+      const id = 'plotly-trace-layer-' + tr.uid + '-symbol';
+      const mode = gd.data[i] && gd.data[i].mode;                  // _fullData 에는 mode 가 비어 있어 입력값에서 읽는다
+      if (mode === 'text' && map.getLayer(id) && map.getLayoutProperty(id, 'text-allow-overlap') !== true) {
+        map.setLayoutProperty(id, 'text-allow-overlap', true);
+        map.setLayoutProperty(id, 'text-ignore-placement', true);
+      }
+    });
+    const meta = gd.layout && gd.layout.meta && gd.layout.meta.labels;
+    if (!meta || !map.style) return false;                         // 타일 · 아이콘이 덜 받아져도 레이어는 올릴 수 있다
+    const BASE = meta.base || 19;                                  // 파이썬 LABEL_FONT
+    const size = Math.round(Math.max(13, Math.min(BASE, gd.clientWidth / 32)));   // 소수 크기면 글자가 아예 안 그려진다
+    const data = {type: 'FeatureCollection', features: meta.names.map((n) => ({
+      type: 'Feature', geometry: {type: 'Point', coordinates: [n.lon, n.lat]},
+      properties: {name: n.name, anchor: n.anchor, offset: [n.offset[0] * BASE / size, n.offset[1] * BASE / size]}}))};
+    const key = JSON.stringify(data) + size + meta.color;          // 바뀐 게 없으면 아무것도 안 한다
+    const src = map.getSource('ctry-names');
+    if (!src) {
+      try {
+        map.addSource('ctry-names', {type: 'geojson', data: data});
+        map.addLayer({id: 'ctry-names', type: 'symbol', source: 'ctry-names',
+                      layout: {'text-field': ['get', 'name'], 'text-font': ['Open Sans Regular'], 'text-size': size,
+                               'text-anchor': ['get', 'anchor'], 'text-offset': ['get', 'offset'], 'text-padding': 0},
+                      paint: {'text-color': meta.color}});
+      } catch (e) { return false; }                                // 스타일이 아직 없으면 다음 확인 때 다시
+    } else if (map.__labelKey !== key) {
+      src.setData(data);
+      map.setLayoutProperty('ctry-names', 'text-size', size);
+      map.setPaintProperty('ctry-names', 'text-color', meta.color);
+    }
+    if (map.getLayer('ctry-names')) map.moveLayer('ctry-names');   // 늘 맨 위 (Plotly 가 레이어를 다시 만들어도 이름이 원에 가리지 않게)
+    map.__labelKey = key;
+    return true;
+  };
+  // 지도를 보일지: 배율 · 이름 위치가 다 맞고 글꼴 · 타일까지 받은 뒤에 한 번에 보인다 (CSS 가 그 전까지 숨긴다).
+  // 받는 게 늦어도 새 지도가 나타난 뒤 2초가 지나면 보인다.
+  const reveal = (on) => { if (d.documentElement.dataset.mapReady !== (on ? '1' : '0')) d.documentElement.dataset.mapReady = on ? '1' : '0'; };
+  const tune = () => {
+    if (w.__mapTuning) return;                                     // 아래 설정이 styledata 를 다시 부르므로 겹쳐 돌지 않게
+    const gd = d.querySelector('.st-key-live_map_chart .js-plotly-plot');
+    const sub = gd && gd._fullLayout && gd._fullLayout.map && gd._fullLayout.map._subplot;
+    if (!sub || !sub.map || !gd._fullData) return;
+    const map = sub.map;
+    w.__mapTuning = true;
+    try {
+      if (!map.__tuned) {                                          // 새 지도 객체: 한 번만 연결
+        map.__tuned = true;
+        map.__born = Date.now();
+        reveal(false);                                             // 새 지도는 준비될 때까지 숨긴다
+        map._fadeDuration = 0;                                     // 이름 위치가 바뀔 때 0.3초 흐려졌다 나타나는 효과 끄기
+        map.on('styledata', tune);                                 // Plotly 가 이름표를 초기화하는 순간 바로 다시 적용
+        map.on('idle', tune);                                      // 그리기 · 글꼴 · 타일이 끝났을 때 다시 확인 (여기서 보이게 된다)
+        setTimeout(tune, 2100);                                    // 늦어도 2초 뒤엔 보이게
+      }
+      if (!gd.__tuneHook) { gd.__tuneHook = true; gd.on('plotly_afterplot', () => setTimeout(tune, 0)); }
+      const fitted = fitMap(gd, map);
+      const placed = placeLabels(gd, map);
+      // 배율 · 이름 위치가 다 맞았을 때만 보인다 (이름 레이어가 생기기 전에 보이면 원 한가운데 이름이 잠깐 나온다)
+      if (fitted && placed && (map.loaded() || Date.now() - map.__born > 2000)) reveal(true);
+    } finally {
+      w.__mapTuning = false;
+    }
+  };
+  [0, 300, 900].forEach((ms) => setTimeout(tune, ms));             // 지도가 생기는 시점이 들쭉날쭉해 몇 번 확인 (이미 맞으면 아무것도 안 함)
+  setTimeout(fit, 300);
+  setTimeout(fit, 1500);
+})();
+"""
+
+
+def fit_charts_to_panel():
+    """패널을 화면 아래 끝까지 채우고, 차트를 그 높이에 다시 맞춘다.
+
+    Plotly는 처음 그릴 때 기본 높이(450px)로 그려서, 그린 직후 높이를 재고 다시 그리게 한다.
+    매번 다른 값(시각)을 넣어야 Streamlit이 같은 내용이라고 건너뛰지 않고 스크립트를 다시 실행한다.
+    """
+    import time
+    with st.container(key="resize_nudge"):
+        st.html(f"<script>/* {time.time()} */{FIT_SCRIPT}</script>", unsafe_allow_javascript=True)
+
+
+VIEWS = {
+    "지도": ("국가별 이벤트 발생 현황", "원 안 숫자 = 오늘 이벤트 수 · 원에 마우스를 올리면 상세"),
+    "네트워크": ("분쟁 원인별 국가 간 관계 네트워크", "선에 마우스를 올리면 방향별 건수"),
+}
+
+
+@st.fragment(run_every="60s")
+def live_main_panel():
+    """왼쪽 큰 패널. 지도와 네트워크를 버튼으로 바꿔 본다. 60초마다 이 패널만 다시 그린다."""
+    with st.container(border=True, key="main_panel"):
+        view = st.session_state.get("main_view") or "지도"
+        title, hint = VIEWS[view]
+        choice = "전체"
+        # 제목과 버튼을 한 줄에 두되, 폭이 모자라면 버튼 묶음이 제목 아래 줄로 내려간다 (잘리지 않게).
+        with st.container(horizontal=True, wrap=True, vertical_alignment="center", gap="small"):
+            st.markdown(f'<div class="map-head" style="border:none;padding-bottom:0"><b>{title}</b>'
+                        f' {info_icon(hint)}</div>', unsafe_allow_html=True, width="stretch")   # 안내는 ⓘ 말풍선
+            # 버튼 묶음. 네트워크일 때만 그 왼쪽에 분쟁 원인 선택 상자를 둔다.
+            with st.container(horizontal=True, horizontal_alignment="right",
+                              vertical_alignment="center", gap="small", width="content"):
+                if view == "네트워크":
+                    choice = st.selectbox("분쟁 원인", ["전체"] + list(realtime.CATEGORIES),
+                                          key="net_category", label_visibility="collapsed",
+                                          width=160)
+                st.segmented_control("보기", list(VIEWS), default="지도", key="main_view",
+                                     label_visibility="collapsed")
+
+        if view == "네트워크":
+            draw_network(choice)
+        else:
+            draw_map()
+        fit_charts_to_panel()
+
+
+@st.fragment(run_every="60s")
+def live_feed():
+    """오늘(UTC) 사건을 최신순으로 보여준다. 일시정지하면 그 순간 목록을 붙잡아 둔다."""
+    import html as html_lib
+
+    paused = st.session_state.get("feed_paused", False)
+
+    with st.container(border=True, key="feed_panel"):
+        # 제목은 남는 폭을 쓰고, 버튼은 글자 폭만큼 확보한다. 좁은 화면에서도 버튼이 잘리지 않는다.
+        with st.container(horizontal=True, vertical_alignment="center", gap="small"):
+            st.markdown('<div class="map-head" style="border:none;padding-bottom:0"><b>최근 사건</b> '
+                        + info_icon('오늘(UTC) 사건을 최신순으로 · 시각은 한국 시간 · 보도량 = 그 사건을 다룬 기사 수 '
+                                    '(적음 1–2 · 보통 3–7 · 많음 8건+) · 같은 기사 N건 = 한 기사에서 나온 사건 묶음') + '</div>', unsafe_allow_html=True, width="stretch")
+            clicked = st.button("다시 시작" if paused else "일시정지", key="feed_toggle", width="content")
+        if clicked:
+            st.session_state["feed_paused"] = not paused
+            if not paused:   # 방금 멈췄다 → 지금 목록을 저장
+                st.session_state["feed_snapshot"] = realtime.recent_events(
+                    realtime.load_day(realtime.today_utc()))
+            st.rerun(scope="fragment")
+
+        if paused and "feed_snapshot" in st.session_state:
+            items = st.session_state["feed_snapshot"]
+        else:
+            items = realtime.recent_events(realtime.load_day(realtime.today_utc()))
+
+        with st.container(border=False, key="feed_list"):   # 남은 높이를 채우고, 넘치면 이 안에서만 스크롤
+            if not items:
+                st.caption("오늘(UTC) 수집된 사건이 아직 없습니다.")
+            rows = []
+            for it in items:
+                esc = html_lib.escape
+                link = (f'<a href="{esc(it["url"])}" target="_blank">기사 링크</a> · {esc(it["domain"])}'
+                        if it["url"] else "출처 없음")
+                rows.append(
+                    f'<div class="feed-item">'
+                    f'<div class="feed-time">{it["time_kst"]}</div>'
+                    f'<div class="feed-body">'
+                    f'<div class="feed-pair">{esc(it["src"])} <span>→</span> {esc(it["dst"])}</div>'
+                    f'<div class="feed-tags">'
+                    f'<span class="feed-badge" style="color:{it["color"]};border-color:{it["color"]}66;'
+                    f'background:{it["color"]}1f">{it["root"]} {it["category"] or "기타"}</span>'
+                    + (f'<span class="feed-group">같은 기사 {it["count"]}건</span>'
+                       if it["count"] > 1 else "")
+                    + (f'<span class="feed-late">{it["days_before"]}일 전 사건</span>'
+                       if it["days_before"] else "")
+                    + f'</div>'
+                    f'<div class="feed-what">{esc(", ".join(it["whats"]))} · <em>{esc(it["where"])}</em></div>'
+                    f'<div class="feed-link">{link}</div>'
+                    f'</div>'
+                    f'<div class="feed-side {it["grade_class"]}">'
+                    f'<b>{it["grade"]} <i class="dots">{"●●●" if it["grade_class"] == "hot" else "●●○" if it["grade_class"] == "warm" else "●○○"}</i></b><span>기사 {it["articles"]}건</span>'
+                    f'</div></div>')
+            st.markdown("".join(rows), unsafe_allow_html=True)
+        if paused:
+            st.caption("일시정지 중 · 새 사건은 '다시 시작'을 누르면 보입니다.")
+
+
+def page():
+    st.title('실시간 모니터링')
+    page_sub(term("GDELT 2.0") + " 데이터를 기반으로 중동 16개국 사이에서 일어난 " + term("갈등 사건") + "을 15분마다 보여 줍니다. 날짜 기준은 " + term("UTC") + " 오늘입니다.")
+    k = realtime.kpis()
+    if k["top"]:
+        name, count, partner = k["top"]
+        st.markdown(f'<div class="summary">오늘(UTC) 중동 국가 간 갈등 사건 <b>{k["total"]:,}건</b> · '
+                    f'가장 많이 관여한 나라는 <b>{name}</b>({count}건, 최다 상대 {partner})</div>', unsafe_allow_html=True)
+    else:
+        st.caption('정치, 영토, 이념, 종교, 민족 등 다양한 이유로 발생하는 국제 분쟁을 분석합니다.')
+
+    live_kpis()
+
+
+
+    left, right = st.columns([1.8, 1], gap="medium")   # 왼쪽(지도·네트워크)을 넓게
+
+    with left:
+        live_main_panel()
+
+    with right:
+        live_feed()
