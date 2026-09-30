@@ -316,7 +316,7 @@ def page(filter_box=None, on_open=None, compact=False, show_title=True):
         page_sub(term("SIPRI") + "와 " + term("UN Comtrade") + " 자료를 통해 중동 16개국의 무기 이전 규모와 교역액 추이를 살펴보고, 주요 공급국과 품목별 거래 현황을 확인합니다. SIPRI 값의 단위는 " + term("TIV") + "입니다.")
     source = tabbar(
         "자료", ["Comtrade", "SIPRI"], key="arms_source",
-        format_func=lambda s: {"Comtrade": "Comtrade · 교역액(달러) · 2002~", "SIPRI": "SIPRI · 주문 TIV · 1980~"}[s],
+        format_func=lambda s: {"Comtrade": "Comtrade", "SIPRI": "SIPRI"}[s],
     )
     M = arms.SOURCES[source]
     U = M["unit"]

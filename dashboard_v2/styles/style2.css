@@ -1841,26 +1841,29 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] > div {
     display: flex !important;
-    width: 100% !important;
-    max-width: none !important;   /* 스트림릿 기본은 max-width: fit-content 라 폭이 안 늘어난다 */
+    width: 90% !important;
+    max-width: none !important;
+    height: 40px;
     flex-wrap: nowrap !important;
     gap: 0 !important;
-    padding: 5px !important;
-    margin: 2px 0 16px !important;
-    border: 1px solid #1f2b44 !important;
-    border-radius: 16px !important;
+    padding: 2px !important;
+    margin: 20px auto 20px !important;
+    /* border: 1px solid #1f2b44 !important; */
+    border-radius: 20px !important;
     background: rgba(148, 163, 184, .07) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .35) !important;
 }
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button {
     flex: 1 1 0 !important;
     min-width: 0 !important;
     width: 100% !important;
+    height: 100%;
     justify-content: center !important;
     border: 0 !important;
     background: transparent !important;
-    border-radius: 11px !important;
-    padding: 10px 12px !important;
+    border-radius: 18px !important;
+    padding: 14px !important;
     box-shadow: none !important;
     transition: background .15s ease, color .15s ease;
 }
@@ -1876,11 +1879,32 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] {
-    background: #16223f !important;
+    background: rgba(131, 139, 158, 0.5) !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, .35) !important;
 }
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] p {
     color: #e5eaf3 !important;
     font-weight: 700 !important;
+}
+
+/* 페이지 안 탭바: 화면 너비에 따라 본문 대비 너비 조절 (기본 100%) */
+@media (min-width: 800px) {
+    [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] > div {
+        width: 90% !important;
+    }
+}
+
+@media (min-width: 1000px) {
+    [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] > div {
+        width: 70% !important;
+        height: 52px;
+    }
+}
+
+@media (min-width: 1400px) {
+    [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] > div {
+        width: 60% !important;
+        height: 52px;
+    }
 }

@@ -649,7 +649,7 @@ button[kind="primary"] p, button[kind="primary"] {
 /* ---- 페이지 안 «세부 보기» 띠 (ui.tabbar) — 밝은 배경용 ---- */
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] > div {
     border-color: #d8cfbd !important;
-    background: #f1ece1 !important;
+    background: #ffffff !important;
 }
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button p {
@@ -661,10 +661,11 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] {
-    background: #ffffff !important;
+    background: rgba(185, 28, 28, 0.8) !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, .12) !important;
+    border:1px solid #d8cfbd !important;
 }
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] p {
-    color: #1c1a17 !important;
+    color: #ffffff !important;
 }
