@@ -19,7 +19,7 @@ html, body, .stMarkdown, .stMarkdown p, .stMarkdown li, label, label p, [data-te
     color: #1c1a17 !important;
 }
 
-[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p, .kpi .lbl, .kpi .sub, .pill-n, .pill-s, .glegend, .sec-s, .verdict .v2, .strip .l, .strip .s, .cond, .sb-foot, .menu-desc, .map-head span, .map-legend, .feed-time, .feed-side span, .empty {
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p, .kpi .kpi .sub, .pill-n, .pill-s, .glegend, .sec-s, .verdict .v2, .strip .l, .strip .s, .cond, .sb-foot, .menu-desc, .map-head span, .map-legend, .feed-time, .feed-side span, .empty {
     color: #6b6255 !important;
 }
 
@@ -40,6 +40,13 @@ html, body, .stMarkdown, .stMarkdown p, .stMarkdown li, label, label p, [data-te
     background: #ffffff !important;
     border-color: #e5e0d5 !important;
     box-shadow: 0 1px 3px rgba(28,26,23,0.06) !important;
+}
+
+.kpi .lbl {
+    font-size: 16px;
+    font-weight: 600;
+    color: #686868;
+    letter-spacing: -0.3px;
 }
 
 .kpi.blue {
@@ -130,6 +137,12 @@ button[kind="primary"] p, button[kind="primary"] {
 /* 위의 '사이드바 글자 = 검정' 규칙이 빨간 버튼 글자까지 덮지 않게 */
 
 /* 실시간 패널 */
+.kpi .sub {
+    font-size: 14px;
+    color: #6b717c;
+    margin-top: auto;
+}
+
 [data-testid="stVerticalBlockBorderWrapper"] {
     border-color: #e5e0d5 !important;
     background: #ffffff;

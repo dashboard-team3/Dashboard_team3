@@ -515,14 +515,12 @@ def live_feed():
 
 def page():
     st.title('실시간 모니터링')
-    page_sub(term("GDELT 2.0") + " 데이터를 기반으로 중동 16개국 사이에서 일어난 " + term("갈등 사건") + "을 15분마다 보여 줍니다. 날짜 기준은 " + term("UTC") + " 오늘입니다.")
+    page_sub(term("GDELT 2.0") + " 데이터를 기반으로 중동 16개국 사이에서 일어난 " + term("실시간 갈등 뉴스") + "를 보여줍니다. 날짜 기준은 " + term("UTC") + " 오늘입니다.")
     k = realtime.kpis()
     if k["top"]:
         name, count, partner = k["top"]
         st.markdown(f'<div class="summary">오늘(UTC) 중동 국가 간 갈등 사건 <b>{k["total"]:,}건</b> · '
                     f'가장 많이 관여한 나라는 <b>{name}</b>({count}건, 최다 상대 {partner})</div>', unsafe_allow_html=True)
-    else:
-        st.caption('정치, 영토, 이념, 종교, 민족 등 다양한 이유로 발생하는 국제 분쟁을 분석합니다.')
 
     live_kpis()
 

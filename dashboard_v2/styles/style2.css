@@ -25,21 +25,32 @@
 /* 실시간 KPI 카드: 라벨 / 큰 값 / 설명 한 줄 */
 .kpi {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 14px;
     padding: 16px 18px;
     border-radius: 12px;
     border: 1px solid #1f2b44;
     background: #111a2e;
+    height: 160px;
+}
+
+/* 라벨 / 값 / 설명을 세로 배치 */
+.kpi > div {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
 }
 
 .kpi .lbl {
     font-size: 16px;
+    font-weight: 600;
     color: #aab4c5;
+    letter-spacing: -0.3px;
 }
 
 .kpi .val {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 800;
     color: #ffffff;
 }
@@ -59,9 +70,9 @@
 }
 
 .kpi .sub {
-    font-size: 16px;
-    color: #aab4c5;
-    margin-top: 4px;
+    font-size: 14px;
+    color: #9da6b6;
+    margin-top: auto;
 }
 
 /* 실시간 지도 패널 */
@@ -345,8 +356,8 @@
     overflow-wrap: anywhere;
 }
 
-/* 창 폭이 1700px 아래면 피드 글자와 여백을 한 단계 줄여 한 줄에 더 들어가게 한다 */
-@media (max-width: 1700px) {
+/* 창 폭이 1600px 아래면 피드 글자와 여백을 한 단계 줄여 한 줄에 더 들어가게 한다 */
+@media (max-width: 1600px) {
     .feed-item {
         gap: 10px;
         padding: 11px 2px;
@@ -446,18 +457,6 @@ h1, h2, h3 {
     box-shadow: 0 6px 18px rgba(0,0,0,0.25);
     position: relative;
     overflow: hidden;
-}
-
-.kpi .val {
-    font-size: 28px;
-    letter-spacing: -0.02em;
-}
-
-.kpi .lbl {
-    font-size: 16px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #8b98ad;
 }
 
 .kpi .delta {
@@ -1150,7 +1149,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
    강조는 크기보다 굵기와 색: 본문은 회색으로 힘을 빼고, 제목 · 핵심 수치만 흰색(밝은 테마는 검정)
    최대 너비 1440px 가운데 정렬 · 그래프는 카드로 묶기 · 제목 주변 여백 */
 [data-testid="stMain"] h1, [data-testid="stMain"] h1 span {
-    font-size: 28px !important;
+    font-size: 36px !important;
     font-weight: 800 !important;
     line-height: 1.25 !important;
 }
