@@ -37,7 +37,7 @@ VIEWS = {   # 버튼 이름 → (카드 제목 줄, 카드 설명)
 def page():
     """리스크와 무기 거래 개요: 두 분석 소개 카드 → 버튼으로 하나를 골라 그 아래에 그린다."""
     st.title("리스크와 무기 거래 개요")
-    page_sub(term("리스크") + "와 무기 수입을 연도별로 맞대어, 갈등이 커질 때 무기 거래가 어떻게 움직이는지 봅니다. 한 나라씩 보거나, 중동 전체에서 갈등이 " + term("급증") + "한 뒤를 사례로 봅니다.")
+    page_sub("국가별·중동 전체의 " + term("리스크") + "와 무기 거래 흐름을 함께 살펴보고, 리스크의 " + term("급증") + " 전후의 거래 변화와 시차를 분석합니다.")
     choice = st.session_state.get("ra_view") or "국가별 리스크와 무기 거래"
     cards = "".join(
         f'<div class="ra-card{" on" if name == choice else ""}"><div class="ra-k">{k}</div>'
