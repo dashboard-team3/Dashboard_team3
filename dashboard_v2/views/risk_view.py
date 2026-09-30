@@ -208,8 +208,9 @@ def page():
         else:
             cmat = _in_period(cmat_full, q0, q1)
             reg = _in_period(region, q0, q1)
-            # v2: [선 그래프 | 기간 평균 막대] 2단 → 그 아래 등급 카드
-            left, right = st.columns([1.7, 1], gap="medium")
+            # v2: 국가쌍 탭과 같은 모양 — [그래프 | 등급 카드] 2단
+            #     기간 평균 막대는 선 그래프 아래로 내려 왼쪽 단에 함께 둔다
+            left, right = st.columns([2.3, 1], gap="medium")
             with left:
                 c_region = st.toggle("중동 전체 기준선", value=True, key="country_region")
                 fig_c = go.Figure()
@@ -236,27 +237,15 @@ def page():
                 st.plotly_chart(theme.adapt(fig_c), width="stretch", config=CHART_CONFIG)
 
             with right:
-                cavg = cmat[clist].mean().sort_values(ascending=False)
-                fig_cb = go.Figure(go.Bar(x=cavg.values, y=[names[c] for c in cavg.index], orientation="h",
-                                          marker_color=[C_RISK if c == cfocus else C_MUTE for c in cavg.index],
-                                          text=[f"{v:.3f}" for v in cavg.values], textposition="outside", cliponaxis=False,
-                                          hovertemplate="%{y} · %{x:.3f}<extra></extra>"))
-                fig_cb.update_layout(**DARK_LAYOUT, height=max(220, 60 + 34 * len(clist)), showlegend=False,
-                                     title=dict(text=ctitle("국가별 기간 평균 리스크", f"{_pstr(q0, q1)} · 고른 나라 {len(clist)}곳 · 빨강 = 강조한 나라"), font=dict(size=17, color=C_TEXT), x=0),
-                                     margin=dict(l=10, r=50, t=60, b=10))
-                fig_cb.update_xaxes(range=[0, 1], gridcolor="#1f2b44", tickfont=dict(size=14))
-                fig_cb.update_yaxes(autorange="reversed", gridcolor="#1f2b44", tickfont=dict(size=14))
-                st.plotly_chart(theme.adapt(fig_cb), width="stretch", config=CHART_CONFIG)
-
-            last_c = cmat.index.max()
-            grade_pills([(c, names[c], cmat[c].iloc[-1], cmat[c].mean()) for c in clist],
-                        dists[ccol], f"국가별 리스크 · {last_c:%Y-%m} 기준", hi=cfocus, layer="국가별",
-                        title_tip=f"마지막 달 {last_c:%Y-%m}의 상태 · 평균 = {_pstr(q0, q1)} 평균 · "
-                                  "상위 % = 같은 층(국가별·중동 전체) 1980년 이후 모든 달 중 순위 · 빨간 테두리 = 강조한 나라",
-                        month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
-            grade_pills([("__region__", "중동 전체", reg.iloc[-1], reg.mean())], dists["region"], layer="중동 전체",
-                        month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
-            grade_legend()
+                last_c = cmat.index.max()
+                grade_pills([(c, names[c], cmat[c].iloc[-1], cmat[c].mean()) for c in clist],
+                            dists[ccol], f"국가별 리스크 · {last_c:%Y-%m} 기준", hi=cfocus, layer="국가별",
+                            title_tip=f"마지막 달 {last_c:%Y-%m}의 상태 · 평균 = {_pstr(q0, q1)} 평균 · "
+                                      "상위 % = 같은 층(국가별·중동 전체) 1980년 이후 모든 달 중 순위 · 빨간 테두리 = 강조한 나라",
+                            month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
+                grade_pills([("__region__", "중동 전체", reg.iloc[-1], reg.mean())], dists["region"], layer="중동 전체",
+                            month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
+                grade_legend()
 
             info("**국가별 종합 리스크** = 위 식의 하루 갈등·협력 합을 그 나라가 낀 15개 국가쌍 전체(주어·목적어 모두)로 "
                   "먼저 더한 뒤 나눈 값의 월평균 (국가쌍 리스크의 평균이 아님).\n\n"
