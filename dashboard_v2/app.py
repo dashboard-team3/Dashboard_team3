@@ -14,14 +14,14 @@ from core import setup, sidebar, ui
 LIGHT = setup.setup()                  # 1. 페이지 설정 · CSS · 밝은 테마 (맨 먼저)
 page = sidebar.menu()                  # 2. 사이드바 제목 · 메뉴
 
-from views import start_view, realtime_view, risk_view, arms_view, risk_arms_view, data_intro_view   # noqa: E402
+from views import start_view, realtime_view, country_view, risk_view, arms_view, risk_arms_view, data_intro_view   # noqa: E402
 
 PAGES = {                              # 3. 메뉴 이름 → 그 페이지를 그리는 함수
     "홈": start_view.page,         #    시작 화면: 중동 지도 배경 · 큰 제목 · 메뉴 카드 (왼쪽 메뉴는 접어 둠)
     "실시간 모니터링": realtime_view.page,
     "리스크 분석": risk_view.page,
     "무기 거래 추이": lambda: arms_view.page(compact=True),   # 필터 상자는 제목 아래에서 직접 만든다
-    "리스크와 무기 거래": risk_arms_view.page,          #    나라 하나
+    "리스크와 무기 거래": country_view.page,   #    나라 하나를 한 장으로 (views/country_view.py, 2026-10-01)
     "종합 분석": risk_arms_view.region_page,   #    중동 16개국 전체 (급증 전후, views/surge_view.py)
     "데이터 소개": data_intro_view.page,
 }

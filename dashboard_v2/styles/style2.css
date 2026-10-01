@@ -2401,3 +2401,225 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
     background-repeat: no-repeat;
     mask: none;
 }
+
+/* 시차 고르기 단추 — 위 그래프의 금색 강조 상자와 같은 색 (2026-10-01) */
+[class*="st-key-lagbtn-"] button {
+    padding: 5px 10px !important;
+    min-height: 0 !important;
+}
+
+[class*="st-key-lagbtn-"] button p {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+}
+
+[class*="st-key-lagbtn-"] button[kind="primary"] {
+    background: #f5c542 !important;
+    border-color: #f5c542 !important;
+}
+
+[class*="st-key-lagbtn-"] button[kind="primary"] p {
+    color: #0b1220 !important;
+}
+
+[class*="st-key-lagbtn-"] button[kind="secondary"] {
+    border-color: #f5c542 !important;
+}
+
+[class*="st-key-lagbtn-"] button[kind="secondary"] p {
+    color: #b7791f !important;
+}
+
+/* ================================================================ 국가 카드 (2026-10-01)
+   나라 하나를 한 장으로 — 머리(큰 숫자 4개) · 세 칸 목록 · 추이 · 급증한 해 알약 */
+.chead {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: linear-gradient(135deg, #131d33 0%, #0f1729 100%);
+    border: 1px solid #1f2b44;
+    border-radius: 18px;
+    padding: 22px 26px;
+    margin: 6px 0 18px;
+}
+
+.ch-l { flex: 0 0 auto; min-width: 180px; }
+
+.ch-n {
+    font-size: 30px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.15;
+}
+
+.ch-n span {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #8b98ad;
+    letter-spacing: .08em;
+    vertical-align: middle;
+}
+
+.ch-s { font-size: 13px; color: #8b98ad; margin-top: 8px; line-height: 1.7; }
+
+.ch-s b { color: #cbd5e1; }
+
+.ch-r {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.cstat {
+    background: rgba(148, 163, 184, .07);
+    border: 1px solid #1f2b44;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.cs-l { font-size: 13px; color: #8b98ad; }
+
+/* 칸 제목 옆 기준 기간 — 지표마다 «최근 12개월» 인지 «누적» 인지 바로 알게 (2026-10-01) */
+.cs-l small {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    background: rgba(148, 163, 184, .12);
+    border-radius: 5px;
+    padding: 1px 6px;
+    margin-left: 5px;
+    letter-spacing: .01em;
+}
+
+.cs-u {
+    font-size: 13px;
+    font-weight: 700;
+    color: #8b98ad;
+    margin-left: 5px;
+}
+
+.cs-s em {
+    font-style: normal;
+    font-size: 11px;
+    font-weight: 700;
+    color: #0b1220;
+    background: #f5c542;
+    border-radius: 5px;
+    padding: 1px 6px;
+    margin-left: 5px;
+}
+
+.cs-v {
+    font-size: 24px;
+    font-weight: 800;
+    color: #e5eaf3;
+    line-height: 1.25;
+    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
+}
+
+.cs-s { font-size: 12.5px; color: #8b98ad; margin-top: 3px; }
+
+.cs-s i {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.ccard {
+    background: #111a2e;
+    border: 1px solid #1f2b44;
+    border-radius: 14px;
+    padding: 16px 18px;
+    height: 100%;
+}
+
+.cc-t { font-size: 14px; font-weight: 700; color: #e5eaf3; margin-bottom: 10px; }
+
+.cc-t small {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    background: rgba(148, 163, 184, .12);
+    border-radius: 5px;
+    padding: 1px 6px;
+    margin-left: 4px;
+}
+
+.ci { list-style: none; margin: 0; padding: 0; counter-reset: ci; }
+
+.ci li {
+    counter-increment: ci;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(31, 43, 68, .7);
+    font-size: 15px;
+    color: #cbd5e1;
+}
+
+.ci li:last-child { border-bottom: 0; }
+
+.ci li::before {
+    content: counter(ci);
+    flex: 0 0 auto;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: #1f2b44;
+    color: #8b98ad;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ci .ci-n { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ci b { color: #ffffff; font-variant-numeric: tabular-nums; }
+
+.ci .ci-e { color: #8b98ad; }
+.ci li.ci-e::before { content: ""; background: none; }
+
+.cevs {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 14px;
+    color: #8b98ad;
+    margin: 2px 0 4px;
+}
+
+.cevs-t { flex: 0 0 auto; font-weight: 700; color: #cbd5e1; }
+
+.cevs-c { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.cevs-n { font-size: 12.5px; color: #8b98ad; margin: 0 0 8px; }
+
+.cev {
+    display: inline-block;
+    padding: 3px 10px;
+    border: 1px solid #1f2b44;
+    border-radius: 999px;
+    font-size: 13px;
+    color: #8b98ad;
+    font-variant-numeric: tabular-nums;
+}
+
+.cev b { margin-right: 6px; color: #e5eaf3; }
+
+.cev.up { border-color: #f87171; color: #f87171; }
+.cev.dn { border-color: #60a5fa; color: #60a5fa; }
+
+@media (max-width: 1100px) {
+    .chead { flex-direction: column; align-items: stretch; gap: 14px; }
+}

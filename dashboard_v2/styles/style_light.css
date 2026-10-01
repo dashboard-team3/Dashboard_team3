@@ -795,3 +795,53 @@ button[kind="primary"] p, button[kind="primary"] {
 .chip b {
     color: #111827 !important;
 }
+
+/* ---- 국가 카드 — 밝은 배경용 (2026-10-01) ---- */
+.chead {
+    background: linear-gradient(135deg, #ffffff 0%, #f7f3ea 100%) !important;
+    border-color: #e5e0d5 !important;
+}
+
+.ch-n { color: #1c1a17 !important; }
+.ch-n span, .ch-s, .cs-l, .cs-s, .cevs { color: #6b6255 !important; }
+
+.cstat {
+    background: #ffffff !important;
+    border-color: #e5e0d5 !important;
+}
+
+.cs-v { color: #1c1a17 !important; }
+
+.ccard {
+    background: #ffffff !important;
+    border-color: #e5e0d5 !important;
+}
+
+.cc-t { color: #1c1a17 !important; }
+.ci li { color: #4a443b !important; border-bottom-color: #ece6da !important; }
+.ci b { color: #1c1a17 !important; }
+
+.ci li::before {
+    background: #ece6da !important;
+    color: #6b6255 !important;
+}
+
+.cevs-t { color: #1c1a17 !important; }
+.cevs-n { color: #6b6255 !important; }
+.cev { border-color: #e5e0d5 !important; color: #6b6255 !important; }
+.cev b { color: #1c1a17 !important; }
+.cev.up { border-color: #b91c1c !important; color: #b91c1c !important; }
+.cev.dn { border-color: #1d4ed8 !important; color: #1d4ed8 !important; }
+
+.cs-l small, .cc-t small {
+    color: #6b6255 !important;
+    background: #ece6da !important;
+}
+
+.cs-u { color: #6b6255 !important; }
+.ch-s b { color: #1c1a17 !important; }
+
+.cs-s em {
+    background: #b7791f !important;
+    color: #ffffff !important;
+}

@@ -52,12 +52,26 @@ def _country():
     names = relations.COUNTRIES
     m = relations.arms_panel()
     y0, y1 = int(m["year"].min()), int(m["year"].max())
-
     country, years = _ra_filters(names, y0, y1)
+    country_sections(country, years)
 
+
+def country_sections(country, years, no=1, annual=True):
+    """연 리스크 × 무기 수입 그래프와 시차 상관 두 묶음. 필터 없이 «그리기만» 한다.
+
+    국가 카드(views/country_view.py)에서도 같은 내용을 쓰려고 떼어 냈다 (2026-10-01).
+    no      = 첫 소제목 번호 — 카드 쪽은 앞에 다른 묶음이 있어 2부터 시작한다.
+    annual  = False 면 «연 리스크 × 무기 수입» 묶음을 건너뛰고 시차 상관만 그린다
+              (카드 쪽은 그 막대를 맨 위 그래프에 합쳐 두어 여기서 또 그리면 겹친다)
+    """
+    names = relations.COUNTRIES
+    m = relations.arms_panel()
     g = m[(m["country"] == country) & m["year"].between(*years)].sort_values("year")
     if g.empty:
         st.info("이 기간에는 자료가 없습니다.")
+        return
+    if not annual:
+        _lag_section(country, years, m, g, no, extras=False)
         return
     gy = g.set_index("year")
     st.markdown(f'<div class="summary"><b>{names[country]}</b> {years[0]}–{years[1]}: 연 리스크 평균 <b>{g["risk"].mean():.3f}</b> '
@@ -66,7 +80,7 @@ def _country():
     span = years[1] - years[0]
     step = 1 if span <= 12 else 2 if span <= 25 else 5
 
-    section_head("01", f"연 리스크와 무기 수입 · {names[country]}",
+    section_head(f"{no:02d}", f"연 리스크와 무기 수입 · {names[country]}",
                  "선이 그 나라의 <b>연 종합 리스크</b>(월별 값을 그 달 일수로 가중 평균 = 그 해 모든 날의 평균), 막대가 <b>SIPRI 무기 수입</b>(주문 연도 기준 TIV). "
                  "두 축의 단위가 달라 높이를 직접 비교하지는 않습니다.")
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -93,8 +107,18 @@ def _country():
         st.dataframe(g[["year", "risk", "tiv"]].rename(columns={"year": "연도", "risk": "연 리스크", "tiv": "무기 수입 (TIV)"}).round(3),
                      hide_index=True, width="stretch")
 
+    _lag_section(country, years, m, g, no + 1)
+
+
+def _lag_section(country, years, m, g, no, extras=True):
+    """시차 상관 묶음만 (위 묶음과 떼어 두어 국가 카드가 이것만 부를 수 있게).
+
+    extras=False 면 맨 아래 «같은 상관을 네 방식으로» 표를 뺀다 (국가 카드는 한 장으로 짧게 본다).
+    """
+    names = relations.COUNTRIES
+    gy = g.set_index("year")      # 아래 «네 방식» 표가 쓴다 (위 묶음을 건너뛰면 여기서 만들어야 한다)
     # ── 시차 상관 (같은 화면 아래에) ──
-    section_head("02", "리스크가 오른 뒤 무기 수입이 늘었나 · 시차 상관",
+    section_head(f"{no:02d}", "리스크가 오른 뒤 무기 수입이 늘었나 · 시차 상관",
                  "올해 리스크와 <b>k년 뒤</b> 수입(log)의 피어슨 상관. 왼쪽은 고른 나라의 점, 오른쪽은 16개국을 나라 안에서 표준화해 "
                  "합친 값과 나라별 상관의 중앙값. 함께 움직여도 인과관계나 통계적 유의성을 뜻하지 않습니다.")
     lag = st.slider("시차 — 리스크가 오른 해로부터 몇 해 뒤의 수입을 볼까", 0, 3, 1, key="ra_lag")
@@ -174,13 +198,14 @@ def _country():
                 f"{'리스크가 오른 해에 수입도 늘었다고 보기 어렵습니다. 상관이 0 근처라는 것은 둘이 따로 움직인다는 뜻이지 관계가 없다는 증명은 아닙니다.' if abs(pr0) < 0.3 else '약하지 않은 상관입니다. 다만 인과관계나 유의성을 뜻하지는 않습니다.'} "
                 f"SIPRI는 계약 연도 기준이라 실제 인도는 몇 해 뒤이고, 수입은 예산·정권·공급국 사정처럼 갈등과 무관한 요인에도 크게 좌우됩니다.")
 
-    st.markdown(f'<div class="pill-t">{names[country]} · 같은 상관을 네 방식으로 '
-                + info_icon("큰 계약 한 건이나 장기 추세 때문인지 가려 봅니다. 네 값이 같은 방향으로 크면 믿을 만한 관계. "
-                            "Pearson 만 크고 최대 주문 제외에서 꺼지면 계약 한 건 효과, 변화량에서 꺼지면 둘 다 오르는 장기 추세 효과. "
-                            "비교한 해가 5개 미만이면 계산하지 않습니다.") + "</div>", unsafe_allow_html=True)
-    lt = relations.lag_table(gy["risk"], gy["tiv"])
-    st.dataframe(lt.style.format({c: "{:+.2f}" for c in ["Pearson", "최대 주문 제외", "변화량", "Spearman"]}, na_rep="-"),
-                 hide_index=True, width="stretch")
+    if extras:
+        st.markdown(f'<div class="pill-t">{names[country]} · 같은 상관을 네 방식으로 '
+                    + info_icon("큰 계약 한 건이나 장기 추세 때문인지 가려 봅니다. 네 값이 같은 방향으로 크면 믿을 만한 관계. "
+                                "Pearson 만 크고 최대 주문 제외에서 꺼지면 계약 한 건 효과, 변화량에서 꺼지면 둘 다 오르는 장기 추세 효과. "
+                                "비교한 해가 5개 미만이면 계산하지 않습니다.") + "</div>", unsafe_allow_html=True)
+        lt = relations.lag_table(gy["risk"], gy["tiv"])
+        st.dataframe(lt.style.format({c: "{:+.2f}" for c in ["Pearson", "최대 주문 제외", "변화량", "Spearman"]}, na_rep="-"),
+                     hide_index=True, width="stretch")
     info("**16개국 전체** = 나라마다 리스크와 log 수입을 그 나라 평균·표준편차로 표준화한 뒤 16개국 점을 모두 모아 잰 피어슨 r. "
           "나라 간 규모 차이를 걷어낸 값.\n\n"
           "**나라별 중앙값** = 나라마다 따로 잰 r의 중앙값. 몇 나라가 결과를 끌고 가는지 보는 용도.\n\n"

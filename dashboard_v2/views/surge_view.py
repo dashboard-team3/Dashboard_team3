@@ -27,6 +27,7 @@ from sources import surge as A      # 원본: import analysis as A
 from core import theme           # 그래프 글꼴 · 밝은 테마 색 (theme.adapt)
 from core.ui import ctitle, tabbar
 
+LIM = 0.3          # 흔히 «약한 상관» 의 경계로 쓰는 값. 통계적 유의성 기준이 아니다 (2026-10-01)
 INK, RED, BLUE, GOLD, MUTE, GRID = "#e5eaf3", "#f87171", "#60a5fa", "#f5c542", "#8b98ad", "#16233c"
 BG, CARD, LINE = "#0b1220", "#111a2e", "#1f2b44"
 
@@ -219,6 +220,24 @@ def timeline(rows, key="up_timeline", color_of=None, text_of=None):
     return pts[0].get("point_index") if pts else None
 
 
+def lag_buttons(ks, key="corr_lag"):
+    """시차(같은 해·1·2·3년 뒤) 고르기 단추 (2026-10-01).
+
+    고른 시차는 위 그래프의 금색 강조 상자와 아래 국가별 그래프가 함께 따라간다 —
+    «왜 하필 1년 뒤인가» 라는 의문이 생기지 않게 네 시점을 모두 열어 둔다."""
+    cur = st.session_state.get(key, 1)
+    cols = st.columns([1, 1, 1, 1, 4], gap="small", vertical_alignment="center")
+    for i, name in enumerate(ks):
+        with cols[i]:
+            with st.container(key=f"lagbtn-{i}"):
+                if st.button(name, key=f"btn_{key}_{i}", width="stretch",
+                             type="primary" if i == cur else "secondary",
+                             help=f"리스크가 오른 해와 «{name}» 무기 수입을 견준 값"):
+                    st.session_state[key] = i
+                    st.rerun()
+    return cur
+
+
 def shape_filter(cnt, key, small=False, none_is_all=True):
     """A·B·C 단추 한 줄 (2026-10-01). 단추가 곧 범례이자 거르개다 — 색은 그 유형의 그래프 색.
 
@@ -336,57 +355,82 @@ def page_1_corr():
             ks.append("같은 해" if k == 0 else f"{k}년 뒤")
             pooled.append(pr)
             med.append(float(per.median()))
-        r1, per1 = A.lag_corr(M, 1)
+        lag = lag_buttons(ks)
+        LAG_TAG = {0: "같은 해", 1: "단기 · 1년 뒤", 2: "중기 · 2년 뒤", 3: "3년 뒤"}
+        r1, per1 = A.lag_corr(M, lag)
+        plus, minus = int((per1 > 0).sum()), int((per1 < 0).sum())
+        strong = [A.COUNTRIES[c] for c, v in per1.items() if abs(v) >= LIM]
 
-        key("분석 1", "전체 국가의 연 단위 분석에서는 뚜렷한 공통 경향이 확인되지 않았습니다.",
-            f"시차 0~3년의 전체 상관계수는 <b>{min(pooled):+.3f} ~ {max(pooled):+.3f}</b> 으로 0에 가까웠습니다."
-            f"국가별 상관계수는 양(+)의 방향을 보인 국가 {int((per1 > 0).sum())}개국, 음(-)의 방향을 보인 국가 (−) {int((per1 < 0).sum())}개국으로 나뉘었습니다.</b>"
-            "국가별 차이가 전체 집계 결과에 반영되지 않을 수 있으므로, <b>이 결과만으로 관계의 유무를 판단하기는 어렵습니다.</b>", GOLD)
+        key("분석 1", "16개국을 합치면 0 인데, 나라별로는 방향이 갈립니다.",
+            f"시차 0~3년의 전체 상관계수는 <b>{min(pooled):+.3f} ~ {max(pooled):+.3f}</b> 으로 0 에 가깝습니다. "
+            f"그런데 {ks[lag]} 기준으로 보면 양(+) <b>{plus}개국</b> · 음(−) <b>{minus}개국</b> 으로 갈려, "
+            "서로 지워진 값이 0 으로 보인 것입니다.", GOLD)
 
-        sec("01", "국가별 갈등 위험과 무기 수입의 상관관계",
-            "국가별로 갈등 위험 지표와 무기 수입 간 피어슨 상관계수를 산출했습니다. 국가별 계수의 방향과 크기는 서로 다르게 나타나, 전체 국가의 연간 지표만으로는 세부적인 변화 양상을 파악하는 데 한계가 있습니다.", GOLD)
+        sec("01", "시차별 상관계수 — 어느 시점을 볼 것인가",
+            "리스크가 오른 뒤 몇 해 뒤의 무기 수입과 견줄지 0~3년을 모두 재어 보고, 고른 시점을 아래에서 나라별로 펼칩니다.", GOLD)
 
-        c1, c2 = st.columns([1.3, 1], gap="medium")
+        c1, c2 = st.columns([1.35, 1], gap="medium")
         with c1:
             fig = go.Figure()
             for vals, name, col in [(pooled, "전체 국가 집계", RED), (med, "국가별 중앙값", BLUE)]:
                 fig.add_trace(go.Bar(x=ks, y=vals, name=name, marker_color=col,
                                      text=[f"{v:+.3f}" for v in vals], textposition="outside",
-                                     cliponaxis=False,
+                                     cliponaxis=False, textfont=dict(size=13),
                                      hovertemplate=name + " · %{x} · r = %{y:+.3f}<extra></extra>"))
-            fig.update_layout(paper_bgcolor=BG, plot_bgcolor=BG, barmode="group", height=380,
-                              font=dict(color=INK, size=15, family="Malgun Gothic, sans-serif"),
-                              margin=dict(l=10, r=10, t=86, b=10),   # v2: 제목(19px)과 범례가 겹치지 않게 위 여백을 늘림
-                              title=dict(text=ctitle("시차별 상관계수 (피어슨 r)", "중동 16개국 · 연 단위 · 빨강 = 전체 국가 집계 · 파랑 = 국가별 중앙값"),
-                                          font=dict(size=17, color=INK), x=0),
+            # «1년 뒤» 칸만 금색 점선 상자로 묶어, 아래 그래프가 이 칸을 펼친 것임을 눈으로 잇는다 (2026-10-01)
+            fig.add_vrect(x0=lag - 0.5, x1=lag + 0.5, fillcolor=GOLD, opacity=0.10,
+                          line=dict(color=GOLD, width=1.2, dash="dot"), layer="below")
+            fig.add_annotation(x=lag, y=0.30, text="아래에서 나라별로 ↓", showarrow=False,
+                               font=dict(size=13, color=GOLD), yanchor="bottom")
+            fig.update_layout(paper_bgcolor=BG, plot_bgcolor=BG, barmode="group", height=360,
+                              font=dict(color=INK, size=14, family="Malgun Gothic, sans-serif"),
+                              margin=dict(l=10, r=10, t=82, b=10),
+                              title=dict(text=ctitle("시차별 상관계수 (피어슨 r)",
+                                                     "중동 16개국 · 연 단위 · 빨강 = 전체 집계 · 파랑 = 국가별 중앙값"),
+                                         font=dict(size=17, color=INK), x=0),
                               legend=dict(orientation="h", y=1.02, yanchor="bottom", x=0, font=dict(size=14)))
-            fig.update_xaxes(title="수입 시점", gridcolor=GRID)
-            fig.update_yaxes(title="피어슨 r", range=[-0.35, 0.35], gridcolor=GRID,
+            fig.update_xaxes(title=None, gridcolor=GRID, tickfont=dict(size=14))
+            fig.update_yaxes(title=None, range=[-0.35, 0.40], gridcolor=GRID, tickfont=dict(size=14),
                              zeroline=True, zerolinecolor=MUTE, zerolinewidth=1.5)
             st.plotly_chart(theme.adapt(fig), width="stretch", config=CFG)
         with c2:
-            note("전체 국가를 집계한 결과, <b>0~3년의 시차에서 상관계수는 모두 0에 가까웠습니다.</b></br> 국가별 변화 방향과 시점이 달라 <b>전체 값에서는 공통된 경향이 뚜렷하게 나타나지 않습니다.</b>", "gold")
-            note("<b>해석 시 고려사항</b></br>"
-                 "- 국가별 차이 : 전체 상관계수만으로 개별 국가의 변화 양상을 판단하기 어렵습니다.<br>"
-                 "- 시점 차이 : SIPRI의 주문 연도와 실제 인도 연도는 다를 수 있습니다.<br>"
-                 "- 다른 영향 요인 : 국방 예산, 정책, 제재, 공급 여건도 무기 주문 규모에 영향을 줄 수 있습니다.")
+            # 결론을 굵은 제목으로 먼저, 이유는 문어체로 (2026-10-01 인사이트 강조형)
+            note("<b>국가별 세부 분석 필수</b><br>"
+                 "전체 집계 시 국가 간 상반된 추세가 상쇄되어 유의미한 변화(0에 수렴)를 확인하기 어렵습니다. "
+                 "정확한 맥락 파악을 위해 전체 합산이 아닌 개별 국가 단위의 데이터를 확인해야 합니다.", "gold")
+            with st.expander("해석할 때 고려할 것"):
+                note("<b>국가별 차이</b> 전체 값으로 개별 국가를 판단할 수 없음<br>"
+                     "<b>시점 차이</b> SIPRI 는 주문 연도 기준이라 실제 인도는 몇 해 뒤<br>"
+                     "<b>다른 요인</b> 국방 예산 · 정책 · 제재 · 공급 여건도 주문에 영향")
 
+        vals = per1.values
         st.plotly_chart(theme.adapt(
             go.Figure(go.Bar(
-                x=per1.values, y=[A.COUNTRIES[c] for c in per1.index], orientation="h",
-                marker_color=[RED if v > 0 else BLUE for v in per1.values],
-                text=[f"{v:+.2f}" for v in per1.values], textposition="outside", cliponaxis=False,
+                x=vals, y=[A.COUNTRIES[c] for c in per1.index], orientation="h",
+                marker=dict(color=[RED if v > 0 else BLUE for v in vals],
+                            opacity=[1.0 if abs(v) >= LIM else 0.45 for v in vals]),
+                text=[f"{v:+.2f}" for v in vals], textposition="outside", cliponaxis=False,
+                textfont=dict(size=13),
                 hovertemplate="%{y} · r = %{x:+.3f}<extra></extra>")
             ).update_layout(
-                paper_bgcolor=BG, plot_bgcolor=BG, height=520, showlegend=False,
-                font=dict(color=INK, size=15, family="Malgun Gothic, sans-serif"),
-                margin=dict(l=10, r=50, t=50, b=10),
-                title=dict(text=ctitle("국가별 상관계수", "리스크와 1년 뒤 무기 수입 · 피어슨 r · 빨강 = 양(+) · 파랑 = 음(−)"), font=dict(size=17, color=INK), x=0)
-            ).update_xaxes(range=[-0.55, 0.45], gridcolor=GRID, zeroline=True,
-                           zerolinecolor=MUTE, zerolinewidth=1.5
-            ).update_yaxes(autorange="reversed", gridcolor=GRID)),
+                paper_bgcolor=BG, plot_bgcolor=BG, height=500, showlegend=False,
+                font=dict(color=INK, size=14, family="Malgun Gothic, sans-serif"),
+                margin=dict(l=10, r=50, t=82, b=10),
+                title=dict(text=ctitle(f"[{LAG_TAG[lag]}] 국가별 리스크와 {ks[lag]} 무기 수입",
+                                       f"피어슨 r · 빨강 = 양(+) · 파랑 = 음(−) · 점선 ±{LIM} 밖만 진하게"),
+                           font=dict(size=17, color=INK), x=0)
+            ).add_vline(x=LIM, line=dict(color=MUTE, width=1, dash="dot")
+            ).add_vline(x=-LIM, line=dict(color=MUTE, width=1, dash="dot")
+            ).add_annotation(x=LIM, y=1.02, yref="paper", text=f"±{LIM}", showarrow=False,
+                             font=dict(size=13, color=MUTE), yanchor="bottom"
+            ).update_xaxes(range=[-0.55, 0.45], gridcolor=GRID, tickfont=dict(size=14),
+                           zeroline=True, zerolinecolor=MUTE, zerolinewidth=1.5
+            ).update_yaxes(autorange="reversed", gridcolor=GRID, tickfont=dict(size=14))),
             width="stretch", config=CFG)
-        note("국가별 상관계수는 양(+)과 음(-)의 방향으로 나뉘며, 국가 간 차이도 확인됩니다. 전체 국가의 집계값만으로는 이러한 국가별 양상을 충분히 설명하기 어렵습니다.", "gold")
+        note("<b>기준선을 넘는 국가는 소수</b><br>"
+             + (f"±{LIM} 를 넘는 국가는 <b>{' · '.join(strong)}</b> 로, 방향도 서로 일치하지 않습니다. " if strong
+                else f"이 시점에서는 ±{LIM} 를 넘는 국가가 없습니다. ")
+             + f"±{LIM} 는 통용되는 «약한 상관» 의 경계이며, 통계적 유의성이나 인과관계를 의미하지 않습니다.", "gold")
 
 
     # ══ 2. 증가 케이스 ════════════════════════════════════════════════════
