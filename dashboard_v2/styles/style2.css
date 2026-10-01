@@ -1789,8 +1789,11 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 
 /* ---------------------------------------------------------------- 페이지 머리 (2026-09-30): 대시보드 제목 → 페이지 제목 → 부제 한 줄 */
 .brand {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
     font-family: "A2Z", "Nanum Gothic", sans-serif !important;
-    font-size: 19px;
+    font-size: 22px;
     font-weight: 800;
     color: #ffffff;
     margin: 0 0 6px;
@@ -1804,7 +1807,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
     color: #8b98ad;
     margin-left: 12px;
     padding-left: 12px;
-    border-left: 1.5px solid #6b7891;
+    /* border-left: 1.5px solid #6b7891; */
     letter-spacing: -0.3px;
 }
 
