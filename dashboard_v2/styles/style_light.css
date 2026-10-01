@@ -915,3 +915,4 @@ button[kind="primary"] p, button[kind="primary"] {
 .st-key-surge_app .ov-big, .st-key-surge_app .ov-t, .st-key-surge_app .ov-note-t, .st-key-surge_app .ov-name, .st-key-surge_app .ov-num, .st-key-surge_app .ov-info b { color: #111827 !important; }
 .st-key-riskmap_side .st-key-risk_map { background: transparent !important; border: none !important; }
 .st-key-riskmap_bigchart { background: #eef3fb !important; border-color: #cfdcf3 !important; }
+.st-key-risk_map path.js-line[style*="dasharray"], .st-key-risk_map .scattergeo path.point { filter: drop-shadow(0 0 2px rgba(255,255,255,.9)) !important; }

@@ -2746,3 +2746,17 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 .st-key-riskmap_side .st-key-risk_map { background: transparent !important; border: none !important; box-shadow: none !important; }
 .st-key-riskmap_side .lv-lg { padding-top: 6px; }
 .st-key-riskmap_side .lv-lg .lv-long { display: none; }
+/* 리스크 추이 왼쪽 칸 머리글의 국가쌍 · 국가별 고르기: 오른쪽 끝에 붙인다 */
+.st-key-riskmap_mode_box [data-testid="stButtonGroup"] { justify-content: flex-end; }
+.st-key-riskmap_mode_box { align-items: flex-end; }
+/* 국가쌍 화살표 (2026-10-01): 점선(8px,4px)이 고른 나라 → 상대국 쪽으로 흘러가게 */
+.st-key-risk_map path.js-line[style*="dasharray"] { animation: rmflow 0.9s linear infinite; filter: drop-shadow(0 0 2px rgba(0,0,0,.75)); }
+.st-key-risk_map .scattergeo path.point { filter: drop-shadow(0 0 2px rgba(0,0,0,.75)); }   /* 화살촉 */
+@keyframes rmflow { to { stroke-dashoffset: -24; } }
+/* 리스크 추이 오른쪽 카드: 카드 위를 투명 단추로 덮어 누르면 그 나라 선을 굵게 (2026-10-01) */
+[class*="st-key-rmcard_"]:not([class*="st-key-rmcard_btn"]) { position: relative; gap: 0 !important; }
+[class*="st-key-rmcard_"]:not([class*="st-key-rmcard_btn"]) [data-testid="stElementContainer"]:has(button) { position: absolute !important; inset: 0; z-index: 2; margin: 0 !important; }
+[class*="st-key-rmcard_btn"], [class*="st-key-rmcard_btn"] [data-testid="stButton"], [class*="st-key-rmcard_btn"] button { width: 100% !important; height: 100% !important; }
+[class*="st-key-rmcard_btn"] button { opacity: 0 !important; cursor: pointer; }
+[class*="st-key-rmcard_"]:not([class*="st-key-rmcard_btn"]):hover .pill { border-color: #8b5cf6 !important; }
+.st-key-riskmap_cards .pills { margin: 0 !important; }
