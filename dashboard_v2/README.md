@@ -27,7 +27,7 @@ GitHub(Dashboard_team3)에서 받은 경우: `data/` 에 CSV 5개(`risk_monthly_
 | ① 실시간 모니터링 | `views/realtime_view.py` (자료 읽기 `sources/realtime.py`) |
 | ② 리스크 분석 | `views/risk_view.py` (`sources/relations.py`) |
 | ③ 무기 거래 추이 | `views/arms_view.py` (`sources/arms.py`) |
-| ④ 리스크와 무기 거래 | `views/risk_arms_view.py` · 중동 무기 거래 분석은 `views/surge_view.py` (`sources/surge.py`) |
+| ④ 리스크와 무기 거래 | `views/risk_arms_view.py` · 종합 분석은 `views/surge_view.py` (`sources/surge.py`) |
 | ⑤ 데이터 소개 | `views/data_intro_view.py` |
 | 색 · 글자 크기 · 카드 모양 | `styles/style2.css` · `styles/style_light.css` · `core/theme.py` (여러 페이지에 영향 → 먼저 말하기) |
 

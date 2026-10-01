@@ -707,7 +707,7 @@ button[kind="primary"] p, button[kind="primary"] {
     border-color: #e5e0d5 !important;
 }
 
-/* 중동 무기 거래 분석 · 증가 케이스: 표를 담은 카드 (2026-10-01) */
+/* 종합 분석 · 증가 케이스: 표를 담은 카드 (2026-10-01) */
 .st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) > [data-testid="stColumn"]:has([data-testid="stDataFrame"]) > [data-testid="stVerticalBlock"] {
     background: #ffffff !important;
     border-color: #e5e0d5 !important;

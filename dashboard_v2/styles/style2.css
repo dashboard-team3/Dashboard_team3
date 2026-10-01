@@ -2041,7 +2041,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 /* ================================================================ 중동 무기 거래 분석 (2026-10-01)
-   중동 무기 거래 분석: [그래프 | 설명] · [표 | 설명] 두 줄의 위아래 끝 맞춤 (글은 그대로, 상자 높이만) */
+   종합 분석: [그래프 | 설명] · [표 | 설명] 두 줄의 위아래 끝 맞춤 (글은 그대로, 상자 높이만) */
 .st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stPlotlyChart"]),
 .st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) {
     align-items: stretch !important;
