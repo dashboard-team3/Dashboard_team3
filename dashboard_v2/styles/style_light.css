@@ -169,7 +169,17 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 [data-testid="stAppViewContainer"] {
-    background: radial-gradient(1100px 520px at 12% -8%, #efe9dd 0%, rgba(239,233,221,0) 60%), #f7f5f0 !important;
+    background: radial-gradient(
+        1100px 520px at 12% -8%,
+        #EEEEEE 0%,
+        rgba(238, 238, 238, 0) 60%
+    ), #FAFAFA !important;
+}
+
+/* 본문 배경을 투명하게 해서 바깥 배경이 이어지도록 */
+[data-testid="stMain"],
+[data-testid="stMainBlockContainer"].block-container {
+    background: transparent !important;
 }
 
 [data-testid="stSidebar"] {
