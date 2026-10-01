@@ -11,12 +11,18 @@ from sources import relations
 
 
 def grade_pills(items, dist, title="", hi=None, layer="이 층", title_tip="", month="", period=""):
-    """등급 카드 (가로형): 왼쪽 = 이름 · 평균 · 상위 %, 오른쪽 = 등급 배지 · 큰 값. 설명은 모두 마우스 말풍선.
-    items = [(코드, 이름, 마지막 달 값, 기간 평균)], dist = 그 층의 값 분포, layer = 층 이름,
-    month = 마지막 달('2026-09'), period = 기간 글자."""
+    """등급 카드 (가로형): 왼쪽 = 이름 · 평균 · 이 달 상위 %, 오른쪽 = 등급 배지 · 큰 값.
+    items = [(코드, 이름, 마지막 달 값, 기간 평균[, 12개월 이동평균])], dist = 그 층의 값 분포,
+    layer = 층 이름, month = 마지막 달('2026-09'), period = 기간 글자.
+
+    큰 숫자는 그 달 하나의 값이라 그래프 선(12개월 이동평균)의 끝점과 다르다. 한 줄이 길어져 화면에는
+    안 쓰고, 큰 숫자에 마우스를 올리면 그 선 끝점 값을 함께 보여 준다 (ma). (2026-10-01)
+    «상위 %» 는 평균이 아니라 «큰 숫자(그 달 값)» 의 순위다 — 평균이 같아도 그 달 값이 다르면 달라진다."""
     h = [f'<div class="pill-t">{title} {info_icon(title_tip)}</div>'] if title else []
     h.append('<div class="pills">')
-    for code, name, v, avg in items:
+    for it in items:
+        code, name, v, avg = it[:4]
+        ma = it[4] if len(it) > 4 else None
         g = relations.grade(v)
         pc = relations.pct_rank(v, dist)
         col = relations.GRADE_COLORS[g] if g is not None else C_MUTE
@@ -25,11 +31,14 @@ def grade_pills(items, dist, title="", hi=None, layer="이 층", title_tip="", m
         sub = [tip(f"평균 {avg:.3f}", f"{period} 기간의 월별 리스크 평균")] if avg is not None and not pd.isna(avg) else []
         if pc is not None:
             top = max(100 - pc, 0.1)
-            sub.append(tip(f"상위 {top:.0f}%", f"{layer} 1980년 이후 모든 달 가운데 상위 {top:.0f}% — "
-                                                f"이 값보다 높았던 달이 {top:.0f}% 뿐이라는 뜻"))
+            sub.append(tip(f"이 달 상위 {top:.0f}%", f"큰 숫자({val})를 {layer} 1980년 이후 «모든 나라의 모든 달»과 "
+                                                f"견준 순위 — 이 값보다 높았던 달이 {top:.0f}% 뿐이라는 뜻. "
+                                                f"왼쪽 평균이 아니라 {month} 한 달 값의 순위라, 평균이 같아도 다를 수 있음"))
         g_tip = (f"{txt} 등급 ({relations.GRADE_DESC[g]}) — 보도된 사건 무게 가운데 갈등의 비중으로 매긴 5단계, 모든 층 같은 잣대"
                  if g is not None else "자료가 없는 달")
         v_tip = f"{month} 한 달의 리스크 (그 달 하루하루 값의 평균, 0~1). 1에 가까울수록 갈등 보도 비중이 큼"
+        if ma is not None and not pd.isna(ma):   # 한 줄이 길어져 화면에서는 빼고 말풍선에만 둔다 (2026-10-01)
+            v_tip += f" · 왼쪽 그래프 선의 마지막 점(12개월 이동평균)은 {ma:.3f} 로, 한 달 값인 이 숫자와 다름"
         h.append(f'<div class="pill{" hi" if code == hi else ""}">'
                  f'<div class="pl"><div class="pill-n">{name}</div><div class="pill-s">{" · ".join(sub)}</div></div>'
                  f'<div class="pr">{tip(txt, g_tip, "pill-g r", f"background:{col}")}{tip(val, v_tip, "pill-v r")}</div></div>')
@@ -217,11 +226,15 @@ def page():
             with right:
                 last_m = in_range.index.max()
                 # 카드마다 같은 내용(마지막 달 · 기간 · 순위 기준)은 소제목에 한 번만, 카드에는 평균 · 상위 %만
-                grade_pills([(q, names[q], in_range[q].iloc[-1], in_range[q].mean())
+                # 그래프와 같은 식으로 다듬은 선의 마지막 점 (카드 큰 숫자는 그 달 값이라 둘을 함께 보여 준다)
+                ma_pair = {q: _in_period(relations.smooth(series[q], how), p0, p1).iloc[-1] for q in partners}
+                grade_pills([(q, names[q], in_range[q].iloc[-1], in_range[q].mean(), ma_pair[q])
                              for q in _card_items(partners, in_range.mean(), focus)],
                             dists["pair"], f"{names[country]} → 상대국 · {last_m:%Y-%m} 기준", hi=focus, layer="국가쌍",
-                            title_tip=f"마지막 달 {last_m:%Y-%m}의 상태 · 평균 = {_pstr(p0, p1)} 평균 · "
-                                      "상위 % = 국가쌍 1980년 이후 모든 달 중 순위 · 빨간 테두리 = 강조한 상대국 · "
+                            title_tip=f"큰 숫자 = {last_m:%Y-%m} 한 달의 리스크 · 평균 = {_pstr(p0, p1)} 월별 평균 · "
+                                      "큰 숫자에 마우스를 올리면 그래프 선의 마지막 점(12개월 이동평균) 값도 보임 · "
+                                      f"이 달 상위 % = 큰 숫자를 국가쌍 1980년 이후 모든 쌍·모든 달과 견준 순위 "
+                                      "(평균의 순위가 아님) · 빨간 테두리 = 강조한 상대국 · "
                                       "카드는 고른 상대국 중 기간 평균 상위 5곳",
                             month=f"{last_m:%Y-%m}", period=_pstr(p0, p1))
                 grade_legend()
@@ -271,14 +284,19 @@ def page():
 
             with right:
                 last_c = cmat.index.max()
-                grade_pills([(c, names[c], cmat[c].iloc[-1], cmat[c].mean())
+                ma_cty = {c: _in_period(relations.smooth(cmat_full[c], how), q0, q1).iloc[-1] for c in clist}
+                grade_pills([(c, names[c], cmat[c].iloc[-1], cmat[c].mean(), ma_cty[c])
                              for c in _card_items(clist, cmat.mean(), cfocus)],
                             dists[ccol], f"국가별 리스크 · {last_c:%Y-%m} 기준", hi=cfocus, layer="국가별",
-                            title_tip=f"마지막 달 {last_c:%Y-%m}의 상태 · 평균 = {_pstr(q0, q1)} 평균 · "
-                                      "상위 % = 같은 층(국가별·중동 전체) 1980년 이후 모든 달 중 순위 · 빨간 테두리 = 강조한 나라 · "
+                            title_tip=f"큰 숫자 = {last_c:%Y-%m} 한 달의 리스크 · 평균 = {_pstr(q0, q1)} 월별 평균 · "
+                                      "큰 숫자에 마우스를 올리면 그래프 선의 마지막 점(12개월 이동평균) 값도 보임 · "
+                                      "이 달 상위 % = 큰 숫자를 국가별 1980년 이후 모든 나라·모든 달과 견준 순위 "
+                                      "(평균의 순위가 아님) · 빨간 테두리 = 강조한 나라 · "
                                       "카드는 고른 나라 중 기간 평균 상위 5곳",
                             month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
-                grade_pills([("__region__", "중동 전체", reg.iloc[-1], reg.mean())], dists["region"], layer="중동 전체",
+                grade_pills([("__region__", "중동 전체", reg.iloc[-1], reg.mean(),
+                              _in_period(relations.smooth(region, how), q0, q1).iloc[-1])],
+                            dists["region"], layer="중동 전체",
                             month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
                 grade_legend()
 
@@ -286,4 +304,9 @@ def page():
                   "먼저 더한 뒤 나눈 값의 월평균 (국가쌍 리스크의 평균이 아님).\n\n"
                   "**중동 전체**(점선) = 16개국 사이 모든 사건으로 낸 값. 비교 기준선으로 씁니다.\n\n"
                   "**등급** = 0.2 간격 (매우 낮음 < 0.2 ≤ 낮음 < 0.4 ≤ 보통 < 0.6 ≤ 높음 < 0.8 ≤ 매우 높음). "
-                  "'상위 N%'는 그 층(국가별·국가쌍·전체)이 1980년부터 기록한 모든 달 가운데 순위.", formula=True)
+                  "**이 달 상위 N%** = 카드의 «큰 숫자»(그 달 한 달 값)를, 그 층이 1980년부터 기록한 "
+                  "모든 대상·모든 달의 값과 한 줄로 세워 매긴 순위입니다 (국가별 8,972개 · 국가쌍 109,472개 값). "
+                  "왼쪽 «평균»의 순위가 아니므로, 기간 평균이 같은 두 나라도 그 달 값이 다르면 상위 %가 다릅니다. "
+                  "같은 값이 여럿이면 그중 가장 낮은 순위로 셉니다.\n\n"
+                  "**그래프 선과 카드의 큰 숫자가 다른 이유** = 선은 12개월 이동평균이고 카드의 큰 숫자는 «그 달 한 달» 값입니다. 카드의 큰 숫자에 마우스를 올리면 선 끝점(이동평균) 값을 함께 보여 줍니다.",
+                 formula=True)
