@@ -1992,7 +1992,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
     margin-top: 2px;
 }
 
-/* 리스크 분석 (2026-10-01): 그래프 위 한 줄 = 왼쪽 '리스크 추이 ⓘ' · 오른쪽 토글 */
+/* 리스크 추이 (2026-10-01): 그래프 위 한 줄 = 왼쪽 '리스크 추이 ⓘ' · 오른쪽 토글 */
 .chart-h {
     font-family: "A2Z", "Nanum Gothic", sans-serif;
     font-size: 19px;
@@ -2026,7 +2026,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
     margin-bottom: 16px;                       /* Streamlit 글 칸의 아래 -16px 를 메워, 마지막 카드가 상자 아랫선에 붙지 않게 */
 }
 
-/* 리스크 분석: 카드 상자 단은 최소 380px (좁은 화면에서 나라 이름 · 값이 겹치지 않게), 그래프 단이 나머지를 쓴다 (2026-10-01) */
+/* 리스크 추이: 카드 상자 단은 최소 380px (좁은 화면에서 나라 이름 · 값이 겹치지 않게), 그래프 단이 나머지를 쓴다 (2026-10-01) */
 [data-testid="stHorizontalBlock"]:has(.st-key-pair_cards) > [data-testid="stColumn"]:last-child,
 [data-testid="stHorizontalBlock"]:has(.st-key-cty_cards) > [data-testid="stColumn"]:last-child {
     min-width: 380px !important;

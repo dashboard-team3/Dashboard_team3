@@ -689,7 +689,7 @@ button[kind="primary"] p, button[kind="primary"] {
     margin-top: 2px;
 }
 
-/* 리스크 분석 그래프 위 제목 · 오른쪽 카드 묶음 상자 (2026-10-01) */
+/* 리스크 추이 그래프 위 제목 · 오른쪽 카드 묶음 상자 (2026-10-01) */
 .chart-h {
     color: #111827 !important;
 }
