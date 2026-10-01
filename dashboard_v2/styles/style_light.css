@@ -913,3 +913,5 @@ button[kind="primary"] p, button[kind="primary"] {
 .st-key-surge_app .ov-cb-h { color: #6b7280 !important; }
 .st-key-surge_app .ov-no, .st-key-surge_app .ov-info-t { color: #4f46e5 !important; }
 .st-key-surge_app .ov-big, .st-key-surge_app .ov-t, .st-key-surge_app .ov-note-t, .st-key-surge_app .ov-name, .st-key-surge_app .ov-num, .st-key-surge_app .ov-info b { color: #111827 !important; }
+.st-key-riskmap_side .st-key-risk_map { background: transparent !important; border: none !important; }
+.st-key-riskmap_bigchart { background: #eef3fb !important; border-color: #cfdcf3 !important; }

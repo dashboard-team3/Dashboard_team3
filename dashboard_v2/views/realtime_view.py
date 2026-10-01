@@ -173,7 +173,7 @@ def draw_map():
     fig.add_trace(go.Choropleth(
         locations=poly["iso"], z=poly["count"] ** 0.5, locationmode="ISO-3", showscale=False,
         colorscale=_scale(SEQ_LIGHT if light else SEQ_DARK), zmin=0, zmax=zmax,
-        marker_line_color="#ffffff" if light else "#0f1116", marker_line_width=0.9,
+        marker_line_color="#ffffff" if light else "#13142a", marker_line_width=0.9,
         customdata=poly["hover"], hovertemplate="%{customdata}<extra></extra>"))
     # 2) 이름 + 숫자. 좁은 나라(LABEL_OUT)는 이름을 바깥으로 빼고 가는 선으로 잇는다
     name_col = "#1c1a17" if light else "#ffffff"
@@ -202,8 +202,8 @@ def draw_map():
             marker=dict(size=9, color="#e66767", line=dict(width=0))))
     fig.update_layout(
         geo=dict(projection_type="mercator", fitbounds="locations", visible=True,
-                 showland=True, landcolor="#dfe5ef" if light else "#1a1d25",
-                 showcountries=True, countrycolor="#c9d2e0" if light else "#262a34", countrywidth=0.6,
+                 showland=True, landcolor="#dfe5ef" if light else "#1c1d38",          # 어두운 바탕(#13142a)보다 한 칸 밝게
+                 showcountries=True, countrycolor="#c9d2e0" if light else "#2a2a48", countrywidth=0.6,
                  showcoastlines=False, showocean=False, showlakes=False, showframe=False,
                  bgcolor="rgba(0,0,0,0)"),
         margin=dict(l=0, r=0, t=0, b=0), showlegend=False, autosize=True,
@@ -218,8 +218,7 @@ def draw_map():
         mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 88%, transparent 100%);}
       .st-key-live_map_chart .scattergeo path.point {animation: lvping 1.6s ease-in-out infinite;}
       @keyframes lvping {0%, 100% {opacity: 1;} 50% {opacity: .15;}}
-      .st-key-main_panel:has(.st-key-live_map_chart) {background:
-        radial-gradient(1000px 600px at 45% 45%, #1a1e28 0%, #0f1116 70%) !important;}
+      .st-key-main_panel:has(.st-key-live_map_chart) {background: #13142a !important;}   /* 리스크 추이 칸 · 다른 카드와 같은 바탕 */
       html[data-theme="light"] .st-key-main_panel:has(.st-key-live_map_chart) {background:
         #eef3fb !important; border-color: #cfdcf3 !important;}   /* 연한 하늘색 */
     </style>""", unsafe_allow_html=True)
