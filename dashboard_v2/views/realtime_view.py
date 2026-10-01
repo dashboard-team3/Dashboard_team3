@@ -99,7 +99,7 @@ def live_kpis():
     if k["slot_kst"]:
         st.caption(f"마지막 수신 구간 {k['slot_kst']} KST (UTC {k['slot_utc']}) · 60초마다 자동 갱신")
     else:
-        st.caption("실시간 수집기 상태를 찾을 수 없습니다. pjL 폴더에서 python run_realtime.py 가 실행 중인지 확인하세요.")
+        st.caption(":exclamation: 실시간 수집기 상태를 찾을 수 없습니다.")
 
 
 MAP_CENTER = dict(lat=27.2, lon=44.0)   # 튀르키예(북)와 예멘(남) 사이 가운데

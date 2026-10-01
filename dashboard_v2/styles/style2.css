@@ -422,6 +422,21 @@
 
 }
 
+/* 화면 너비 900px 이하: 지도 위, 최근 사건 아래 */
+@media (max-width: 900px) {
+    [data-testid="stHorizontalBlock"]:has(.st-key-feed_panel) {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    [data-testid="stHorizontalBlock"]:has(.st-key-feed_panel)
+    > [data-testid="stColumn"] {
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+
 /* ================================================================ app2 전용: 테마·글꼴·위젯 다듬기 */
 
 /* 기본 글꼴 = 나눔고딕 (글꼴 불러오기는 이 파일 맨 앞) */
