@@ -882,6 +882,34 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
     line-height: 1.35;
 }
 
+/* 무기 거래 추이 지도 옆 요약: 띠를 세로로 쌓은 카드 (리스크 분석 등급 카드처럼, 2026-10-01) */
+.strip.vstrip {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin: 0;
+}
+
+.strip.vstrip .cell {
+    flex: none;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 14px 18px;
+    white-space: normal;
+}
+
+.strip.vstrip .v {
+    font-size: 22px;
+    line-height: 1.25;
+    word-break: keep-all;
+}
+
+.strip.vstrip .s {
+    flex: none;
+}
+
 /* ---------------------------------------------------------------- 그래프 위 필터 상자
    여러 개 고르는 칸(상대국·대상국)은 기본이 가로 스크롤이라, 넘친 칩이 오른쪽 아이콘 밑에 숨는다 → 다음 줄로 내린다 */
 [data-testid="stMultiSelectTagsContainer"] {
@@ -1950,4 +1978,117 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
         width: 60% !important;
         height: 52px;
     }
+}
+
+/* 등급 카드 묶음 제목 아래 작은 줄 ('2026-09 기준') — 제목을 늘 두 줄로 고정 (2026-10-01) */
+.pill-ts {
+    display: block;
+    font-size: 14px;
+    font-weight: 400;
+    color: #8b98ad;
+    margin-top: 2px;
+}
+
+/* 리스크 분석 (2026-10-01): 그래프 위 한 줄 = 왼쪽 '리스크 추이 ⓘ' · 오른쪽 토글 */
+.chart-h {
+    font-family: "A2Z", "Nanum Gothic", sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: #e5eaf3;
+}
+
+[data-testid="stVerticalBlock"]:has(> .st-key-pair_region),
+[data-testid="stVerticalBlock"]:has(> .st-key-country_region) {
+    align-items: flex-end !important;          /* 토글을 오른쪽 끝으로 */
+}
+
+.st-key-pair_region,
+.st-key-country_region {
+    width: auto !important;
+}
+
+/* 오른쪽 등급 카드 묶음: 제목 ~ 카드를 그래프 카드와 같은 상자 하나로. 위 여백 = 왼쪽 '리스크 추이' 줄 높이 */
+.st-key-pair_cards,
+.st-key-cty_cards {
+    background: #111a2e;
+    border: 1px solid #1f2b44;
+    border-radius: 14px;
+    padding: 6px 10px 12px;
+    margin-top: 40px;
+}
+
+.st-key-pair_cards .pills,
+.st-key-cty_cards .pills {
+    grid-template-columns: 1fr !important;     /* 상자 안 폭에 맞춰 한 줄에 하나 (minmax 340px 이면 상자 밖으로 넘친다) */
+    margin-bottom: 16px;                       /* Streamlit 글 칸의 아래 -16px 를 메워, 마지막 카드가 상자 아랫선에 붙지 않게 */
+}
+
+/* 리스크 분석: 카드 상자 단은 최소 380px (좁은 화면에서 나라 이름 · 값이 겹치지 않게), 그래프 단이 나머지를 쓴다 (2026-10-01) */
+[data-testid="stHorizontalBlock"]:has(.st-key-pair_cards) > [data-testid="stColumn"]:last-child,
+[data-testid="stHorizontalBlock"]:has(.st-key-cty_cards) > [data-testid="stColumn"]:last-child {
+    min-width: 380px !important;
+}
+
+[data-testid="stHorizontalBlock"]:has(.st-key-pair_cards) > [data-testid="stColumn"]:first-child,
+[data-testid="stHorizontalBlock"]:has(.st-key-cty_cards) > [data-testid="stColumn"]:first-child {
+    min-width: 0 !important;
+    flex-shrink: 1 !important;
+}
+
+[data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .st-key-pair_cards),
+[data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .st-key-cty_cards) {
+    flex-wrap: nowrap !important;              /* 최소 폭 때문에 카드 단이 아래로 떨어지지 않게 */
+}
+
+/* ================================================================ 중동 무기 거래 분석 (2026-10-01)
+   중동 무기 거래 분석: [그래프 | 설명] · [표 | 설명] 두 줄의 위아래 끝 맞춤 (글은 그대로, 상자 높이만) */
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stPlotlyChart"]),
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) {
+    align-items: stretch !important;
+}
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stPlotlyChart"]) [data-testid="stVerticalBlock"],
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) [data-testid="stVerticalBlock"] {
+    height: 100%;
+}
+/* 설명 쪽: 마지막 설명 상자가 남는 높이를 채움 */
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stPlotlyChart"]) [data-testid="stElementContainer"]:has(.note):not(:has(~ [data-testid="stElementContainer"] .note)),
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) [data-testid="stElementContainer"]:has(.note):not(:has(~ [data-testid="stElementContainer"] .note)) {
+    flex-grow: 1;
+}
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note) [data-testid="stElementContainer"]:has(.note):not(:has(~ [data-testid="stElementContainer"] .note)) [data-testid="stMarkdown"],
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note) [data-testid="stElementContainer"]:has(.note):not(:has(~ [data-testid="stElementContainer"] .note)) [data-testid="stMarkdown"] > div,
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note) [data-testid="stElementContainer"]:has(.note):not(:has(~ [data-testid="stElementContainer"] .note)) [data-testid="stMarkdownContainer"],
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note) [data-testid="stElementContainer"]:has(.note):not(:has(~ [data-testid="stElementContainer"] .note)) .note {
+    height: 100%;
+    box-sizing: border-box;
+}
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note) [data-testid="stElementContainer"]:first-child .note {
+    margin-top: 0;
+}
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note) [data-testid="stElementContainer"]:has(.note):not(:has(~ [data-testid="stElementContainer"] .note)) .note {
+    margin-bottom: 0;
+}
+/* 표 쪽: 표를 카드 상자에 넣어 설명 상자와 높이를 맞춤 (표 아래는 카드 배경) */
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) > [data-testid="stColumn"]:has([data-testid="stDataFrame"]) > [data-testid="stVerticalBlock"] {
+    background: #111a2e;
+    border: 1px solid #1f2b44;
+    border-radius: 12px;
+    padding: 12px;
+    box-sizing: border-box;
+}
+/* Streamlit 글 칸의 아래 -16px 만큼 넘치므로 마지막 설명 상자는 그만큼 짧게 */
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note) [data-testid="stElementContainer"]:has(.note):not(:has(~ [data-testid="stElementContainer"] .note)) .note {
+    height: calc(100% - 8px);
+}
+/* 표 옆 설명은 하나뿐: 위 여백 없이 표 카드와 같은 높이 */
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) .note {
+    margin: 0 !important;
+    height: auto !important;                 /* 글이 길면 상자가 글만큼 늘어나고 (안 잘림), 짧으면 표 카드 높이까지 */
+    min-height: 100%;
+}
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note) [data-testid="stMarkdown"] > div {
+    align-items: flex-start !important;      /* 설명 상자를 칸 가운데가 아니라 위에 붙임 */
+}
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) [data-testid="stMarkdownContainer"] {
+    margin-bottom: 0 !important;             /* 글 칸의 아래 -16px 를 없애야 설명 상자 전체 높이로 줄 높이가 정해진다 */
 }

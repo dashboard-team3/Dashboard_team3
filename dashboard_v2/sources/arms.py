@@ -1,6 +1,6 @@
-"""무기 거래 추이 페이지용 데이터. 자료 두 가지를 같은 모양(공급국 → 중동 대상국, 기간, 품목, 값)으로 맞춰 돌려준다.
+"""무기 거래 추이 페이지용 데이터. 자료 두 가지를 같은 모양(공급국 → 중동 수입국, 기간, 품목, 값)으로 맞춰 돌려준다.
 
-Comtrade (data/comtrade_mirror_detail.csv): 월 × 수출국 × 대상국 × HS 품목, 값 = 교역액(USD, Mirror 기준)
+Comtrade (data/comtrade_mirror_detail.csv): 월 × 수출국 × 수입국 × HS 품목, 값 = 교역액(USD, Mirror 기준)
 SIPRI    (data/SIPRI_pre_1980_2025.csv):     계약 1건 = 1행, 값 = 주문 TIV, 주문 연도 기준
 """
 import math
@@ -68,7 +68,7 @@ SUPPLIER_ISO = {
     "Slovenia": "SVN", "Croatia": "HRV", "Thailand": "THA",
 }
 
-# 대상국(중동 16개국, 파일에는 팔레스타인 없음): 개요 지도와 같은 좌표
+# 수입국(중동 16개국, 파일에는 팔레스타인 없음): 개요 지도와 같은 좌표
 TARGET_POS = {
     "TUR": (39.0, 35.0), "SYR": (35.4, 38.8), "LBN": (34.3, 35.6), "ISR": (31.0, 34.6),
     "PSE": (32.4, 36.9), "JOR": (30.0, 37.6), "IRQ": (33.0, 43.7), "IRN": (32.5, 54.0),
@@ -112,7 +112,7 @@ SOURCES = {
         colors=HS_COLORS, exporter_label="수출국", role_label="수출",
         desc="UN Comtrade 군용 품목 6개(HS 8710 · 9301 · 9306 · 880521 · 890610 · 930591)의 월별 교역액. "
              "수출국이 신고한 Mirror 기준으로 중동 국가가 받은 금액이며, 단위는 백만 달러입니다.",
-        foot="Mirror 값 = 수출국이 신고한 대중동 수출액. 대상국이 직접 신고한 수입액이 아닙니다. 신고가 없는 달은 0이 아니라 '관측 없음'이며, "
+        foot="Mirror 값 = 수출국이 신고한 대중동 수출액. 수입국이 직접 신고한 수입액이 아닙니다. 신고가 없는 달은 0이 아니라 '관측 없음'이며, "
              "월별 기록이 있어도 모든 품목·수출국의 신고가 완전하다는 뜻은 아닙니다.",
     ),
     "SIPRI": dict(
@@ -167,7 +167,7 @@ def apply_filters(df, years, cats, targets, exporters):
 # ---------------------------------------------------------------- 집계
 
 def flows(df):
-    """공급국 → 대상국 흐름별 값 합, 관측 수(월 또는 계약), 최다 품목."""
+    """공급국 → 수입국 흐름별 값 합, 관측 수(월 또는 계약), 최다 품목."""
     g = (df.groupby(["exporter_iso3", "exporter", "target_iso3", "target_name"])
            .agg(value=("value", "sum"), obs=("obs", "nunique"),
                 top_cat=("cat", lambda s: s.value_counts().index[0]))

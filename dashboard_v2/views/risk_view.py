@@ -10,15 +10,17 @@ from core.ui import C_RISK, C_MUTE, C_TEXT, LINE_COLORS, CHART_CONFIG, DARK_LAYO
 from sources import relations
 
 
-def grade_pills(items, dist, title="", hi=None, layer="이 층", title_tip="", month="", period=""):
+def grade_pills(items, dist, title="", hi=None, layer="이 층", title_tip="", month="", period="", title_sub=""):
     """등급 카드 (가로형): 왼쪽 = 이름 · 평균 · 이 달 상위 %, 오른쪽 = 등급 배지 · 큰 값.
     items = [(코드, 이름, 마지막 달 값, 기간 평균[, 12개월 이동평균])], dist = 그 층의 값 분포,
-    layer = 층 이름, month = 마지막 달('2026-09'), period = 기간 글자.
+    layer = 층 이름, month = 마지막 달('2026-09'), period = 기간 글자, title_sub = 제목 아래 작은 줄('2026-09 기준').
 
     큰 숫자는 그 달 하나의 값이라 그래프 선(12개월 이동평균)의 끝점과 다르다. 한 줄이 길어져 화면에는
     안 쓰고, 큰 숫자에 마우스를 올리면 그 선 끝점 값을 함께 보여 준다 (ma). (2026-10-01)
-    «상위 %» 는 평균이 아니라 «큰 숫자(그 달 값)» 의 순위다 — 평균이 같아도 그 달 값이 다르면 달라진다."""
-    h = [f'<div class="pill-t">{title} {info_icon(title_tip)}</div>'] if title else []
+    «상위 %» 는 평균이 아니라 «큰 숫자(그 달 값)» 의 순위다 — 평균이 같아도 그 달 값이 다르면 달라진다.
+    제목은 늘 두 줄(제목 / 작은 줄)이라 나라 이름 길이와 화면 폭에 따라 줄 수가 바뀌지 않는다 → 옆 그래프와 높이를 맞출 수 있다 (2026-10-01)"""
+    tsub = f'<span class="pill-ts">{title_sub}</span>' if title_sub else ""
+    h = [f'<div class="pill-t">{title} {info_icon(title_tip)}{tsub}</div>'] if title else []
     h.append('<div class="pills">')
     for it in items:
         code, name, v, avg = it[:4]
@@ -67,6 +69,14 @@ def _card_items(items, avg, focus):
     if focus in items and focus not in top:
         top = top[:CARD_N - 1] + [focus]
     return top
+
+
+def _chart_head(key, tip_text):
+    """그래프 위 한 줄: 왼쪽 '리스크 추이 ⓘ' · 오른쪽 '중동 전체 기준선' 토글 (2026-10-01). 토글 값을 돌려준다."""
+    h1, h2 = st.columns([1, 1], vertical_alignment="center")
+    h1.markdown(f'<div class="chart-h">리스크 추이 {info_icon(tip_text)}</div>', unsafe_allow_html=True)
+    with h2:
+        return st.toggle("중동 전체 기준선", value=True, key=key)
 
 
 def _line_colors(items, focus):
@@ -192,9 +202,10 @@ def page():
             top = ranking.index[0]
             peak = in_range[top].idxmax()
             # v2: [그래프 | 등급 카드] 2단 · 핵심 요약(결론)은 그래프 바로 아래에 (2026-09-30)
-            left, right = st.columns([2.3, 1], gap="medium")
+            left, right = st.columns([2, 1], gap="medium")   # (2026-10-01) 2.3:1 → 2:1, 카드 상자 안 글자가 안 잘리게
             with left:
-                show_region = st.toggle("중동 전체 기준선", value=True, key="pair_region")
+                show_region = _chart_head("pair_region", "선 = 국가쌍 월별 리스크의 12개월 이동평균 (0~1). 굵은 선 = 강조한 상대국 · "
+                                                         "점선 = 중동 전체 기준선 · 범례 이름을 누르면 그 선을 숨기거나 다시 보입니다")
                 fig = go.Figure()
                 if show_region:
                     rs = _in_period(relations.smooth(region, how), p0, p1)   # 전체로 먼저 이동평균, 그다음 자르기
@@ -210,14 +221,16 @@ def page():
                         opacity=1 if q == focus else 0.45,
                         hovertemplate=f"{names[country]} → {names[q]} %{{y:.3f}}<extra></extra>"))
                 _gap_bands(fig, gaps, p0, p1)
-                fig.update_layout(**DARK_LAYOUT, height=440, hovermode="x unified",
+                # 오른쪽 카드 묶음(상대국 최대 5장)과 아래 끝을 맞추도록 카드 수에 따라 높이를 정한다 (2026-10-01)
+                n_cards = min(len(partners), CARD_N)
+                fig.update_layout(**DARK_LAYOUT, height=max(440, 103 * n_cards + 79), hovermode="x unified",
                                   # 제목 두 줄: 무엇을 보나 / 어떻게 읽나 (예전 소제목의 '빨간 선 · 점선' 설명이 여기로)
                                   title=dict(text=ctitle(f"{names[country]} ➜ 상대국 리스크 (0~1)",
                                                     f"{names[focus]} 강조" + (" / 점선 = 중동 전체" if show_region else "")
                                                     + f" · {_pstr(p0, p1)} · 12개월 이동평균"),
                                              font=dict(size=17, color=C_TEXT), x=0, y=0.95, yanchor="top"),   # 맨 위에 붙여 범례와 안 겹치게
                                   margin=dict(l=10, r=10, t=90, b=10),
-                                  legend=dict(orientation="h", y=1.02, yanchor="bottom", x=0, font=dict(size=14)))
+                                  legend=dict(orientation="h", y=-0.1, yanchor="top", x=0, font=dict(size=14)))   # 범례는 x축 아래 (좁은 화면에서 두 줄이 돼도 제목과 안 겹치게, 2026-10-01)
                 _time_axes(fig, p0, p1)
                 st.plotly_chart(theme.adapt(fig), width="stretch", config=CHART_CONFIG)
                 st.markdown(f'<div class="summary"><b>{names[country]}</b> → 상대국 리스크는 <b>{names[top]}</b>{relations.jo(names[top])} 가장 높습니다 '
@@ -228,15 +241,16 @@ def page():
                 # 카드마다 같은 내용(마지막 달 · 기간 · 순위 기준)은 소제목에 한 번만, 카드에는 평균 · 상위 %만
                 # 그래프와 같은 식으로 다듬은 선의 마지막 점 (카드 큰 숫자는 그 달 값이라 둘을 함께 보여 준다)
                 ma_pair = {q: _in_period(relations.smooth(series[q], how), p0, p1).iloc[-1] for q in partners}
-                grade_pills([(q, names[q], in_range[q].iloc[-1], in_range[q].mean(), ma_pair[q])
-                             for q in _card_items(partners, in_range.mean(), focus)],
-                            dists["pair"], f"{names[country]} → 상대국 · {last_m:%Y-%m} 기준", hi=focus, layer="국가쌍",
-                            title_tip=f"큰 숫자 = {last_m:%Y-%m} 한 달의 리스크 · 평균 = {_pstr(p0, p1)} 월별 평균 · "
-                                      "큰 숫자에 마우스를 올리면 그래프 선의 마지막 점(12개월 이동평균) 값도 보임 · "
-                                      f"이 달 상위 % = 큰 숫자를 국가쌍 1980년 이후 모든 쌍·모든 달과 견준 순위 "
-                                      "(평균의 순위가 아님) · 빨간 테두리 = 강조한 상대국 · "
-                                      "카드는 고른 상대국 중 기간 평균 상위 5곳",
-                            month=f"{last_m:%Y-%m}", period=_pstr(p0, p1))
+                with st.container(key="pair_cards"):          # 제목 ~ 카드를 한 상자로 (그래프 카드와 위아래 끝을 맞춤)
+                    grade_pills([(q, names[q], in_range[q].iloc[-1], in_range[q].mean(), ma_pair[q])
+                                 for q in _card_items(partners, in_range.mean(), focus)],
+                                dists["pair"], f"{names[country]} → 상대국", hi=focus, layer="국가쌍", title_sub=f"{last_m:%Y-%m} 기준",
+                                title_tip=f"큰 숫자 = {last_m:%Y-%m} 한 달의 리스크 · 평균 = {_pstr(p0, p1)} 월별 평균 · "
+                                          "큰 숫자에 마우스를 올리면 그래프 선의 마지막 점(12개월 이동평균) 값도 보임 · "
+                                          f"이 달 상위 % = 큰 숫자를 국가쌍 1980년 이후 모든 쌍·모든 달과 견준 순위 "
+                                          "(평균의 순위가 아님) · 빨간 테두리 = 강조한 상대국 · "
+                                          "카드는 고른 상대국 중 기간 평균 상위 5곳",
+                                month=f"{last_m:%Y-%m}", period=_pstr(p0, p1))
                 grade_legend()
             # (v2, 2026-09-30) 국가쌍 아래 '계산 기준' 팝오버 · 평균/최고 리스크 표는 뺐다
             #  — 평균 · 최신 값은 등급 카드와 그래프에, 계산식은 데이터 소개에 있다
@@ -252,12 +266,12 @@ def page():
             st.info("왼쪽 필터에서 나라를 한 곳 이상 골라 주세요.")
         else:
             cmat = _in_period(cmat_full, q0, q1)
-            reg = _in_period(region, q0, q1)
             # v2: 국가쌍 탭과 같은 모양 — [그래프 | 등급 카드] 2단
             #     기간 평균 막대는 선 그래프 아래로 내려 왼쪽 단에 함께 둔다
-            left, right = st.columns([2.3, 1], gap="medium")
+            left, right = st.columns([2, 1], gap="medium")   # (2026-10-01) 2.3:1 → 2:1, 카드 상자 안 글자가 안 잘리게
             with left:
-                c_region = st.toggle("중동 전체 기준선", value=True, key="country_region")
+                c_region = _chart_head("country_region", "선 = 국가별 종합 리스크의 12개월 이동평균 (0~1). 굵은 선 = 강조한 나라 · "
+                                                         "점선 = 중동 전체 기준선 · 범례 이름을 누르면 그 선을 숨기거나 다시 보입니다")
                 fig_c = go.Figure()
                 if c_region:
                     rs = _in_period(relations.smooth(region, how), q0, q1)
@@ -272,32 +286,32 @@ def page():
                                                opacity=1 if c == cfocus else 0.45,
                                                hovertemplate=f"{names[c]} %{{y:.3f}}<extra></extra>"))
                 _gap_bands(fig_c, gaps, q0, q1)
-                fig_c.update_layout(**DARK_LAYOUT, height=440, hovermode="x unified",
+                # 오른쪽 카드 묶음(나라 최대 5장)과 아래 끝을 맞추도록 카드 수에 따라 높이를 정한다 (2026-10-01)
+                n_cards = min(len(clist), CARD_N)
+                fig_c.update_layout(**DARK_LAYOUT, height=max(440, 103 * n_cards + 79), hovermode="x unified",
                                     title=dict(text=ctitle("국가별 종합 리스크 (0~1)",
                                                       f"{names[cfocus]} 강조" + (" / 점선 = 중동 전체" if c_region else "")
                                                       + f" · {_pstr(q0, q1)} · 12개월 이동평균"), font=dict(size=17, color=C_TEXT),
                                                x=0, y=0.95, yanchor="top"),
                                     margin=dict(l=10, r=10, t=90, b=10),
-                                    legend=dict(orientation="h", y=1.02, yanchor="bottom", x=0, font=dict(size=14)))
+                                    legend=dict(orientation="h", y=-0.1, yanchor="top", x=0, font=dict(size=14)))   # 범례는 x축 아래 (좁은 화면에서 두 줄이 돼도 제목과 안 겹치게, 2026-10-01)
                 _time_axes(fig_c, q0, q1)
                 st.plotly_chart(theme.adapt(fig_c), width="stretch", config=CHART_CONFIG)
 
             with right:
                 last_c = cmat.index.max()
                 ma_cty = {c: _in_period(relations.smooth(cmat_full[c], how), q0, q1).iloc[-1] for c in clist}
-                grade_pills([(c, names[c], cmat[c].iloc[-1], cmat[c].mean(), ma_cty[c])
-                             for c in _card_items(clist, cmat.mean(), cfocus)],
-                            dists[ccol], f"국가별 리스크 · {last_c:%Y-%m} 기준", hi=cfocus, layer="국가별",
-                            title_tip=f"큰 숫자 = {last_c:%Y-%m} 한 달의 리스크 · 평균 = {_pstr(q0, q1)} 월별 평균 · "
-                                      "큰 숫자에 마우스를 올리면 그래프 선의 마지막 점(12개월 이동평균) 값도 보임 · "
-                                      "이 달 상위 % = 큰 숫자를 국가별 1980년 이후 모든 나라·모든 달과 견준 순위 "
-                                      "(평균의 순위가 아님) · 빨간 테두리 = 강조한 나라 · "
-                                      "카드는 고른 나라 중 기간 평균 상위 5곳",
-                            month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
-                grade_pills([("__region__", "중동 전체", reg.iloc[-1], reg.mean(),
-                              _in_period(relations.smooth(region, how), q0, q1).iloc[-1])],
-                            dists["region"], layer="중동 전체",
-                            month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
+                with st.container(key="cty_cards"):           # 제목 ~ 카드를 한 상자로 (그래프 카드와 위아래 끝을 맞춤)
+                    grade_pills([(c, names[c], cmat[c].iloc[-1], cmat[c].mean(), ma_cty[c])
+                                 for c in _card_items(clist, cmat.mean(), cfocus)],
+                                dists[ccol], "국가별 리스크", hi=cfocus, layer="국가별", title_sub=f"{last_c:%Y-%m} 기준",
+                                title_tip=f"큰 숫자 = {last_c:%Y-%m} 한 달의 리스크 · 평균 = {_pstr(q0, q1)} 월별 평균 · "
+                                          "큰 숫자에 마우스를 올리면 그래프 선의 마지막 점(12개월 이동평균) 값도 보임 · "
+                                          "이 달 상위 % = 큰 숫자를 국가별 1980년 이후 모든 나라·모든 달과 견준 순위 "
+                                          "(평균의 순위가 아님) · 빨간 테두리 = 강조한 나라 · "
+                                          "카드는 고른 나라 중 기간 평균 상위 5곳",
+                                month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
+                # (2026-10-01) 오른쪽 '중동 전체' 카드는 뺐다 — 중동 전체는 그래프의 점선으로 본다
                 grade_legend()
 
             info("**국가별 종합 리스크** = 위 식의 하루 갈등·협력 합을 그 나라가 낀 15개 국가쌍 전체(주어·목적어 모두)로 "

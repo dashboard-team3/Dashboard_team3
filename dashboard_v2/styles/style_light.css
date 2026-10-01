@@ -679,3 +679,29 @@ button[kind="primary"] p, button[kind="primary"] {
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] p {
     color: #ffffff !important;
 }
+
+/* 등급 카드 묶음 제목 아래 작은 줄 ('2026-09 기준') — 제목을 늘 두 줄로 고정 (2026-10-01) */
+.pill-ts {
+    display: block;
+    font-size: 14px;
+    font-weight: 400;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* 리스크 분석 그래프 위 제목 · 오른쪽 카드 묶음 상자 (2026-10-01) */
+.chart-h {
+    color: #111827 !important;
+}
+
+.st-key-pair_cards,
+.st-key-cty_cards {
+    background: #ffffff !important;
+    border-color: #e5e0d5 !important;
+}
+
+/* 중동 무기 거래 분석 · 증가 케이스: 표를 담은 카드 (2026-10-01) */
+.st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) > [data-testid="stColumn"]:has([data-testid="stDataFrame"]) > [data-testid="stVerticalBlock"] {
+    background: #ffffff !important;
+    border-color: #e5e0d5 !important;
+}

@@ -31,11 +31,12 @@ def card(label, value, sub, tone=""):
             f'<div class="val">{value}</div><div class="sub">{sub}</div></div></div>')
 
 
-def strip(items):
-    """카드 대신 한 줄 띠: [(label, value, sub, tone)] — 그래프가 위로 올라오도록 높이를 줄인 요약 (app2)."""
+def strip(items, vertical=False):
+    """카드 대신 한 줄 띠: [(label, value, sub, tone)] — 그래프가 위로 올라오도록 높이를 줄인 요약 (app2).
+    vertical=True 면 세로로 쌓는다 (지도 옆 오른쪽 단, 리스크 분석의 등급 카드처럼 · 2026-10-01)."""
     cells = "".join(f'<div class="cell {tone}"><span class="l">{label}</span><span class="v">{value}</span>'
                     f'<span class="s">{sub}</span></div>' for label, value, sub, tone in items)
-    return f'<div class="strip">{cells}</div>'
+    return f'<div class="strip{" vstrip" if vertical else ""}">{cells}</div>'
 
 
 def _axes(fig):
@@ -50,13 +51,13 @@ def _layout(fig, **kw):
 
 # ---------------------------------------------------------------- 지도
 
-def draw_map(df, M, overlay, top_n):
+def draw_map(df, M, overlay, top_n, height=560):
     U = M["unit"]
     fig = go.Figure()
     fl = arms.flows(df)
     imp = df.groupby("target_iso3")["value"].sum()
 
-    if overlay == "대상국별 수입":
+    if overlay == "수입국별":
         fig.add_trace(go.Choropleth(
             locations=imp.index, z=imp.values, locationmode="ISO-3",
             colorscale=[[0, "#2a3a2e"], [1, GOLD]], marker_line_color="#0b1220", marker_line_width=0.5,
@@ -98,22 +99,22 @@ def draw_map(df, M, overlay, top_n):
                     line=dict(color="#0b1220", width=1)),
         text=[f"<b>{COUNTRIES[c]}</b> (수입)<br>{v:,.1f} {U}" for c, v in imp.items()],
         hovertemplate="%{text}<extra></extra>"))
-    # 대상국별 수입은 중동 16개국만 칠하므로 중동으로 확대한다. 흐름(호) 보기는 공급국이 전 세계라 세계지도 그대로.
-    geo = {**GEO, **GEO_ME} if overlay == "대상국별 수입" else GEO
-    _layout(fig, margin=dict(l=0, r=0, t=0, b=0), height=560, geo=geo, dragmode="pan",
+    # 수입국별은 중동 16개국만 칠하므로 중동으로 확대한다. 흐름(호) 보기는 공급국이 전 세계라 세계지도 그대로.
+    geo = {**GEO, **GEO_ME} if overlay == "수입국별" else GEO
+    _layout(fig, margin=dict(l=0, r=0, t=0, b=0), height=height, geo=geo, dragmode="pan",
             uirevision=f"arms-map-{overlay}")            # 보기마다 따로: 바꾸면 그 보기의 처음 범위로 열린다
     st.plotly_chart(theme.adapt(fig), width="stretch", key="arms_map_chart",
                     config={"displaylogo": False, "scrollZoom": False, "responsive": True,
                             "modeBarButtons": [["zoomInGeo", "zoomOutGeo", "resetGeo"]]})
     st.caption((f"호 굵기 = {M['value_label']} · 호 가운데에 마우스를 올리면 상세 · 상위 {min(top_n, len(fl))}개 / 전체 {len(fl)}개 흐름"
-                if overlay != "대상국별 수입" else f"색이 진할수록 {M['value_label']} 규모가 큼") + " · 위치는 나라 중심점(대략)")
+                if overlay != "수입국별" else f"색이 진할수록 {M['value_label']} 규모가 큼") + " · 위치는 나라 중심점(대략)")
 
 
 # ---------------------------------------------------------------- 추이
 
 def draw_trend(df, M, how, by):
     U = M["unit"]
-    key = {M["cat_label"]: "cat", "대상국": "target_name", M["exporter_label"]: "exporter"}[by]
+    key = {M["cat_label"]: "cat", "수입국": "target_name", M["exporter_label"]: "exporter"}[by]
     t, months, need = arms.series(df, how, key)
 
     if key != "cat":                                  # 항목이 많으면 상위 8개 + 기타
@@ -160,20 +161,20 @@ def draw_trend(df, M, how, by):
 
 # ---------------------------------------------------------------- 순위
 
-def hbar(series, title, color, U):
+def hbar(series, title, color, U, height=420):
     s = series.sort_values(ascending=True).tail(12)
     fig = go.Figure(go.Bar(x=s.values, y=s.index, orientation="h", marker_color=color,
                            text=[f"{v:,.0f}" for v in s.values], textposition="outside", cliponaxis=False,
                            hovertemplate=f"%{{y}}<br>%{{x:,.1f}} {U}<extra></extra>"))
-    _layout(fig, margin=dict(l=10, r=70, t=40, b=10), height=420,
+    _layout(fig, margin=dict(l=10, r=70, t=40, b=10), height=height,
             title=dict(text=title, font=dict(size=16, color="#e5eaf3"), x=0))
     _axes(fig)
     fig.update_xaxes(range=[0, float(s.max()) * 1.18 if len(s) else 1])   # 가장 긴 막대 끝 숫자가 잘리지 않게 여유
     st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
 
 
-def target_cat_heatmap(df, M, highlight=None, title=None):
-    """대상국(행) × 품목(열) 히트맵. highlight 나라는 맨 위로 올리고 이름에 ▶ 표시."""
+def target_cat_heatmap(df, M, highlight=None, title=None, height=None):
+    """수입국(행) × 품목(열) 히트맵. highlight 나라는 맨 위로 올리고 이름에 ▶ 표시."""
     h = df.pivot_table(index="target_name", columns="cat", values="value", aggfunc="sum", fill_value=0)
     h = h.loc[h.sum(axis=1).sort_values(ascending=False).index]
 
@@ -183,8 +184,8 @@ def target_cat_heatmap(df, M, highlight=None, title=None):
     fig = go.Figure(go.Heatmap(z=h.values, x=h.columns, y=labels, colorscale=[[0, "#111a2e"], [1, GOLD]],
                                hovertemplate=f"%{{y}} · %{{x}}<br>%{{z:,.1f}} {M['unit']}<extra></extra>",
                                colorbar=dict(thickness=10, tickfont=dict(color="#cbd5e1"))))
-    _layout(fig, height=max(320, 40 + 26 * len(h)),
-            title=dict(text=title or ctitle(f"대상국 × {M['cat_label']}", "칸 색이 진할수록 큼 · 필터 조건"), font=dict(size=16, color="#e5eaf3"), x=0))
+    _layout(fig, height=height or max(320, 40 + 26 * len(h)),
+            title=dict(text=title or ctitle(f"수입국 × {M['cat_label']}", "칸 색이 진할수록 큼 · 필터 조건"), font=dict(size=16, color="#e5eaf3"), x=0))
     fig.update_yaxes(autorange="reversed")
     st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
 
@@ -196,12 +197,14 @@ def draw_rank(df, M):
     with c1:
         hbar(df.groupby("exporter")["value"].sum(), ctitle(f"{M['exporter_label']} TOP 12", f"단위 {U} · 필터 조건의 합계"), GOLD, U)
     with c2:
-        hbar(df.groupby("target_name")["value"].sum(), ctitle("대상국 TOP 12", f"단위 {U} · 필터 조건의 합계"), "#f87171", U)
+        hbar(df.groupby("target_name")["value"].sum(), ctitle("수입국 TOP 12", f"단위 {U} · 필터 조건의 합계"), "#f87171", U)
     c3, c4 = st.columns(2)
+    # 품목별 막대와 옆 히트맵의 아래 끝을 맞춘다: 히트맵은 수입국 수만큼 길어지므로 둘 다 그 높이로 (2026-10-01)
+    hh = max(420, 40 + 26 * df["target_name"].nunique())
     with c3:
-        hbar(df.groupby("cat")["value"].sum(), ctitle(f"{M['cat_label']}별", f"단위 {U} · 필터 조건의 합계"), "#60a5fa", U)
+        hbar(df.groupby("cat")["value"].sum(), ctitle(f"{M['cat_label']}별", f"단위 {U} · 필터 조건의 합계"), "#60a5fa", U, height=hh)
     with c4:
-        target_cat_heatmap(df, M)
+        target_cat_heatmap(df, M, height=hh)
     if "weapon" in df.columns:                          # SIPRI: 무기 모델 표
         w = (df.groupby(["weapon", "weapon_desc"]).agg(tiv=("value", "sum"), n=("obs", "nunique"), qty=("qty", "sum"))
                .reset_index().sort_values("tiv", ascending=False).head(15))
@@ -214,7 +217,7 @@ def draw_rank(df, M):
 
 def country_picker(df, key):
     order = df.groupby("target_iso3")["value"].sum().sort_values(ascending=False).index.tolist()
-    return st.selectbox("대상국", order, format_func=COUNTRIES.get, key=key)
+    return st.selectbox("수입국", order, format_func=COUNTRIES.get, key=key)
 
 
 def draw_country_compare(df, M, country, how):
@@ -230,7 +233,7 @@ def draw_country_compare(df, M, country, how):
             opacity=1 if me else 0.7, hovertemplate=f"{col} %{{y:,.1f}} {M['unit']}<extra></extra>"))
     fmt = {"월별": "%Y-%m", "분기별": "%Y-%m", "연간": "%Y"}[how]
     _layout(fig, height=360, hovermode="x unified",
-            title=dict(text=ctitle("대상국별 비교", f"{how} · {name} 강조"), font=dict(size=16, color="#e5eaf3"), x=0),
+            title=dict(text=ctitle("수입국별 비교", f"{how} · {name} 강조"), font=dict(size=16, color="#e5eaf3"), x=0),
             legend=dict(orientation="h", y=-0.25, yanchor="top", x=0, font=dict(size=13)))
     _axes(fig)
     fig.update_xaxes(tickformat=fmt, hoverformat=fmt)
@@ -253,7 +256,7 @@ def draw_rank_country(df, M, country):
         hbar(one.groupby("exporter")["value"].sum(), ctitle(f"{name} {M['exporter_label']} TOP 12", f"단위 {U}"), GOLD, U)
     with c2:
         hbar(one.groupby("cat")["value"].sum(), ctitle(f"{name} {M['cat_label']}별", f"단위 {U}"), "#60a5fa", U)
-    target_cat_heatmap(df, M, highlight=name, title=ctitle(f"대상국 × {M['cat_label']}", f"{name}(▶)을 맨 위에 두고 다른 나라와 비교"))
+    target_cat_heatmap(df, M, highlight=name, title=ctitle(f"수입국 × {M['cat_label']}", f"{name}(▶)을 맨 위에 두고 다른 나라와 비교"))
     share = df.groupby("target_name")["value"].sum().sort_values(ascending=False)
     rank = list(share.index).index(name) + 1
     st.caption(f"{name}{jo(name, '은는')} 필터 기간 전체의 {total / share.sum():.1%} ({rank}위 / {len(share)}개국).")
@@ -264,8 +267,8 @@ def draw_rank_country(df, M, country):
 def draw_pairs(df, M):
     U = M["unit"]
     fl = arms.flows(df)
-    st.markdown(f"**{M['exporter_label']} → 대상국 흐름 {len(fl)}개** ({M['value_label']} 큰 순)")
-    cols = {"exporter": M["exporter_label"], "target_name": "대상국", "value": f"{M['value_label']} ({U})",
+    st.markdown(f"**{M['exporter_label']} → 수입국 흐름 {len(fl)}개** ({M['value_label']} 큰 순)")
+    cols = {"exporter": M["exporter_label"], "target_name": "수입국", "value": f"{M['value_label']} ({U})",
             "obs": M["obs_label"], "top_cat": f"주요 {M['cat_label']}"}
     st.dataframe(fl.rename(columns=cols)[list(cols.values())].round(1), hide_index=True, width="stretch", height=420)
     top_exp = df.groupby("exporter")["value"].sum().sort_values(ascending=False).index[:10]
@@ -274,7 +277,7 @@ def draw_pairs(df, M):
     fig = go.Figure(go.Heatmap(z=h.values, x=h.columns, y=h.index, colorscale=[[0, "#111a2e"], [1, GOLD]],
                                hovertemplate=f"%{{x}} → %{{y}}<br>%{{z:,.1f}} {U}<extra></extra>",
                                colorbar=dict(thickness=10, tickfont=dict(color="#cbd5e1"))))
-    _layout(fig, height=460, title=dict(text=ctitle(f"대상국 × 상위 10개 {M['exporter_label']}", f"단위 {U} · 칸 색이 진할수록 큼"), font=dict(size=16, color="#e5eaf3"), x=0))
+    _layout(fig, height=460, title=dict(text=ctitle(f"수입국 × 상위 10개 {M['exporter_label']}", f"단위 {U} · 칸 색이 진할수록 큼"), font=dict(size=16, color="#e5eaf3"), x=0))
     st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
 
 
@@ -299,7 +302,7 @@ def _filters(box, vertical, f, M, k, y0, y1, cats_all, targets_all, exp_opts, ex
         else:
             f["years"] = c1.slider("기간", y0, y1, f["years"], key=f"arms_years_{k}")
         f["cats"] = c2.pills(M["cat_label"], cats_all, selection_mode="multi", default=f["cats"], key=f"arms_cats_{k}") or cats_all
-        f["targets"] = c3.multiselect("대상국(수입)", targets_all, default=f["targets"], format_func=COUNTRIES.get,
+        f["targets"] = c3.multiselect("수입국", targets_all, default=f["targets"], format_func=COUNTRIES.get,
                                       key=f"arms_targets_{k}", placeholder="전체") or targets_all
         f["exporters"] = c4.multiselect(f"{M['exporter_label']} (비우면 전체)", exp_opts, default=f["exporters"],
                                         format_func=exp_name.get, key=f"arms_exporters_{k}",
@@ -338,20 +341,20 @@ def page(filter_box=None, on_open=None, compact=False, show_title=True):
         _filters(filter_box, True, f, M, k, y0, y1, cats_all, targets_all, exp_opts, exp_name, months)
         # 접힌 필터 아래 '현재 조건' 한 줄 (리뷰 2순위)
         st.sidebar.markdown(f'<div class="side-note">현재 · {f["years"][0]}–{f["years"][1]} · {M["cat_label"]} {len(f["cats"])}/{len(cats_all)} · '
-                            f'대상국 {len(f["targets"])}곳 · {M["exporter_label"]} {"전체" if not f["exporters"] else str(len(f["exporters"])) + "곳"}</div>',
+                            f'수입국 {len(f["targets"])}곳 · {M["exporter_label"]} {"전체" if not f["exporters"] else str(len(f["exporters"])) + "곳"}</div>',
                             unsafe_allow_html=True)
         
     elif on_open is None:
         # v2: 필터는 «본문 맨 위» 접이식 상자 (2026-09-30 사이드바 -> 본문)
         _filters(page_filters("무기 거래 추이"), False, f, M, k, y0, y1, cats_all, targets_all, exp_opts, exp_name, months)
         filter_note(f'{f["years"][0]}-{f["years"][1]} · {M["cat_label"]} {len(f["cats"])}/{len(cats_all)} · '
-                    f'대상국 {len(f["targets"])}곳 · {M["exporter_label"]} '
+                    f'수입국 {len(f["targets"])}곳 · {M["exporter_label"]} '
                     f'{"전체" if not f["exporters"] else str(len(f["exporters"])) + "곳"}')
 
     else:
         a, b = st.columns([5, 1])
         a.caption(f"현재 조건 · {f['years'][0]}–{f['years'][1]} · {M['cat_label']} {len(f['cats'])}/{len(cats_all)} · "
-                  f"대상국 {len(f['targets'])}개 · {M['exporter_label']} {'전체' if not f['exporters'] else str(len(f['exporters'])) + '개'}")
+                  f"수입국 {len(f['targets'])}개 · {M['exporter_label']} {'전체' if not f['exporters'] else str(len(f['exporters'])) + '개'}")
         b.button("필터 열기 ▸", on_click=on_open, key=f"arms_open_{k}", use_container_width=True)
     years, cats, targets, exporters = f["years"], f["cats"], f["targets"], f["exporters"]
 
@@ -392,27 +395,32 @@ def page(filter_box=None, on_open=None, compact=False, show_title=True):
                       f"공급국 {sub['exporter_iso3'].nunique()}개국 · 흐름 {len(arms.flows(sub))}개", ""))
         
     if compact:
-        st.markdown(strip(items), unsafe_allow_html=True)
-        
+        pass                                            # (2026-10-01) 요약은 위 띠 대신 지도 탭 오른쪽 단에 세로로 (아래 t_map)
     else:
         for col, (label, value, sub_, tone) in zip(st.columns(4), items):
             col.markdown(card(label, value, sub_, tone), unsafe_allow_html=True)
 
     t_map, t_trend, t_rank, t_pair = st.tabs(["지도", "추이", "순위", "국가쌍"])
     with t_map:
-        m1, m2 = st.columns([1.5, 2])
-        arc = f"{M['role_label']} 흐름(호)"
-        overlay = m1.segmented_control("표시", [arc, "대상국별 수입"], default=arc, key=f"arms_overlay_{k}") or arc
-        top_n = m2.slider(f"표시할 흐름 수 ({M['value_label']} 큰 순)", 5, 100, 40, step=5, key=f"arms_topn_{k}")
-        draw_map(sub, M, overlay, top_n)
-        if missing:
-            st.caption(f"좌표가 없어 지도에 못 그린 {M['exporter_label']}: {', '.join(missing)}")
+        # v2 (2026-10-01): 리스크 분석처럼 [지도 | 요약 카드] 2단. 지도는 560 → 410px (오른쪽 카드 아래 끝에 맞춤)
+        left, right = st.columns([2.3, 1], gap="medium") if compact else (st.container(), None)
+        with left:
+            m1, m2 = st.columns([1.5, 2])
+            arc = f"{M['role_label']} 흐름(호)"
+            overlay = m1.segmented_control("표시", [arc, "수입국별"], default=arc, key=f"arms_overlay_{k}") or arc
+            top_n = m2.slider(f"표시할 흐름 수 ({M['value_label']} 큰 순)", 5, 100, 40, step=5, key=f"arms_topn_{k}")
+            draw_map(sub, M, overlay, top_n, height=410 if compact else 560)
+            if missing:
+                st.caption(f"좌표가 없어 지도에 못 그린 {M['exporter_label']}: {', '.join(missing)}")
+        if right is not None:
+            with right:
+                st.markdown(f'<div class="pill-t">요약 · {per_txt}</div>' + strip(items, vertical=True), unsafe_allow_html=True)
     with t_trend:
         a, b, c = st.columns([1.2, 1.4, 1.4])
         scope = a.segmented_control("범위", ["전체", "국가별"], default="전체", key=f"arms_trend_scope_{k}") or "전체"
         how = b.radio("집계", M["periods"], index=M["periods"].index(M["default_period"]), horizontal=True, key=f"arms_how_{k}")
         if scope == "전체":
-            by = c.radio("쌓기 기준", [M["cat_label"], "대상국", M["exporter_label"]], horizontal=True, key=f"arms_by_{k}")
+            by = c.radio("쌓기 기준", [M["cat_label"], "수입국", M["exporter_label"]], horizontal=True, key=f"arms_by_{k}")
             draw_trend(sub, M, how, by)
         else:
             by = c.radio("쌓기 기준", [M["cat_label"], M["exporter_label"]], horizontal=True, key=f"arms_by_country_{k}")
