@@ -84,8 +84,8 @@ HIDE
 HIDE_SIDEBAR = """
 header[data-testid="stHeader"] {background: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important;}
 /* 밝은 테마여도 시작 화면은 밤하늘: 밝은 테마 CSS 가 칠하는 흰 바탕을 덮는다 */
-html[data-theme="light"] .stApp, html[data-theme="light"] [data-testid="stAppViewContainer"], html[data-theme="light"] [data-testid="stMain"],
-html[data-theme="light"] header[data-testid="stHeader"] {background: #0b1220 !important;}
+html[data-theme="light"] .stApp, html[data-theme="light"] [data-testid="stAppViewContainer"], html[data-theme="light"] [data-testid="stMain"] {background: #0b1220 !important;}
+html[data-theme="light"] header[data-testid="stHeader"] {background: transparent !important; border: 0 !important;}   /* 맨 위 띠가 지도를 가리지 않게 */
 html[data-theme="light"] header[data-testid="stHeader"] * {color: #cbd5e1 !important;}
 html[data-theme="light"] [data-testid="stMain"] .st-key-landing_map [data-testid="stElementContainer"]:has(> [data-testid="stFullScreenFrame"] > [data-testid="stPlotlyChart"]) {background: transparent !important; border: 0 !important;}
 [data-testid="stMainBlockContainer"] {max-width: 1400px !important; padding-top: 0 !important;}
