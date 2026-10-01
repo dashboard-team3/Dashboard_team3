@@ -68,22 +68,18 @@ def draw_map(df, M, overlay, top_n, height=560):
     else:
         shown = fl.head(top_n)
         top = shown["value"].max() if len(shown) else 1
-        mid_lat, mid_lon, mid_txt, mid_size = [], [], [], []
         for r in shown.itertuples():
             a, b = arms.pos(r.exporter_iso3), arms.pos(r.target_iso3)
             if a is None or b is None:
                 continue
             lats, lons = arms.great_circle(a[0], a[1], b[0], b[1])
             w = 1 + 7 * (r.value / top) ** 0.5
-            fig.add_trace(go.Scattergeo(lat=lats, lon=lons, mode="lines", hoverinfo="skip", showlegend=False,
-                                        line=dict(color=GOLD, width=w), opacity=0.55))
-            k = len(lats) // 2
-            mid_lat.append(lats[k]); mid_lon.append(lons[k]); mid_size.append(max(6, w * 2))
-            mid_txt.append(f"<b>{r.exporter} → {r.target_name}</b><br>{r.value:,.1f} {U} · {M['obs_label']} {r.obs}"
-                           f"<br>주요 {M['cat_label']} {r.top_cat}")
-        fig.add_trace(go.Scattergeo(lat=mid_lat, lon=mid_lon, mode="markers", showlegend=False,
-                                    marker=dict(size=mid_size, color="rgba(0,0,0,0)"),
-                                    text=mid_txt, hovertemplate="%{text}<extra></extra>"))
+            # (2026-10-01) 호 가운데 동그라미는 뺐다 — 뜻이 안 보이고 지저분해서. 호 자체에 마우스를 올리면 상세가 뜬다
+            txt = (f"<b>{r.exporter} → {r.target_name}</b><br>{r.value:,.1f} {U} · {M['obs_label']} {r.obs}"
+                   f"<br>주요 {M['cat_label']} {r.top_cat}")
+            fig.add_trace(go.Scattergeo(lat=lats, lon=lons, mode="lines", showlegend=False,
+                                        line=dict(color=GOLD, width=w), opacity=0.55,
+                                        text=[txt] * len(lats), hovertemplate="%{text}<extra></extra>"))
         sup = shown.groupby(["exporter_iso3", "exporter"])["value"].sum().reset_index()
         sup = sup[sup["exporter_iso3"].map(arms.pos).notna()]
         fig.add_trace(go.Scattergeo(
@@ -106,7 +102,7 @@ def draw_map(df, M, overlay, top_n, height=560):
     st.plotly_chart(theme.adapt(fig), width="stretch", key="arms_map_chart",
                     config={"displaylogo": False, "scrollZoom": False, "responsive": True,
                             "modeBarButtons": [["zoomInGeo", "zoomOutGeo", "resetGeo"]]})
-    st.caption((f"호 굵기 = {M['value_label']} · 호 가운데에 마우스를 올리면 상세 · 상위 {min(top_n, len(fl))}개 / 전체 {len(fl)}개 흐름"
+    st.caption((f"호 굵기 = {M['value_label']} · 호(선)에 마우스를 올리면 상세 · 상위 {min(top_n, len(fl))}개 / 전체 {len(fl)}개 흐름"
                 if overlay != "수입국별" else f"색이 진할수록 {M['value_label']} 규모가 큼") + " · 위치는 나라 중심점(대략)")
 
 
