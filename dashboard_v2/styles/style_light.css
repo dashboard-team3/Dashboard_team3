@@ -767,11 +767,31 @@ button[kind="primary"] p, button[kind="primary"] {
     background: #ffffff !important;
     border-color: #e5e0d5 !important;
 }
-.ts-h, .ts-n { color: #111827 !important; }
-.ts-v, .ts-kv { color: #111827 !important; }
+.ts-h, .ts-kv { color: #111827 !important; }
 .ts-kv.up { color: #dc2626 !important; }
 .ts-kv.down { color: #2563eb !important; }
-.ts-s, .ts-kl, .ts-v small { color: #6b7280 !important; }
-.ts-ks { color: #4b5563 !important; }
+.ts-s, .ts-kl, .ts-ks { color: #4b5563 !important; }
 .ts-kc { background: #faf8f3 !important; border-color: #e5e0d5 !important; }
-.ts-bar { background: #ece7dc !important; }
+
+/* 무기 거래 추이 새 모양 (2026-10-01) */
+[class*="st-key-tab_row_"] {
+    border-bottom-color: #e5e0d5 !important;
+}
+
+[class*="st-key-grp_"], .chip {
+    background: #faf8f3 !important;
+    border-color: #e5e0d5 !important;
+}
+
+[class*="st-key-cty_row_"] {
+    background: #ffffff !important;
+    border-color: #e5e0d5 !important;
+}
+
+.grp-l, .flt-h, .chip {
+    color: #6b7280 !important;
+}
+
+.chip b {
+    color: #111827 !important;
+}

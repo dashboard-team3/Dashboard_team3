@@ -2217,14 +2217,14 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 /* ================================================================ 무기 거래 추이 · 추이 탭 오른쪽 상자 (2026-10-01)
-   버튼으로 '흐름 요약' ↔ '상위 5'. 상자 모양은 리스크 분석 카드 상자와 같게 */
+   흐름 요약 (2026-10-01 '상위 5' 는 뺐다). 상자 모양은 리스크 분석 카드 상자와 같게 */
 [class*="st-key-trend_side_"] {
     background: #111a2e;
     border: 1px solid #1f2b44;
     border-radius: 14px;
     padding: 12px 16px 16px;
     min-height: 460px;                        /* 왼쪽 추이 그래프 카드 높이 (draw_trend height=460) — 버튼을 바꿔도 상자 높이 그대로 */
-    margin-top: 100px;                        /* 왼쪽 그림 위 조작 줄(84px) + 간격(16px) 만큼 내려 그림 카드와 윗선을 맞춤 */
+    margin-top: 0;                            /* (2026-10-01) 조작은 위 탭 줄로 올라가 그림 카드와 같은 높이에서 시작 */
     box-sizing: border-box;
 }
 [class*="st-key-trend_side_"] [data-testid="stMarkdownContainer"] {
@@ -2232,14 +2232,6 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 .ts-h { font-size: 16px; font-weight: 700; color: #e5eaf3; margin: 2px 0 2px; }
 .ts-s { font-size: 14px; color: #8b98ad; margin-bottom: 10px; }
-.ts-rest { margin: 12px 0 0; }
-.ts-row { margin: 10px 0 0; }
-.ts-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.ts-n { font-size: 16px; color: #e5eaf3; }
-.ts-v { font-size: 16px; font-weight: 700; color: #ffffff; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.ts-v small { font-size: 14px; font-weight: 400; color: #8b98ad; margin-left: 6px; }
-.ts-bar { height: 6px; border-radius: 3px; background: #1f2b44; margin-top: 5px; overflow: hidden; }
-.ts-bar i { display: block; height: 100%; border-radius: 3px; }
 .ts-k { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .ts-kc { background: #0e1628; border: 1px solid #1f2b44; border-radius: 10px; padding: 10px 14px; }
 .ts-kl { font-size: 14px; color: #8b98ad; }
@@ -2249,25 +2241,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 .ts-ks { font-size: 14px; color: #aab4c5; }
 
 /* ---------------------------------------------------------------- 무기 거래 추이 · 지도 탭과 추이 탭을 같은 틀로 (2026-10-01)
-   두 탭 모두 [조작 한 줄 84px + 그림 460px | 오른쪽 상자 460px] — 탭을 바꿔도 크기 · 위치가 그대로 */
-[class*="st-key-tab_ctl_"] {
-    min-height: 84px;
-    height: 84px;
-}
-
-[class*="st-key-tab_ctl_trend_"] {
-    margin-top: 0 !important;                 /* 알약 버튼 묶음의 바깥 여백 때문에 줄이 3px 어긋나는 것을 없앰 */
-    margin-bottom: 0 !important;
-}
-
-[class*="st-key-tab_ctl_trend_"] [data-testid="stButtonGroup"] button {
-    padding-left: 10px !important;            /* 범위 · 집계 · 쌓기 기준이 1280px 화면에서도 한 줄에 들어가게 */
-    padding-right: 10px !important;
-}
-
-[class*="st-key-tab_ctl_trend_"] [data-testid="stSpace"] {
-    min-width: 0 !important;
-}
+   두 탭 모두 [그림 460px | 오른쪽 상자 460px], 비율 2:1 — 탭을 바꿔도 크기 · 위치가 그대로 */
 
 /* 지도 탭 오른쪽 상자: 요약 카드 3개 (관측 월 · 계약 카드는 뺐다) */
 [class*="st-key-trend_side_map_"] .ts-h {
@@ -2276,4 +2250,122 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 
 [class*="st-key-trend_side_map_"] .strip.vstrip {
     margin-top: 4px;
+}
+
+/* ---------------------------------------------------------------- 무기 거래 추이 새 모양 (2026-10-01)
+   필터 상자 안 머리줄 · 기간 빠른 버튼 / 탭 줄(보기 + 그 탭의 조작) / 분석 대상국 줄 + 숫자 칩 */
+.flt-h {
+    font-size: 14px;
+    color: #8b98ad;
+}
+
+[class*="st-key-flt_quick_"] button {
+    min-height: 0 !important;
+    padding: 2px 12px !important;
+}
+
+[class*="st-key-flt_quick_"] button p {
+    font-size: 14px !important;
+}
+
+/* 탭 줄: 왼쪽 보기 탭(지도 · 추이 · 순위 · 국가쌍) · 오른쪽 그 탭의 조작 묶음 */
+[class*="st-key-tab_row_"] {
+    border-bottom: 1px solid #1f2b44;
+    padding-bottom: 10px;
+    margin: 6px 0 4px;
+    min-height: 59px;                          /* 탭마다 조작이 달라도(지도는 슬라이더) 줄 높이를 같게 → 탭을 바꿔도 그래프가 안 움직임 */
+}
+
+[class*="st-key-tab_row_"] > [data-testid="stElementContainer"]:first-child button {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+}
+
+[class*="st-key-tab_row_"] > [data-testid="stElementContainer"]:first-child button p {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+}
+
+/* 조작 묶음: 이름표가 버튼 왼쪽에 붙은 작은 상자 */
+[class*="st-key-grp_"] {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    border: 1px solid #1f2b44;
+    border-radius: 10px;
+    padding: 3px 4px 3px 10px;
+    background: #0e1628;
+}
+
+.grp-l {
+    font-size: 14px;
+    color: #8b98ad;
+    white-space: nowrap;
+}
+
+[class*="st-key-grp_"] [data-testid="stSlider"] {
+    padding: 0 8px;
+}
+
+/* 분석 대상국 줄 (국가별일 때만) */
+[class*="st-key-cty_row_"] {
+    background: #111a2e;
+    border: 1px solid #1f2b44;
+    border-radius: 12px;
+    padding: 8px 14px;
+    margin-bottom: 4px;
+}
+
+.chip {
+    display: inline-block;
+    font-size: 14px;
+    color: #aab4c5;
+    background: #0e1628;
+    border: 1px solid #1f2b44;
+    border-radius: 8px;
+    padding: 4px 10px;
+    margin-left: 6px;
+    white-space: nowrap;
+}
+
+.chip b {
+    color: #ffffff;
+    margin-left: 4px;
+}
+
+/* 무기 거래 추이: 제목 오른쪽 자료 고르기(Comtrade · SIPRI) — 좁은 칸이라 띠를 칸 폭에 맞추고 글자가 안 잘리게 */
+.st-key-tabbar-arms_source [data-testid="stButtonGroup"] > div {
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+.st-key-tabbar-arms_source [data-testid="stButtonGroup"] button {
+    padding: 6px 10px !important;
+}
+
+.st-key-tabbar-arms_source [data-testid="stButtonGroup"] button p {
+    white-space: nowrap !important;
+}
+
+/* 화면이 좁으면(1400px 이하) 탭 줄 · 분석 대상국 줄을 촘촘하게 — 한 줄에 들어가게 */
+@media (max-width: 1400px) {
+    [class*="st-key-tab_row_"] > [data-testid="stElementContainer"]:first-child button {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    [class*="st-key-grp_"] {
+        padding-left: 8px;
+    }
+    [class*="st-key-grp_"] button {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+    [class*="st-key-grp_"] button p,
+    .grp-l {
+        font-size: 13px !important;
+    }
+    .chip {
+        padding: 3px 8px;
+        margin-left: 4px;
+        font-size: 13px;
+    }
 }
