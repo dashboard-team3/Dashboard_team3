@@ -339,10 +339,26 @@ def draw_pairs(df, M):
 
 # ---------------------------------------------------------------- 필터 (본문 맨 위 접이식, 2026-10-01 새 모양)
 
+# def _put(store, field, value, wkey):
+#     """빠른 버튼 · 전체 선택: 보관한 값을 바꾸고 위젯 상태를 지워, 다음 실행 때 그 값으로 다시 그리게 한다."""
+#     store[field] = value
+#     st.session_state.pop(wkey, None)
+
 def _put(store, field, value, wkey):
-    """빠른 버튼 · 전체 선택: 보관한 값을 바꾸고 위젯 상태를 지워, 다음 실행 때 그 값으로 다시 그리게 한다."""
-    store[field] = value
-    st.session_state.pop(wkey, None)
+    """버튼 선택값을 저장하고 위젯에 반영한다."""
+    if field in ("period", "years"):
+        store[field] = tuple(value)
+
+        # 다음 실행에서 슬라이더를 새 key로 생성
+        base_key = wkey.rsplit("__", 1)[0]
+        version_key = f"{base_key}_version"
+        st.session_state[version_key] = (
+            st.session_state.get(version_key, 0) + 1
+        )
+    else:
+        selected = list(value)
+        store[field] = selected
+        st.session_state[wkey] = selected
 
 
 def _reset(skey, keys):
@@ -357,6 +373,10 @@ def _filters(box, f, M, k, y0, y1, cats_all, targets_all, exp_opts, exp_name, mo
     값은 st.session_state[f"arms_store_{k}"] 에 보관하고 위젯에는 value/default 로 넘긴다
     (위젯 key 에 직접 값을 넣으면 범위 슬라이더가 한 점짜리로 바뀌는 문제가 있어서)."""
     kp, ky, kc, kt, ke = (f"arms_period_{k}", f"arms_years_{k}", f"arms_cats_{k}", f"arms_targets_{k}", f"arms_exporters_{k}")
+    
+    kp = f"{kp}__{st.session_state.get(f'{kp}_version', 0)}"
+    ky = f"{ky}__{st.session_state.get(f'{ky}_version', 0)}"
+    
     skey = f"arms_store_{k}"
     opts = [d.strftime("%Y-%m") for d in months] if months is not None else None
     if skey not in st.session_state:
