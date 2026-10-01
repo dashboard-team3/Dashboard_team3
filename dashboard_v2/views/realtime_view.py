@@ -654,9 +654,10 @@ def live_feed():
             st.caption("일시정지 중 · 새 사건은 '다시 시작'을 누르면 보입니다.")
 
 
-def page():
-    st.title('실시간 모니터링')
-    page_sub(term("GDELT 2.0") + " 데이터를 기반으로 중동 16개국 사이에서 일어난 " + term("실시간 갈등 뉴스") + "를 보여줍니다. 날짜 기준은 " + term("UTC") + " 오늘입니다.")
+def page(show_title=True):
+    if show_title:
+        st.title('실시간 모니터링')
+        page_sub(term("GDELT 2.0") + " 데이터를 기반으로 중동 16개국 사이에서 일어난 " + term("실시간 갈등 뉴스") + "를 보여줍니다. 날짜 기준은 " + term("UTC") + " 오늘입니다.")
     k = realtime.kpis()
     if k["top"]:
         name, count, partner = k["top"]

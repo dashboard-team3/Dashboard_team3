@@ -174,7 +174,7 @@ def _country_filters(cmat_full, names, months):
     return f["countries"], f["focus"], p0, p1
 
 
-def page():
+def page(show_title=True):
     risk = relations.load_risk()
     names = relations.COUNTRIES
     months = pd.date_range(risk["date"].min(), risk["date"].max(), freq="MS")
@@ -183,8 +183,9 @@ def page():
     region = relations.load_region()
     how = HOW
 
-    st.title('리스크 추이')
-    page_sub("뉴스 기반 갈등 지표를 통해 중동 " + term("국가쌍별") + " · " + term("국가별") + " " +term("리스크") + "의 장기 추세와 시기별 변화를 비교합니다.")
+    if show_title:
+        st.title('리스크 추이')
+        page_sub("뉴스 기반 갈등 지표를 통해 중동 " + term("국가쌍별") + " · " + term("국가별") + " " +term("리스크") + "의 장기 추세와 시기별 변화를 비교합니다.")
     # page_sub("1980년부터 " + term("국가쌍") + " · " + term("국가별") + " 월별 " + term("리스크") + "를 " + term("12개월 이동평균") + "으로 보여 줍니다. 선이 높을수록 그 시기 갈등 쪽 보도가 많았다는 뜻입니다.")
     # v2: 탭 대신 보기 버튼. 고른 보기만 그려서 사이드바 필터도 그 보기 것만 나온다
     view = tabbar("보기", ["국가쌍 리스크", "국가별 리스크"], key="rel_view")

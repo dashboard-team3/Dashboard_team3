@@ -112,6 +112,56 @@ CSS = f"""
 
 """
 
+# 중동 전체 결과 새 레이아웃 (2026-10-01) — 어두운 테마 기본값. 밝은 테마는 style_light.css «종합 분석 새 레이아웃»
+OV_CSS = """
+         border-radius:0 12px 12px 0; padding:.9rem 1.2rem; margin:.2rem 0 1.2rem 0;}
+            display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .ov-key {background:#13142a; border:1px solid #2a2a48; border-left:5px solid #60a5fa; border-radius:0 14px 14px 0;
+           padding:1.2rem 1.5rem; margin:.4rem 0 1.4rem 0;}
+  .ov-kick {display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem;}
+  .ov-badge {font-size:12px; font-weight:700; color:#93c5fd; background:rgba(96,165,250,.15); border-radius:5px; padding:.1rem .45rem;}
+  .ov-mono {font-family:"JetBrains Mono", monospace; font-size:12px; color:#8b98ad;}
+  .ov-big {font-size:24px; font-weight:800; color:#ffffff; line-height:1.45; word-break:keep-all;}
+  .ov-body {font-size:16px; color:#aab4c5; line-height:1.75; margin-top:.6rem; word-break:keep-all;}
+  .ov-num {font-family:"JetBrains Mono", monospace; color:#e5eaf3;}
+  .ov-pos-t {color:#f87171;} .ov-neg-t {color:#60a5fa;}
+  .ov-cb-h {display:flex; justify-content:space-between; font-size:13px; font-weight:600; color:#8b98ad; padding:2px 4px 0;}
+  .ov-cb-h span:last-child {font-family:"JetBrains Mono", monospace; font-weight:500;}
+  .ov-head {display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:.8rem;}
+  .ov-t {font-size:19px; font-weight:800; color:#e5eaf3;}
+  .ov-no {color:#a78bfa; font-family:"JetBrains Mono", monospace; margin-right:.2rem;}
+  .ov-s {font-size:14px; color:#8b98ad; margin-top:.25rem; line-height:1.6;}
+  .ov-leg {display:flex; gap:.9rem; font-size:13px; color:#cbd5e1; white-space:nowrap;}
+  .ov-leg.l {margin-top:.5rem;}
+  .ov-leg i {display:inline-block; width:10px; height:10px; margin-right:.35rem; vertical-align:-1px;}
+  .ov-leg i.sq.red, .ov-leg i.dot.red {background:#f87171;} .ov-leg i.sq.blue, .ov-leg i.dot.blue {background:#60a5fa;}
+  .ov-leg i.dot {border-radius:50%;}
+  .ov-note {border:1px solid #2a2a48; border-radius:12px; padding:1rem 1.1rem; height:100%;}
+  .ov-note-t {font-size:17px; font-weight:800; color:#e5eaf3; margin-bottom:.6rem;}
+  .ov-note-b {font-size:15px; color:#aab4c5; line-height:1.75; word-break:keep-all;}
+  .ov-info {margin-top:1.4rem; background:#1d1b3c; border-radius:8px; padding:.7rem .85rem; font-size:13px; color:#aab4c5; line-height:1.65;}
+  .ov-info-t {font-size:13px; font-weight:700; color:#a78bfa; margin-bottom:.3rem;}
+  .ov-info b {color:#e5eaf3;}
+  .ov-chip {display:inline-block; margin-top:.5rem; font-family:"JetBrains Mono", monospace; font-size:12px; color:#8b98ad;
+            border:1px solid #2a2a48; border-radius:6px; padding:.2rem .55rem; float:right;}
+  .ov-tbl {margin-top:.9rem; border-top:1px solid #2a2a48;}
+  .ov-row {display:grid; grid-template-columns:minmax(150px, 1.2fr) 1.6fr 2px 1.6fr; align-items:center; gap:0 .8rem; padding:.42rem 0;}
+  .ov-row.ov-h {font-family:"JetBrains Mono", monospace; font-size:12px; color:#8b98ad; padding:.6rem 0 .3rem;}
+  .ov-row.ov-h .ov-neg {text-align:right;} .ov-row.ov-h .ov-mid {background:none; text-align:center; overflow:visible; font-weight:700;}
+  .ov-name {font-size:15px; font-weight:600; color:#e5eaf3; display:flex; align-items:center; gap:.5rem;}
+  .ov-dot {width:8px; height:8px; border-radius:50%; flex:0 0 auto; opacity:.5;}
+  .ov-dot.pos {background:#f87171;} .ov-dot.neg {background:#60a5fa;} .ov-dot.strong {opacity:1;}
+  .ov-neg, .ov-pos {display:flex; align-items:center; gap:.5rem; height:24px;}
+  .ov-neg {flex-direction:row-reverse;}
+  .ov-mid {width:2px; height:20px; background:#3b3b5c;}
+  .ov-bar {display:block; height:22px; opacity:.45; flex:0 0 auto;}
+  .ov-bar.pos {background:#f87171;} .ov-bar.neg {background:#60a5fa;} .ov-bar.strong {opacity:1;}
+  .ov-v {font-family:"JetBrains Mono", monospace; font-size:13px; white-space:nowrap;}
+  .ov-v.pos {color:#fca5a5;} .ov-v.neg {color:#93c5fd;}
+  @media (max-width:900px) { .ov-head {flex-direction:column;} }
+"""
+
+
 CFG = {"displayModeBar": False}
 SCOPE = ".st-key-surge_app"             # page() 가 이 이름표(key)를 단 상자 안에 그린다
 
@@ -348,85 +398,115 @@ def grid(rows, cols=5, bar_color=None, sub=None, height_per_row=290, mark_year=F
 
     # ══ 2. 중동 전체 결과 ════════════════════════════════════════════════════
 
+LAG_KEY = "corr_lag_seg"         # 시차 고르기 (아래 국가별 카드에 있지만 위 그래프 강조 · 핵심 문장도 따라간다)
+LAG_DEFAULT = 1                   # 기본 = 1년 뒤 (SIPRI 는 주문 연도 → 1년 뒤가 계약이 잡히는 시점)
+
+
+def _lag_opts(ks):
+    return [k + (" ★" if i == LAG_DEFAULT else "") for i, k in enumerate(ks)]
+
+
+def _diverging(per, lim):
+    """국가별 r 을 가운데 0 선을 기준으로 왼쪽(음) · 오른쪽(양) 막대로 (2026-10-01 새 모양)."""
+    vmax = max(0.35, float(per.abs().max()))
+    rows = []
+    for c, v in per.sort_values(ascending=False).items():
+        w = abs(v) / vmax * 100
+        side = "pos" if v > 0 else "neg"
+        strong = " strong" if abs(v) >= lim else ""
+        bar = f'<i class="ov-bar {side}{strong}" style="width:{w:.0f}%"></i><span class="ov-v {side}">{v:+.2f}</span>'
+        rows.append(f'<div class="ov-row"><div class="ov-name"><i class="ov-dot {side}{strong}"></i>{A.COUNTRIES[c]}</div>'
+                    f'<div class="ov-neg">{bar if v < 0 else ""}</div><div class="ov-mid"></div>'
+                    f'<div class="ov-pos">{bar if v > 0 else ""}</div></div>')
+    return ('<div class="ov-tbl"><div class="ov-row ov-h"><div class="ov-name">국가</div>'
+            '<div class="ov-neg">음(−)의 상관 (감소)</div><div class="ov-mid">0</div>'
+            '<div class="ov-pos">양(+)의 상관 (증가)</div></div>' + "".join(rows) + "</div>")
+
+
 def page_1_corr():
-        ks, pooled, med = [], [], []
-        for k in range(4):
-            pr, per = A.lag_corr(M, k)
-            ks.append("같은 해" if k == 0 else f"{k}년 뒤")
-            pooled.append(pr)
-            med.append(float(per.median()))
-        lag = lag_buttons(ks)
-        LAG_TAG = {0: "같은 해", 1: "단기 · 1년 뒤", 2: "중기 · 2년 뒤", 3: "3년 뒤"}
-        r1, per1 = A.lag_corr(M, lag)
-        plus, minus = int((per1 > 0).sum()), int((per1 < 0).sum())
-        strong = [A.COUNTRIES[c] for c, v in per1.items() if abs(v) >= LIM]
+    """중동 전체 결과 (2026-10-01 새 레이아웃): 핵심 분석 상자 → 01 시차별 상관계수 카드 → 국가별 개별 상관계수 카드."""
+    ks, pooled, med = [], [], []
+    for k in range(4):
+        pr, per = A.lag_corr(M, k)
+        ks.append("같은 해" if k == 0 else f"{k}년 뒤")
+        pooled.append(pr)
+        med.append(float(per.median()))
+    opts = _lag_opts(ks)
+    cur = st.session_state.get(LAG_KEY)
+    lag = opts.index(cur) if cur in opts else LAG_DEFAULT
+    r1, per1 = A.lag_corr(M, lag)
+    plus, minus = int((per1 > 0).sum()), int((per1 < 0).sum())
+    strong = [A.COUNTRIES[c] for c, v in per1.items() if abs(v) >= LIM]
 
-        key("분석 1", "16개국을 합치면 0 인데, 나라별로는 방향이 갈립니다.",
-            f"시차 0~3년의 전체 상관계수는 <b>{min(pooled):+.3f} ~ {max(pooled):+.3f}</b> 으로 0 에 가깝습니다. "
-            f"그런데 {ks[lag]} 기준으로 보면 양(+) <b>{plus}개국</b> · 음(−) <b>{minus}개국</b> 으로 갈려, "
-            "서로 지워진 값이 0 으로 보인 것입니다.", GOLD)
+    # ── 핵심 분석
+    st.markdown(
+        '<div class="ov-key"><div class="ov-kick"><span class="ov-badge">핵심 분석 1</span><span class="ov-mono">상쇄 효과</span></div>'
+        '<div class="ov-big">16개국을 합치면 0인데, 나라별로는 완전히 다른 방향으로 갈립니다.</div>'
+        f'<div class="ov-body">시차 0~3년의 중동 전체 상관계수는 <b class="ov-num">{min(pooled):+.3f} ~ {max(pooled):+.3f}</b>로 0에 가깝습니다. '
+        f'그러나 {ks[lag]} 기준으로 나라별로 나눠 보면 <b class="ov-pos-t">양(+)의 상관 {plus}개국</b>과 '
+        f'<b class="ov-neg-t">음(−)의 상관 {minus}개국</b>으로 갈려, 합칠 때 서로 지워진 값이 0으로 보인 것입니다.</div></div>',
+        unsafe_allow_html=True)
 
-        sec("01", "시차별 상관계수 — 어느 시점을 볼 것인가",
-            "리스크가 오른 뒤 몇 해 뒤의 무기 수입과 견줄지 0~3년을 모두 재어 보고, 고른 시점을 아래에서 나라별로 펼칩니다.", GOLD)
-
-        c1, c2 = st.columns([1.35, 1], gap="medium")
-        with c1:
+    # ── 01 시차별 상관계수
+    with st.container(border=True, key="ov_card1"):
+        st.markdown(
+            '<div class="ov-head"><div><div class="ov-t"><span class="ov-no">01</span> 시차별 상관계수</div>'
+            '<div class="ov-s">리스크가 크게 오른 해와 0~3년 뒤의 무기 주문(TIV)을 견줘, 어느 시점에서 관계가 보이는지 봅니다.</div></div>'
+            '<div class="ov-leg"><span><i class="sq red"></i>전체 국가 집계</span><span><i class="sq blue"></i>국가별 중앙값</span></div></div>',
+            unsafe_allow_html=True)
+        c1, c2 = st.columns([1.9, 1], gap="medium")
+        with c1, st.container(key="ov_chartbox"):
+            st.markdown('<div class="ov-cb-h"><span>시차별 피어슨 상관계수 (r)</span><span>16개국 · 연 단위</span></div>',
+                        unsafe_allow_html=True)
             fig = go.Figure()
-            for vals, name, col in [(pooled, "전체 국가 집계", RED), (med, "국가별 중앙값", BLUE)]:
-                fig.add_trace(go.Bar(x=ks, y=vals, name=name, marker_color=col,
+            lt = theme.is_light()           # 밝은 테마는 아래 국가별 막대와 같은 진한 빨강 · 파랑
+            for vals, name, col in [(pooled, "전체 국가 집계", "#9f1239" if lt else RED), (med, "국가별 중앙값", "#0369a1" if lt else BLUE)]:
+                fig.add_trace(go.Bar(x=ks, y=vals, name=name, marker_color=col, width=0.32,
                                      text=[f"{v:+.3f}" for v in vals], textposition="outside",
-                                     cliponaxis=False, textfont=dict(size=13),
+                                     cliponaxis=False, textfont=dict(size=12, color=col),
                                      hovertemplate=name + " · %{x} · r = %{y:+.3f}<extra></extra>"))
-            # «1년 뒤» 칸만 금색 점선 상자로 묶어, 아래 그래프가 이 칸을 펼친 것임을 눈으로 잇는다 (2026-10-01)
-            fig.add_vrect(x0=lag - 0.5, x1=lag + 0.5, fillcolor=GOLD, opacity=0.10,
-                          line=dict(color=GOLD, width=1.2, dash="dot"), layer="below")
-            fig.add_annotation(x=lag, y=0.30, text="아래에서 나라별로 ↓", showarrow=False,
-                               font=dict(size=13, color=GOLD), yanchor="bottom")
-            fig.update_layout(paper_bgcolor=BG, plot_bgcolor=BG, barmode="group", height=360,
-                              font=dict(color=INK, size=14, family="Malgun Gothic, sans-serif"),
-                              margin=dict(l=10, r=10, t=82, b=10),
-                              title=dict(text=ctitle("시차별 상관계수 (피어슨 r)",
-                                                     "중동 16개국 · 연 단위 · 빨강 = 전체 집계 · 파랑 = 국가별 중앙값"),
-                                         font=dict(size=17, color=INK), x=0),
-                              legend=dict(orientation="h", y=1.02, yanchor="bottom", x=0, font=dict(size=14)))
-            fig.update_xaxes(title=None, gridcolor=GRID, tickfont=dict(size=14))
-            fig.update_yaxes(title=None, range=[-0.35, 0.40], gridcolor=GRID, tickfont=dict(size=14),
-                             zeroline=True, zerolinecolor=MUTE, zerolinewidth=1.5)
+            fig.add_vrect(x0=lag - 0.5, x1=lag + 0.5, fillcolor="#8b5cf6", opacity=0.10, line_width=0, layer="below")
+            fig.add_annotation(x=lag, y=1.0, yref="paper", text=f"선택한 시점 ({ks[lag]})", showarrow=False,
+                               font=dict(size=12, color="#a78bfa"), yanchor="top")
+            fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", barmode="group",
+                              bargap=0.35, height=330, showlegend=False,
+                              font=dict(color=INK, size=13, family="Malgun Gothic, sans-serif"),
+                              margin=dict(l=6, r=6, t=28, b=6))
+            fig.update_xaxes(title=None, showgrid=False, tickfont=dict(size=13))
+            fig.update_yaxes(title=None, range=[-0.25, 0.25], dtick=0.2, tickformat="+.2f", gridcolor=GRID,
+                             tickfont=dict(size=11), zeroline=True, zerolinecolor=MUTE, zerolinewidth=1)
+            fig.add_hline(y=0, line=dict(color=MUTE, width=1, dash="dot"))
             st.plotly_chart(theme.adapt(fig), width="stretch", config=CFG)
         with c2:
-            # 결론을 굵은 제목으로 먼저, 이유는 문어체로 (2026-10-01 인사이트 강조형)
-            note("<b>국가별 세부 분석 필수</b><br>"
-                 "전체 집계 시 국가 간 상반된 추세가 상쇄되어 유의미한 변화(0에 수렴)를 확인하기 어렵습니다. "
-                 "정확한 맥락 파악을 위해 전체 합산이 아닌 개별 국가 단위의 데이터를 확인해야 합니다.", "gold")
-            with st.expander("해석할 때 고려할 것"):
-                note("<b>국가별 차이</b> 전체 값으로 개별 국가를 판단할 수 없음<br>"
-                     "<b>시점 차이</b> SIPRI 는 주문 연도 기준이라 실제 인도는 몇 해 뒤<br>"
-                     "<b>다른 요인</b> 국방 예산 · 정책 · 제재 · 공급 여건도 주문에 영향")
+            st.markdown(
+                '<div class="ov-note"><div class="ov-note-t">국가별 세부 분해 필수</div>'
+                '<div class="ov-note-b">중동 전체를 합쳐 계산하면 나라마다 반대로 움직인 추세가 서로 지워져, '
+                '변화가 0에 가깝게 보입니다. 외교 관계 · 제재 여부 · 국방 예산처럼 나라마다 다른 사정이 크므로 '
+                '나라 단위로 나눠 봐야 합니다.</div>'
+                '<div class="ov-info"><div class="ov-info-t">ⓘ 해석할 때 고려할 점</div>'
+                '<b>국가별 차이</b> 전체 값으로 개별 국가를 판단할 수 없음<br>'
+                '<b>시점 차이</b> SIPRI 는 주문 연도 기준이라 실제 인도는 몇 해 뒤 (보통 1~3년)<br>'
+                '<b>다른 요인</b> 국방 예산 · 정책 · 제재 · 공급 여건도 주문에 영향</div></div>',
+                unsafe_allow_html=True)
 
-        vals = per1.values
-        st.plotly_chart(theme.adapt(
-            go.Figure(go.Bar(
-                x=vals, y=[A.COUNTRIES[c] for c in per1.index], orientation="h",
-                marker=dict(color=[RED if v > 0 else BLUE for v in vals],
-                            opacity=[1.0 if abs(v) >= LIM else 0.45 for v in vals]),
-                text=[f"{v:+.2f}" for v in vals], textposition="outside", cliponaxis=False,
-                textfont=dict(size=13),
-                hovertemplate="%{y} · r = %{x:+.3f}<extra></extra>")
-            ).update_layout(
-                paper_bgcolor=BG, plot_bgcolor=BG, height=500, showlegend=False,
-                font=dict(color=INK, size=14, family="Malgun Gothic, sans-serif"),
-                margin=dict(l=10, r=50, t=82, b=10),
-                title=dict(text=ctitle(f"[{LAG_TAG[lag]}] 국가별 리스크와 {ks[lag]} 무기 수입",
-                                       f"피어슨 r · 빨강 = 양(+) · 파랑 = 음(−) · 점선 ±{LIM} 밖만 진하게"),
-                           font=dict(size=17, color=INK), x=0)
-            ).add_vline(x=LIM, line=dict(color=MUTE, width=1, dash="dot")
-            ).add_vline(x=-LIM, line=dict(color=MUTE, width=1, dash="dot")
-            ).add_annotation(x=LIM, y=1.02, yref="paper", text=f"±{LIM}", showarrow=False,
-                             font=dict(size=13, color=MUTE), yanchor="bottom"
-            ).update_xaxes(range=[-0.55, 0.45], gridcolor=GRID, tickfont=dict(size=14),
-                           zeroline=True, zerolinecolor=MUTE, zerolinewidth=1.5
-            ).update_yaxes(autorange="reversed", gridcolor=GRID, tickfont=dict(size=14))),
-            width="stretch", config=CFG)
+    # ── 국가별 개별 상관계수
+    with st.container(border=True, key="ov_card2"):
+        h1, h2 = st.columns([1.25, 1], vertical_alignment="top")
+        with h1:
+            st.markdown(
+                '<div class="ov-t">국가별 개별 상관계수</div>'
+                '<div class="ov-s">피어슨 r 기준: <b class="ov-pos-t">양(+)의 상관 (갈등 뒤 무기 주문 증가)</b> vs '
+                '<b class="ov-neg-t">음(−)의 상관 (제재 · 단절로 감소)</b></div>'
+                f'<div class="ov-leg l"><span><i class="dot red"></i>양(+)의 상관 {plus}개국</span>'
+                f'<span><i class="dot blue"></i>음(−)의 상관 {minus}개국</span></div>', unsafe_allow_html=True)
+        with h2:
+            with st.container(key="ov_lag_box"):          # 작은 알약 단추 (띠 모양 tabbar 는 칸이 좁아 글자가 잘림)
+                st.segmented_control("시차", opts, default=opts[LAG_DEFAULT], key=LAG_KEY,
+                                     label_visibility="collapsed", width="stretch",
+                                     help="리스크가 크게 오른 해와 몇 년 뒤의 무기 주문을 견줄지 · ★ = 기본(1년 뒤)")
+            st.markdown(f'<div class="ov-chip" title="흔히 «약한 상관» 의 경계로 쓰는 값. 통계적 유의성 기준이 아님">'
+                        f'약한 상관 기준선 ±{LIM:.2f}</div>', unsafe_allow_html=True)
+        st.markdown(_diverging(per1, LIM), unsafe_allow_html=True)
         note("<b>기준선을 넘는 국가는 소수</b><br>"
              + (f"±{LIM} 를 넘는 국가는 <b>{' · '.join(strong)}</b> 로, 방향도 서로 일치하지 않습니다. " if strong
                 else f"이 시점에서는 ±{LIM} 를 넘는 국가가 없습니다. ")
@@ -603,7 +683,7 @@ PAGES = {
     "중동 전체 결과": page_1_corr,
     "증가 케이스": page_2_up,
     "감소 케이스": page_3_down,
-    "결론": page_4_conclusion,
+    "종합 결론": page_4_conclusion,
 }
 
 
@@ -621,10 +701,13 @@ def page():
     b_cnt = sum(1 for r in UP if r["shape"] == "B")
 
     with st.container(key="surge_app"):    # CSS · 밝은 테마 규칙이 이 상자(.st-key-surge_app)만 골라 칠한다
-        st.markdown(f"<style>{_scoped_css(CSS)}</style>", unsafe_allow_html=True)
-        st.subheader("리스크의 변화와 무기 수입은 어떤 관계를 보이는가?")   # 원본: st.title
-        choice = tabbar("쪽 고르기", list(PAGES), key="surge_page")
-        st.write("")
+        st.markdown(f"<style>{_scoped_css(CSS + OV_CSS)}</style>", unsafe_allow_html=True)
+        # (2026-10-01) 맨 위 물음(원본 st.title)은 뺐다 — 페이지 제목 · 부제로 충분
+        if st.session_state.get("surge_page") == "결론":       # 예전 이름으로 저장된 상태
+            st.session_state["surge_page"] = "종합 결론"
+        _, mid, _ = st.columns([0.6, 3, 0.6])
+        with mid:
+            choice = tabbar("쪽 고르기", list(PAGES), key="surge_page")
         PAGES[choice or list(PAGES)[0]]()          # 고른 쪽만 그린다
 
         st.caption("자료 · GDELT 1.0 (국가별 월별 리스크) × SIPRI Arms Transfers (주문 연도 TIV) · 중동 16개국 · 1980~2025")
