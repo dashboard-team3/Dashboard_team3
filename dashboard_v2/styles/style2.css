@@ -3,13 +3,25 @@
    본문 전체 = 나눔고딕 (Google Fonts) · 사이드바 대시보드 제목과 각 메뉴 페이지 제목(h1) = 에이투지체 (눈누 CDN)
    그래프(Plotly) 글꼴은 dashboard/theme.py 의 FONT_FAMILY 가 맞춘다. */
 @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap');
+
+@font-face {
+    font-family: 'A2z';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/에이투지체-4Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'A2Z';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/에이투지체-5Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-display: swap;
+}
 @font-face {
     font-family: "A2Z";
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/에이투지체-7Bold.woff2') format('woff2');
     font-weight: 700;
     font-display: swap;
 }
-
 @font-face {
     font-family: "A2Z";
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/에이투지체-8ExtraBold.woff2') format('woff2');
@@ -1847,6 +1859,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
    구조: stButtonGroup > (숨은 라벨) + div(버튼들) — 띠 모양은 안쪽 div 에 준다. */
 [class*="st-key-tabbar-"] > [data-testid="stElementContainer"] {
     width: 100% !important;
+    font-family: "A2Z", "Nanum Gothic", sans-serif !important;
 }
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] {
@@ -1885,7 +1898,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button p {
     font-size: 15px !important;
-    font-weight: 600 !important;
+    font-weight: 400 !important;
     color: #8b98ad !important;
 }
 
