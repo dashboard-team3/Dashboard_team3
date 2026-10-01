@@ -132,65 +132,204 @@ def _label_placement(radius, side):
 # 패널 높이는 style2.css에서 화면 높이(100vh)에 맞춰 정하고, 차트는 그 안의 남은 높이를 채운다.
 
 
+# (2026-10-01) 중동_스토리맵의 지도 모양 · LIVE 패널 · 범례 상자를 가져왔다.
+# 나라 면을 오늘 사건 수로 주황 한 색의 밝기로 칠하고, 이름 · 숫자를 나라 위에 적는다.
+SEQ_DARK = ["#262a33", "#4a3a33", "#7d4f36", "#b8673b", "#e98a55", "#f6b98d"]    # 스토리맵과 같은 주황
+SEQ_LIGHT = ["#f4ede7", "#f6d6bf", "#f1b48a", "#e98a55", "#cf6430", "#a8481f"]
+
+
+# 나라: (실제 위치 위도, 경도, 이름 위도, 경도)
+# 레반트 3곳은 지중해 쪽 왼편, 걸프 3곳은 바다 쪽 오른편에 한 줄로 적는다.
+LABEL_OUT = {
+    "레바논": (33.9, 35.8, 35.0, 33.4), "이스라엘": (31.6, 34.85, 33.6, 32.8), "팔레스타인": (31.9, 35.25, 32.2, 32.3),
+    "쿠웨이트": (29.3, 47.7, 29.7, 49.2), "바레인": (26.05, 50.55, 27.0, 51.6), "카타르": (25.3, 51.2, 25.7, 52.3),
+}
+LEFT_SIDE = {"레바논", "이스라엘", "팔레스타인"}
+
+
+def _scale(colors):
+    return [[i / (len(colors) - 1), c] for i, c in enumerate(colors)]
+
+
 def draw_map():
-    """오늘(UTC) 실시간 이벤트를 나라별 원으로 그린다. 타일 지도라 패널 폭을 꽉 채운다."""
+    """오늘(UTC) 나라별 사건 수로 중동 16개국 면을 칠한다. 이웃 땅은 흐리게 깔고,
+    최근 1시간 안에 사건이 난 나라는 빨간 점이 깜빡인다. 범례는 왼쪽 범례 상자(live_legend)."""
+    from sources.relations import COUNTRIES as ISO_KR
+    kr_iso = {v: k for k, v in ISO_KR.items()}
+    light = theme.is_light()
     df = realtime.load_day(realtime.today_utc())
     stats = realtime.country_stats(df)
-    totals = realtime.category_totals(df)
-
-    # 원 크기(px): 건수의 제곱근에 비례 (168건과 2건이 둘 다 읽히도록)
-    stats["size"] = stats["count"].apply(lambda n: min(20 + 4 * n ** 0.5, 60) if n else 0)   # 숫자 15px가 들어가게
-    stats["color"] = stats["top_category"].map(
-        lambda c: realtime.CATEGORIES[c]["color"] if c in realtime.CATEGORIES else "rgba(0,0,0,0)")
+    stats["iso"] = stats["country"].map(kr_iso)
     stats["hover"] = stats.apply(lambda r: (
         f"<b>{r['country']}</b> 오늘 {r['count']}건<br>"
         + "<br>".join(f"{cat} {n}" for cat, n in r["by_category"].items() if n)
         + (f"<br>최다 상대 {r['top_partner']}" if r["top_partner"] else "")
     ) if r["count"] else f"<b>{r['country']}</b> 오늘 0건", axis=1)
-    active = stats[stats["count"] > 0]
+    poly = stats.dropna(subset=["iso"])
+    zmax = max(1.0, float(poly["count"].max()) ** 0.5)
 
     fig = go.Figure()
-    # 1) 원
-    fig.add_trace(go.Scattermap(
-        lat=active["lat"], lon=active["lon"], mode="markers",
-        marker=dict(size=active["size"], color=active["color"], opacity=0.9),
-        customdata=active["hover"], hovertemplate="%{customdata}<extra></extra>",
-    ))
-    # 2) 원 안 숫자
-    fig.add_trace(go.Scattermap(
-        lat=active["lat"], lon=active["lon"], mode="text",
-        text=active["count"].astype(str), textfont=dict(color="#ffffff", size=15),
-        hoverinfo="skip",
-    ))
-    # 3) 나라 이름: Plotly 트레이스로 그리지 않는다. Plotly 는 다시 그릴 때마다 자기 레이어를 초기화해 이름이 원 한가운데로
-    #    튀었다(로딩 중 떨림). 이름 · 위치 · 붙일 방향 · 거리 · 색을 layout.meta 로 보내면, 브라우저 스크립트가 지도 엔진에
-    #    우리 이름표 레이어를 따로 올린다. 그 레이어는 Plotly 가 건드리지 않는다.
-    label_meta = {
-        "names": [{"name": r.label, "lat": float(r.lat), "lon": float(r.lon),
-                   "anchor": _label_placement(r.size / 2, r.side)[0], "offset": _label_placement(r.size / 2, r.side)[1]}
-                  for r in stats.itertuples()],
-        "color": "#e5eaf3", "base": LABEL_FONT,
-    }
+    # 1) 나라 면: 사건 수의 제곱근으로 칠한다 (54건과 2건이 둘 다 구분되게)
+    fig.add_trace(go.Choropleth(
+        locations=poly["iso"], z=poly["count"] ** 0.5, locationmode="ISO-3", showscale=False,
+        colorscale=_scale(SEQ_LIGHT if light else SEQ_DARK), zmin=0, zmax=zmax,
+        marker_line_color="#ffffff" if light else "#0f1116", marker_line_width=0.9,
+        customdata=poly["hover"], hovertemplate="%{customdata}<extra></extra>"))
+    # 2) 이름 + 숫자. 좁은 나라(LABEL_OUT)는 이름을 바깥으로 빼고 가는 선으로 잇는다
+    name_col = "#1c1a17" if light else "#ffffff"
+    pos = {r.country: (LABEL_OUT[r.country][2:] if r.country in LABEL_OUT else (r.lat, r.lon)) for r in stats.itertuples()}
+    llat, llon = [], []
+    for name, (a_lat, a_lon, t_lat, t_lon) in LABEL_OUT.items():
+        llat += [a_lat, t_lat, None]; llon += [a_lon, t_lon, None]
+    fig.add_trace(go.Scattergeo(lat=llat, lon=llon, mode="lines", hoverinfo="skip",
+                                line=dict(width=0.8, color="rgba(28,26,23,.45)" if light else "rgba(255,255,255,.45)")))
+    fig.add_trace(go.Scattergeo(
+        lat=[pos[c][0] for c in stats["country"]], lon=[pos[c][1] for c in stats["country"]],
+        mode="text", hoverinfo="skip",
+        text=[(f"<b>{lb}</b> {n}" if c in LABEL_OUT else f"<b>{lb}</b><br>{n}")
+              for c, lb, n in zip(stats["country"], stats["label"], stats["count"])],
+        textposition=[("middle left" if c in LEFT_SIDE else "middle right") if c in LABEL_OUT else "middle center"
+                      for c in stats["country"]],
+        textfont=dict(size=13, color=name_col, family="JetBrains Mono, Pretendard, sans-serif")))
+    # 3) 최근 1시간 안에 사건이 난 나라: 빨간 점 (CSS 로 깜빡임)
+    hot = live_side_data(realtime.last_slot() or "")["active"]
+    act = stats[stats["country"].isin(hot)]
+    if len(act):
+        fig.add_trace(go.Scattergeo(
+            lat=[LABEL_OUT[c][0] if c in LABEL_OUT else la - 1.0 for c, la in zip(act["country"], act["lat"])],
+            lon=[LABEL_OUT[c][1] if c in LABEL_OUT else lo for c, lo in zip(act["country"], act["lon"])],
+            mode="markers", hoverinfo="skip",
+            marker=dict(size=9, color="#e66767", line=dict(width=0))))
     fig.update_layout(
-        map=dict(style="carto-positron-nolabels" if theme.is_light() else "carto-darkmatter-nolabels", center=MAP_CENTER, zoom=MAP_ZOOM),
-        meta={"labels": label_meta},                    # 나라 이름표 자료 (브라우저 스크립트가 읽는다)
+        geo=dict(projection_type="mercator", fitbounds="locations", visible=True,
+                 showland=True, landcolor="#dfe5ef" if light else "#1a1d25",
+                 showcountries=True, countrycolor="#c9d2e0" if light else "#262a34", countrywidth=0.6,
+                 showcoastlines=False, showocean=False, showlakes=False, showframe=False,
+                 bgcolor="rgba(0,0,0,0)"),
         margin=dict(l=0, r=0, t=0, b=0), showlegend=False, autosize=True,
-        paper_bgcolor="rgba(0,0,0,0)",
-        uirevision="live-map",   # 1분마다 다시 그려도 사용자가 옮긴 확대·위치를 유지
+        paper_bgcolor="rgba(0,0,0,0)", dragmode="pan",
+        uirevision="live-geo",   # 1분마다 다시 그려도 사용자가 옮긴 확대·위치를 유지
         hoverlabel=dict(bgcolor="#1e293b", bordercolor="#334155", font=dict(color="#e5eaf3", size=15)))
+    st.markdown("""<style>
+      .st-key-live_map_chart .js-plotly-plot {opacity: 1 !important; animation: none !important;}   /* 타일 지도용 '준비될 때까지 숨김' 끔 */
+      .st-key-main_panel, .st-key-feed_panel {min-height: 840px !important;}   /* 오른쪽에 LIVE · 사건이 함께 들어가서 조금 높게 */
+
+      .st-key-live_map_chart .stPlotlyChart {-webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 88%, transparent 100%);
+        mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 88%, transparent 100%);}
+      .st-key-live_map_chart .scattergeo path.point {animation: lvping 1.6s ease-in-out infinite;}
+      @keyframes lvping {0%, 100% {opacity: 1;} 50% {opacity: .15;}}
+      .st-key-main_panel:has(.st-key-live_map_chart) {background:
+        radial-gradient(1000px 600px at 45% 45%, #1a1e28 0%, #0f1116 70%) !important;}
+      html[data-theme="light"] .st-key-main_panel:has(.st-key-live_map_chart) {background:
+        #eef3fb !important; border-color: #cfdcf3 !important;}   /* 연한 하늘색 */
+    </style>""", unsafe_allow_html=True)
 
     # 마우스를 올리면 오른쪽 위에 확대(+)·축소(−)·처음 위치 버튼만 보인다. 휠 확대는 스크롤과 충돌해서 끈다.
-    st.plotly_chart(theme.adapt(fig), key="live_map_chart", width="stretch", height="stretch",
+    st.plotly_chart(fig, key="live_map_chart", width="stretch", height="stretch",
                     config={"responsive": True, "scrollZoom": False, "displaylogo": False,
-                            "modeBarButtons": [["zoomInMap", "zoomOutMap", "resetViewMap"]]})
-    legend = "".join(
-        f'<span><i style="background:{c["color"]}"></i>{cat} ({totals[cat]})</span>'
-        for cat, c in realtime.CATEGORIES.items())
-    st.markdown(
-        f'<div class="map-legend">{legend}'
-        '<em>원 크기 = 이벤트 수 · 색 = 그 나라에서 가장 많은 사건 유형 · '
-        '한 사건은 양쪽 나라에 모두 세므로 원 숫자의 합은 오늘 누적의 2배입니다</em></div>',
-        unsafe_allow_html=True)
+                            "modeBarButtons": [["zoomInGeo", "zoomOutGeo", "resetGeo"]]})
+    return int(poly["count"].max()) if len(poly) else 0
+
+
+@st.cache_data(ttl=60)
+def live_side_data(slot):
+    """LIVE 패널 숫자 (스토리맵 build_live 와 같은 기준).
+    최근 24시간 건수 · 최근 14일 하루 건수(한국 날짜, 오늘은 진행 중) · 오늘을 뺀 7일 평균 ·
+    24시간 최다 국가쌍 3개 · 최근 1시간 안에 사건이 난 나라."""
+    empty = {"slot_kst": None, "mins": None, "n24": 0, "daily": [], "avg7": 0.0, "pairs": [], "active": []}
+    if not slot:
+        return empty
+    last = pd.to_datetime(slot, format="%Y%m%d%H%M%S")
+    days = [(last - pd.Timedelta(days=i)).strftime("%Y%m%d") for i in range(15, -1, -1)]
+    frames = [f for f in (realtime.load_day(d) for d in days) if not f.empty]
+    if not frames:
+        return empty
+    ev = pd.concat(frames, ignore_index=True)
+    ev["ts"] = pd.to_datetime(ev["TIMESTAMP"], format="%Y%m%d%H%M%S")
+    ev = ev[ev["ts"] <= last]
+    day = ev[ev["ts"] > last - pd.Timedelta(hours=24)]
+
+    kst_day = (ev["ts"] + pd.Timedelta(hours=9)).dt.normalize()
+    today = (last + pd.Timedelta(hours=9)).normalize()
+    per_day = kst_day.value_counts()
+    daily = [{"d": f"{d:%m.%d}", "n": int(per_day.get(d, 0)), "today": bool(d == today)}
+             for d in pd.date_range(today - pd.Timedelta(days=13), today, freq="D")]
+    avg7 = float(sum(x["n"] for x in daily[-8:-1]) / 7)
+
+    pairs = (day.groupby(["Actor1Country_KR", "Actor2Country_KR"]).size()
+             .sort_values(ascending=False).head(3))
+    hot = day[day["ts"] > last - pd.Timedelta(hours=1)]
+    now = pd.Timestamp.now(tz="UTC").tz_localize(None)
+    return {
+        "slot_kst": (last + pd.Timedelta(hours=9)).strftime("%H:%M"),
+        "mins": max(0, int((now - last).total_seconds() // 60)),
+        "n24": int(len(day)), "daily": daily, "avg7": round(avg7, 1),
+        "pairs": [(a, b, int(n)) for (a, b), n in pairs.items()],
+        "active": sorted(set(hot["Actor1Country_KR"]) | set(hot["Actor2Country_KR"])),
+    }
+
+
+def live_panel():
+    """왼쪽 LIVE 패널: 최종 수집 · 최근 24시간 건수(7일 평균 대비) · 14일 막대 · 최다 국가쌍."""
+    L = live_side_data(realtime.last_slot() or "")
+    if not L["slot_kst"]:
+        st.markdown('<div class="lv"><div class="lv-hd"><span class="lv-dot off"></span>LIVE</div>'
+                    '<div class="lv-when stale">실시간 수집기 상태를 찾을 수 없습니다.</div></div>',
+                    unsafe_allow_html=True)
+        return
+    m = L["mins"]
+    ago = f"{m}분 전" if m < 60 else f"{m // 60}시간 {m % 60}분 전"
+    when = (f'<div class="lv-when stale">⚠ 최종 수집 {L["slot_kst"]} KST · {ago} (수집 지연)</div>' if m > 45
+            else f'<div class="lv-when">최종 수집 {L["slot_kst"]} KST · {ago}</div>')
+    delta = ""
+    if L["avg7"]:
+        diff = round((L["n24"] - L["avg7"]) / L["avg7"] * 100)
+        delta = (f'<span class="lv-delta {"up" if diff > 0 else "down"}">'
+                 f'{"▲" if diff > 0 else "▼"}{abs(diff)}%</span>')
+    top = max([x["n"] for x in L["daily"]] + [L["avg7"], 1])
+    bars = "".join(f'<i class="{"today" if x["today"] else ""}" style="height:{max(4, x["n"] / top * 100):.0f}%" '
+                   f'title="{x["d"]} {x["n"]}건{" (진행 중)" if x["today"] else ""}"></i>' for x in L["daily"])
+    pairs = "".join(f'<div class="lv-pair"><span>{a} → {b}</span><b>{n}</b></div>' for a, b, n in L["pairs"]) \
+        or '<div class="lv-pair"><span>최근 24시간 사건 없음</span></div>'
+    st.markdown(f"""
+<div class="lv">
+  <div class="lv-hd"><span class="lv-dot"></span>LIVE<span class="lv-mono">GDELT · 15분</span></div>
+  {when}
+  <div class="lv-cnt">최근 24시간 <b>{L["n24"]:,}</b>건{delta}</div>
+  <div class="lv-sub">최근 7일 일평균 {L["avg7"]:,.0f}건 대비</div>
+  <div class="lv-spark" title="최근 14일 하루 사건 수 (한국 날짜)">{bars}
+    <b class="lv-avg" style="bottom:{L["avg7"] / top * 100:.0f}%" title="7일 평균 {L["avg7"]}건"></b></div>
+  <div class="lv-ax"><span>{L["daily"][0]["d"]}</span><span>점선: 7일 평균</span><span>오늘</span></div>
+  <div class="lv-sec">최다 발생 국가쌍 (24시간)</div>
+  {pairs}
+</div>""", unsafe_allow_html=True)
+
+
+def live_legend():
+    """지도 칸 아래 범례 상자: 왼쪽 색 막대 · 눈금, 오른쪽 뜻 · 유형별 건수 · 출처."""
+    light = theme.is_light()
+    seq = SEQ_LIGHT if light else SEQ_DARK
+    df = realtime.load_day(realtime.today_utc())
+    totals = realtime.category_totals(df)
+    max_count = int(realtime.country_stats(df)["count"].max())
+    mid = round((max_count ** 0.5 / 2) ** 2)          # 색 막대 가운데 = 제곱근 척도의 절반
+    cats = "".join(f'<span><i style="background:{c["color"]}"></i>{cat} {totals[cat]}</span>'
+                   for cat, c in realtime.CATEGORIES.items())
+    slot = realtime.last_slot()
+    upd = f" · 갱신 {realtime.slot_to_kst(slot)} KST" if slot else ""
+    st.markdown(f"""
+<div class="lv-lg">
+  <div class="lv-lg-a">
+    <div class="lv-lg-t">오늘(UTC) 나라별 사건 수</div>
+    <div class="lv-grad" style="background:linear-gradient(90deg,{','.join(seq)})"></div>
+    <div class="lv-ticks"><span>0</span><span>{mid}</span><span>{max_count}건</span></div>
+  </div>
+  <div class="lv-lg-b">
+    <div class="lv-cats">{cats}</div>
+    <div class="lv-note">한 사건은 주체 · 대상 두 나라에 모두 셈 · <span class="lv-dot sm"></span> 최근 1시간 안에 사건</div>
+    <div class="lv-note lv-src">출처 GDELT 2.0 → GDELT2_중동_선택EventCode_필터링 (RDS MySQL pjl){upd}</div>
+  </div>
+</div>""", unsafe_allow_html=True)
 
 
 def draw_network(choice):
@@ -430,8 +569,8 @@ VIEWS = {
 @st.fragment(run_every="60s")
 def live_main_panel():
     """왼쪽 큰 패널. 지도와 네트워크를 버튼으로 바꿔 본다. 60초마다 이 패널만 다시 그린다."""
+    view = st.session_state.get("main_view") or "지도"
     with st.container(border=True, key="main_panel"):
-        view = st.session_state.get("main_view") or "지도"
         title, hint = VIEWS[view]
         choice = "전체"
         # 제목과 버튼을 한 줄에 두되, 폭이 모자라면 버튼 묶음이 제목 아래 줄로 내려간다 (잘리지 않게).
@@ -452,6 +591,7 @@ def live_main_panel():
             draw_network(choice)
         else:
             draw_map()
+            live_legend()   # 지도 칸 아래 범례 상자 (스토리맵)
         fit_charts_to_panel()
 
 
@@ -463,6 +603,7 @@ def live_feed():
     paused = st.session_state.get("feed_paused", False)
 
     with st.container(border=True, key="feed_panel"):
+        live_panel()   # (2026-10-01) 위: 스토리맵 LIVE 패널 · 아래: 최근 사건
         # 제목은 남는 폭을 쓰고, 버튼은 글자 폭만큼 확보한다. 좁은 화면에서도 버튼이 잘리지 않는다.
         with st.container(horizontal=True, vertical_alignment="center", gap="small"):
             st.markdown('<div class="map-head" style="border:none;padding-bottom:0"><b>최근 사건</b> '
@@ -522,11 +663,9 @@ def page():
         st.markdown(f'<div class="summary">오늘(UTC) 중동 국가 간 갈등 사건 <b>{k["total"]:,}건</b> · '
                     f'가장 많이 관여한 나라는 <b>{name}</b>({count}건, 최다 상대 {partner})</div>', unsafe_allow_html=True)
 
-    live_kpis()
+    # (2026-10-01) KPI 카드 3개(live_kpis)는 빼고, 같은 내용을 오른쪽 위 LIVE 패널로
 
-
-
-    left, right = st.columns([1.8, 1], gap="medium")   # 왼쪽(지도·네트워크)을 넓게
+    left, right = st.columns([2.3, 1], gap="medium")   # 왼쪽(지도·네트워크)을 더 넓게 (2026-10-01: 1.8 → 2.3)
 
     with left:
         live_main_panel()

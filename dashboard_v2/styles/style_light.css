@@ -867,3 +867,23 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] p { color: #ffffff !important; }
 [data-testid="stButtonGroup"] button[aria-checked="true"] { border-color: #4f46e5 !important; }
+
+/* 실시간 (2026-10-01): 지도 · 최근 사건 칸 바탕을 연한 하늘색으로 */
+.st-key-main_panel, .st-key-feed_panel, .st-key-feed_panel .feed-item, .st-key-main_panel .map-legend {
+    background: #eef3fb !important;
+    border-color: #cfdcf3 !important;
+}
+
+/* 실시간 LIVE 패널 · 범례 상자 (밝은 테마) */
+.lv, .lv-lg, .lv-pair { color: #1c1a17 !important; }
+.lv-cnt b { color: #1c1a17 !important; }
+.lv-cnt, .lv-cats { color: #374151 !important; }
+.lv-mono, .lv-when, .lv-sub, .lv-ax, .lv-sec, .lv-ticks, .lv-note { color: #6b7280 !important; }
+.lv-when.stale { color: #b45309 !important; }
+.lv-spark i:not(.today) { background: #8fb0e0 !important; }
+.lv-avg { border-top-color: rgba(28,26,23,.55) !important; }
+.lv-lg, .lv-src { border-top-color: #cfdcf3 !important; }
+.lv-delta.up { color: #c2410c !important; }
+.lv-delta.down { color: #2563eb !important; }
+.st-key-feed_panel .lv { border-bottom-color: #cfdcf3 !important; }
+.st-key-main_panel .lv-lg, .st-key-main_panel .lv-src { border-top-color: #cfdcf3 !important; }

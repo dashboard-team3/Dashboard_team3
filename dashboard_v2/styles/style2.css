@@ -2671,3 +2671,45 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 [data-testid="stButtonGroup"] button[aria-checked="true"] span {
     color: #a78bfa !important;
 }
+
+/* 실시간 (2026-10-01): 오른쪽 위 LIVE 패널 · 지도 칸 아래 범례 상자 (중동_스토리맵에서 가져옴) */
+.lv { color: #e8e9ec; }
+.lv-hd { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 16px; }
+.lv-mono { margin-left: auto; color: #9da1ab; font-weight: 500; font-size: 12px; font-family: "JetBrains Mono", monospace; }
+.lv-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #e66767; animation: lvpulse 1.6s infinite; }
+.lv-dot.off { background: #6b7280; animation: none; }
+.lv-dot.sm { width: 7px; height: 7px; vertical-align: 0; }
+@keyframes lvpulse { 0% { box-shadow: 0 0 0 0 rgba(230,103,103,.7); } 70% { box-shadow: 0 0 0 9px rgba(230,103,103,0); } 100% { box-shadow: 0 0 0 0 rgba(230,103,103,0); } }
+.lv-when { color: #9da1ab; font-size: 13px; margin-top: 3px; }
+.lv-when.stale { color: #fbbf24; }
+.lv-cnt { margin-top: 12px; font-size: 14px; color: #c9ccd4; }
+.lv-cnt b { font-size: 26px; color: #ffffff; font-family: "JetBrains Mono", monospace; margin: 0 2px; }
+.lv-delta { font-size: 12px; margin-left: 4px; font-family: "JetBrains Mono", monospace; }
+.lv-delta.up { color: #f0a35e; }
+.lv-delta.down { color: #6ea8f0; }
+.lv-sub { color: #9da1ab; font-size: 12px; margin-top: 1px; }
+.lv-spark { position: relative; display: flex; align-items: flex-end; gap: 3px; height: 44px; margin: 10px 0 2px; }
+.lv-spark i { flex: 1; background: #5e7fb8; border-radius: 2px 2px 0 0; min-height: 2px; opacity: .85; }
+.lv-spark i.today { background: repeating-linear-gradient(45deg, rgba(224,120,74,.85) 0 3px, rgba(224,120,74,.35) 3px 6px); opacity: 1; }
+.lv-avg { position: absolute; left: 0; right: 0; height: 0; border-top: 1.5px dashed rgba(255,255,255,.6); pointer-events: none; }
+.lv-ax { display: flex; justify-content: space-between; color: #9da1ab; font-size: 11px; font-family: "JetBrains Mono", monospace; }
+.lv-sec { font-size: 13px; color: #9da1ab; margin: 14px 0 4px; font-weight: 700; }
+.lv-pair { display: flex; justify-content: space-between; font-size: 14px; padding: 2px 0; color: #e8e9ec; }
+.lv-pair b { font-family: "JetBrains Mono", monospace; }
+.lv-lg { color: #e8e9ec; border-top: 1px solid rgba(255,255,255,.08); padding-top: 12px; }
+.lv-lg-t { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+.lv-grad { height: 12px; border-radius: 6px; }
+.lv-ticks { display: flex; justify-content: space-between; color: #9da1ab; font-size: 13px; margin-top: 6px; font-family: "JetBrains Mono", monospace; }
+.lv-note { color: #9da1ab; font-size: 13px; margin-top: 8px; line-height: 1.5; }
+.lv-src { padding-top: 8px; border-top: 1px solid rgba(255,255,255,.08); }
+.lv-cats { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 13px; color: #c9ccd4; }
+.lv-cats i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+/* LIVE 패널 아래 구분선 (최근 사건 칸 위쪽) */
+.st-key-feed_panel .lv { padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,.08); }
+/* 지도 칸 아래 범례 상자: 왼쪽 색 막대 · 오른쪽 설명 */
+.st-key-main_panel .lv-lg { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 6px 28px; align-items: start; padding-top: 12px; }
+.st-key-main_panel .lv-lg-t { margin-bottom: 8px; }
+.st-key-main_panel .lv-cats { margin-top: 0; }
+.st-key-main_panel .lv-note { margin-top: 5px; }
+.st-key-main_panel .lv-src { padding-top: 5px; }
+@media (max-width: 1200px) { .st-key-main_panel .lv-lg { grid-template-columns: 1fr; } }
