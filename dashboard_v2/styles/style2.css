@@ -1750,11 +1750,12 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 .page-sub {
-    font-size: 16px;
+    font-size: 17px;
     color: #b8c2d3;
     margin: -6px 0 18px;
     line-height: 1.6;
     word-break: keep-all;
+    letter-spacing: -0.3px;
 }
 
 .tip.term {

@@ -41,7 +41,7 @@ def _examples():
 def page():
     st.title("시작하기")
     st.markdown(
-        '<div class="h-s">중동에서 발생한 뉴스(GDELT)를 기반으로 갈등을 파악하고, 무기 계약(SIPRI) · 교역 기록(UN Comtrade)에 대한 정보를 제공합니다.</div>', unsafe_allow_html=True)
+        '<div class="page-sub">중동에서 발생한 뉴스(GDELT)를 기반으로 갈등을 파악하고, 무기 계약(SIPRI) · 교역 기록(UN Comtrade)에 대한 정보를 제공합니다.</div>', unsafe_allow_html=True)
 
     # ── ③ 메뉴마다 알 수 있는 것
     st.markdown('<div class="st-h">구성 페이지</div>', unsafe_allow_html=True)
