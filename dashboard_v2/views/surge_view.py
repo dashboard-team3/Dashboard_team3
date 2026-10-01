@@ -86,6 +86,29 @@ CSS = f"""
     .flow {{flex-direction:column;}} .farr {{display:none;}}
   }}
 
+  /* 고른 사례 한 건의 «그 해 무슨 일이 있었나» 칸 (2026-10-01) */
+  .case-x {{background:{CARD}; border:1px solid {LINE}; border-radius:14px;
+            padding:1.1rem 1.3rem; height:100%;}}
+  .case-h {{font-size:19px; font-weight:800; color:#fff; margin-bottom:.8rem;}}
+  .case-r {{font-size:16px; color:#cbd5e1; padding-bottom:.8rem; border-bottom:1px solid {LINE};}}
+  .case-r b {{font-size:21px; color:{GOLD}; font-variant-numeric:tabular-nums;}}
+  .case-r span {{display:block; font-size:14px; color:{MUTE}; margin-top:.2rem;}}
+  .case-p {{padding:.8rem 0; border-bottom:1px solid {LINE};}}
+  .case-p span {{display:flex; align-items:center; gap:.55rem; font-size:16px;
+                 color:{INK}; margin-bottom:.35rem;}}
+  .case-p i {{font-style:normal; font-size:12px; font-weight:700; color:{BG};
+              background:{MUTE}; border-radius:50%; width:1.2rem; height:1.2rem;
+              display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto;}}
+  .case-p b {{margin-left:auto; color:{RED}; font-variant-numeric:tabular-nums;}}
+  .case-p em {{display:block; font-style:normal; font-size:14px; color:{MUTE}; margin-top:.3rem;}}
+  .case-e {{margin-top:.8rem; display:inline-block; font-size:14px; font-weight:700;
+            color:{BG}; background:{GOLD}; border-radius:6px; padding:.15rem .5rem;}}
+  .case-w {{margin-top:.8rem; font-size:16px; color:#cbd5e1; line-height:1.65;
+            word-break:keep-all;}}
+  .case-w span {{display:block; font-size:13px; color:{MUTE}; margin-top:.35rem;}}
+  .case-n {{margin-top:.9rem; padding-top:.8rem; border-top:1px solid {LINE};
+            font-size:13px; color:{MUTE}; line-height:1.6; word-break:keep-all;}}
+
 """
 
 CFG = {"displayModeBar": False}
@@ -152,8 +175,12 @@ def _cell_box(i, cols, nrow):
     h = 1.0 / nrow                       # 칸 하나의 세로 몫
     x0 = 0.02 + (i % cols) * w           # 이 칸의 왼쪽 끝
     top = 1.0 - (i // cols) * h          # 이 칸의 위쪽 끝
-    return ([x0, x0 + w * 0.80],                     # 가로: 오른쪽 20%는 다음 칸과의 사이
-            [top - h * 0.62, top - h * 0.20],        # 세로: 위 20%는 제목 두 줄 자리
+    # 오른쪽 20%는 «다음 칸과의 사이». 칸이 하나뿐이면 옆 칸이 없으므로 가로·세로를 다 쓴다 (2026-10-01)
+    one = cols == 1
+    gap = 1.0 if one else 0.80
+    y_lo, y_hi = (0.80, 0.18) if one else (0.62, 0.20)   # 아래는 x축 글자 자리
+    return ([x0, x0 + w * gap],
+            [top - h * y_lo, top - h * y_hi],
             x0 - 0.012, top - h * 0.03, top - h * 0.115)
 
 
@@ -162,7 +189,92 @@ def _bar_colors(r, after):
     return [GOLD if y == r["year"] else (MUTE if y < r["year"] else after) for y in r["years"]]
 
 
-def grid(rows, cols=5, bar_color=None, sub=None, height_per_row=290):
+def timeline(rows, key="up_timeline", color_of=None, text_of=None):
+    """0년 타임라인 (2026-10-01): x = 해 · y = 나라 · 색 = 변화 유형 · 점 크기 = 증가폭.
+
+    사례가 나라×연도라 지도로는 한 나라의 여러 해를 가릴 수 없다. 시간 축으로 깔면
+    18건이 한 화면에 다 남으면서 «시기가 뭉치는 것» 까지 보인다.
+    점을 고르면 그 번호를 돌려준다 (아래 사례 카드가 그것을 그린다)."""
+    d = pd.DataFrame(rows)
+    order = d.groupby("ko")["year"].min().sort_values(ascending=False).index.tolist()
+    col = color_of or (lambda r: A.SHAPE_COLOR[r["shape"]])
+    txt = text_of or (lambda r: r["shape"])
+    fig = go.Figure(go.Scatter(
+        x=[r["year"] for r in rows], y=[r["ko"] for r in rows],
+        mode="markers+text", text=[txt(r) for r in rows], textposition="middle center",
+        textfont=dict(size=11, color="#ffffff", family="Malgun Gothic, sans-serif"),
+        marker=dict(size=[15 + 11 * (abs(r["diff"]) - 1.0) for r in rows],
+                    color=[col(r) for r in rows], line=dict(width=1.2, color=BG)),
+        customdata=[[r["ko"], r["year"], A.SHAPES[r["shape"]][0], r["diff"]] for r in rows],
+        hovertemplate="<b>%{customdata[0]} · %{customdata[1]}년</b><br>%{customdata[2]}"
+                      "<br>변화폭 %{customdata[3]:+.2f} 칸<extra></extra>", showlegend=False))
+    fig.update_layout(paper_bgcolor=BG, plot_bgcolor=BG, height=60 + 34 * len(order),
+                      font=dict(color=INK, size=13, family="Malgun Gothic, sans-serif"),
+                      margin=dict(l=10, r=20, t=16, b=10), clickmode="event+select",
+                      xaxis=dict(gridcolor=GRID, zeroline=False, dtick=5, tickformat="d",
+                                 range=[min(r["year"] for r in rows) - 2, max(r["year"] for r in rows) + 2]),
+                      yaxis=dict(categoryorder="array", categoryarray=order, gridcolor=GRID, zeroline=False))
+    ev = st.plotly_chart(theme.adapt(fig), width="stretch", config=CFG, on_select="rerun", key=key)
+    pts = (ev or {}).get("selection", {}).get("points", []) if isinstance(ev, dict) else []
+    return pts[0].get("point_index") if pts else None
+
+
+def shape_filter(cnt, key, small=False, none_is_all=True):
+    """A·B·C 단추 한 줄 (2026-10-01). 단추가 곧 범례이자 거르개다 — 색은 그 유형의 그래프 색.
+
+    누르면 «그 유형만» 켜진다. 켜진 것을 다시 누르면 원래대로 돌아간다.
+    none_is_all=True  고른 것이 없으면 «전부 보기» (타임라인)
+    none_is_all=False 고른 것이 없으면 «아무것도 안 보임» (아래 격자 — 눌러야 펼쳐진다)
+    고른 유형 한 글자, 또는 None 을 돌려준다."""
+    cur = st.session_state.get(key)
+    cols = st.columns([1, 1, 1, 5] if small else [1, 1, 1], gap="small", vertical_alignment="center")
+    for i, k in enumerate(("A", "B", "C")):
+        short, desc = A.SHAPES[k]
+        on = (none_is_all and cur is None) or cur == k
+        with cols[i]:
+            with st.container(key=f"shapebtn-{k}-{'sm' if small else 'big'}"):
+                if st.button(f"{k}형 {cnt[k]}건" if small else f"{k}형 · {short} {cnt[k]}건",
+                             key=f"btn_{key}_{k}", width="stretch",
+                             type="primary" if on else "secondary", help=f"{k}형 — {desc}"):
+                    st.session_state[key] = None if cur == k else k
+                    st.rerun()
+    return cur
+
+
+def case_card(r, sub_text=None, bar_color=None):
+    """고른 사례 하나: 왼쪽에 전후 3년 막대, 오른쪽에 «그 해 무슨 일이 있었나».
+
+    상대국·리스크는 우리 자료에서 바로 뽑고, 배경 한 줄만 사람이 적은 것(A.EVENTS)이다.
+    그 둘을 섞어 보이지 않게 배경 줄에는 «직접 적은 배경» 이라고 밝혀 둔다."""
+    risk, tops = A.case_context(r["country"], int(r["year"]))
+    # 두 칸은 CSS 로 같은 높이를 쓴다 (.st-key-casechart · .st-key-casecard). 사례마다 글 길이가
+    # 달라 카드가 길어지므로, 고정 높이 대신 둘 다 그 줄에서 가장 높은 쪽에 맞춘다. (2026-10-01)
+    c1, c2 = st.columns([1.25, 1], gap="medium")
+    with c1:
+        with st.container(key="casechart"):
+            # 칸 제목 아래 한 줄은 «그 유형이 무슨 뜻인지» 로 (증가폭 숫자는 뺐다 — 2026-10-01)
+            sub = sub_text or (lambda x: f"{x['shape']}형 — {A.SHAPES[x['shape']][1]}")
+            grid([r], cols=1, bar_color=bar_color or A.SHAPE_COLOR[r["shape"]], mark_year=True,
+                 sub=sub, height_per_row=360)
+    with c2:
+      with st.container(key="casecard"):
+        st.markdown(
+            f'<div class="case-x"><div class="case-h">{r["ko"]} · {int(r["year"])}년</div>'
+            f'<div class="case-r">그 해 종합 리스크 <b>{risk:.3f}</b>'
+            f'<span>0~1 · 그 해 모든 날의 평균</span></div>'
+            + '<div class="case-p">' + "".join(
+                f'<span><i>{i + 1}</i>{ko}<b>{v:.2f}</b></span>' for i, (_, ko, v) in enumerate(tops))
+            + '<em>리스크가 가장 높았던 상대국</em></div>'
+            + (f'<div class="case-e">{A.EMBARGO[(r["country"], int(r["year"]))]}</div>'
+               if (r["country"], int(r["year"])) in A.EMBARGO else "")
+            + (f'<div class="case-w">{A.EVENTS[(r["country"], int(r["year"]))]}</div>'
+               if (r["country"], int(r["year"])) in A.EVENTS else "")
+            + '<div class="case-n">상대국은 중동 16개국 사이만 셉니다. 미국·러시아 같은 역외 국가는 '
+              '국가쌍 자료에 없어, 실제 교전 상대가 역외인 사례는 여기에 안 나옵니다.</div></div>',
+            unsafe_allow_html=True)
+
+
+def grid(rows, cols=5, bar_color=None, sub=None, height_per_row=290, mark_year=False):
     """사례를 작은 칸으로 늘어놓는다. rows = cases() 의 행 목록.
 
     막대는 그해 실제 주문 TIV.
@@ -188,9 +300,14 @@ def grid(rows, cols=5, bar_color=None, sub=None, height_per_row=290):
             textposition="outside", cliponaxis=False, textfont=dict(size=11),
             hovertemplate="%{x}년 · %{y:,.0f} TIV<extra></extra>", showlegend=False))
 
+        xa = dict(domain=xdom, anchor="y" + ax, showgrid=False, linecolor=LINE, tickfont=dict(size=11))
+        if mark_year:      # 사례 카드: 여섯 해를 다 적고, 급증한 해(0년)를 눈금에 못박는다 (2026-10-01)
+            xa.update(tickmode="array", tickvals=[str(y) for y in r["years"]],
+                      ticktext=[(f"<b>{y}</b><br>급증(0년)" if y == r["year"] else str(y)) for y in r["years"]])
+        else:
+            xa["nticks"] = 3
         fig.update_layout({
-            "xaxis" + ax: dict(domain=xdom, anchor="y" + ax, showgrid=False,
-                               linecolor=LINE, tickfont=dict(size=11), nticks=3),
+            "xaxis" + ax: xa,
             "yaxis" + ax: dict(domain=ydom, anchor="x" + ax, gridcolor=GRID,
                                zeroline=False, tickfont=dict(size=10),
                                rangemode="tozero", nticks=3)})
@@ -201,7 +318,7 @@ def grid(rows, cols=5, bar_color=None, sub=None, height_per_row=290):
 
     fig.update_layout(annotations=ann, paper_bgcolor=BG, plot_bgcolor=BG,
                       font=dict(color=INK, size=14, family="Malgun Gothic, sans-serif"),
-                      margin=dict(l=10, r=10, t=30, b=10), height=height_per_row * nrow)
+                      margin=dict(l=10, r=10, t=30, b=34 if mark_year else 10), height=height_per_row * nrow)
     st.plotly_chart(theme.adapt(fig), width="stretch", config=CFG)
 
 
@@ -292,31 +409,30 @@ def page_2_up():
                      "(0·1·2 에 몰려 있어 상위 25%가 의도한 기준점대로 명확히 구분하기 위해 개월 수로 끊지 않음)")
         lab = {k: f"{k}형 {v[0]}" for k, v in A.SHAPES.items()}
 
-        # 모양으로 걸러 보기. D형(어디에도 맞지 않는 것)은 읽을 것이 없어 화면에서 뺀다.
+        # (2026-10-01) 위 단추 = 타임라인 거르개. 누른 유형«만» 남는다 (안 누르면 전부).
+        #   D형(어디에도 맞지 않는 것)은 읽을 것이 없어 두 곳 모두에서 뺀다.
         cnt = {k: sum(1 for r in UP if r["shape"] == k) for k in A.SHAPES}
-        opts = {f"{k}형 ({cnt[k]})": k for k in ("A", "B", "C") if cnt[k]}
-        pick = st.segmented_control("변화 유형별 사례 보기", list(opts), selection_mode="multi",
-                                    default=list(opts), key="shape_pick")
-        keep = {opts[t] for t in (pick or [])}
+        tl_pick = shape_filter(cnt, "up_shape_tl")
+        keep = {"A", "B", "C"} if tl_pick is None else {tl_pick}
+        ups = sorted([r for r in UP if r["shape"] in keep], key=lambda r: (r["year"], r["ko"]))
 
-        grid(sorted([r for r in UP if r["shape"] in keep], key=lambda r: (r["shape"], -r["diff"])),
-             bar_color=lambda r: A.SHAPE_COLOR[r["shape"]],
-             sub=lambda r: f"{lab[r['shape']]}")
-        g1, g2 = st.columns([1.25, 1])
-        with g1:
-            rows = [
-                {"모양": f"{k}형 · {v[0]}", "건수": cnt[k], "뜻": v[1]}
-                for k, v in A.SHAPES.items()
-                if k != "D"
-            ]
-            st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
-        with g2:
-            # h1, t1_, p1 = STREAK["급증한 해"]
-            # h2, t2_, p2 = STREAK["그 밖의 해"]
-            note(f"<b>선정 사례에서는 증가 시점이 집중되는 양상이 나타났습니다.</b><br>선정된 18개 사례 중 8개(44%)는 갈등 위험 급증 이듬해에 주문 규모가 정점에 이르렀습니다. A형과 B형을 합치면 14개(78%)에서 2년 이내에 정점이 나타났습니다.</br>"
-                 "다만 이는 <b>선정된 사례의 분포</b>이므로, 전체 국가에서 동일한 양상이 나타난다고 일반화하기는 어렵습니다.", "red")
-        note(f"<b>국가별로 주문 규모가 정점에 이르는 시점이 달랐습니다.</b></br>"
-             "이러한 시차를 고려해 다음 페이지에서 주문 규모가 감소한 사례도 살펴봅니다.", "red")
+        # 거르개를 바꾸면 고른 점의 번호가 가리키는 사례가 달라지므로, 상자 이름에 넣어 선택을 비운다
+        picked = timeline(ups, key="up_timeline_" + "".join(sorted(keep)))
+        if picked is None or picked >= len(ups):
+            picked = max(range(len(ups)), key=lambda i: ups[i]["diff"])   # 처음에는 증가폭이 가장 큰 사례
+        case_card(ups[picked])
+        st.write("")
+
+        # 사례를 한꺼번에 늘어놓은 격자는 접어 둔다 — 단추를 눌러야 그 유형만 펼쳐진다
+        sec("03", "유형별로 모아 보기", "같은 유형끼리 모아, 급증 뒤 주문 규모가 어떤 모양으로 움직였는지 한눈에 견줍니다.", RED)
+        g_pick = shape_filter(cnt, "up_shape_grid", small=True, none_is_all=False)
+        if g_pick is None:
+            note("위 <b>A형 · B형 · C형</b> 단추를 누르면 그 유형의 사례가 모두 펼쳐집니다.")
+        else:
+            grid(sorted([r for r in UP if r["shape"] == g_pick], key=lambda r: -r["diff"]),
+                 bar_color=A.SHAPE_COLOR[g_pick], mark_year=True, height_per_row=330,
+                 sub=lambda r: f"{lab[r['shape']]}")
+        # 맨 아래 정리 글 두 개는 뺐다 — «모양 · 건수 · 뜻» 표와 함께 단추·결론 쪽과 겹쳤다 (2026-10-01)
 
 
     # ══ 3. 감소 케이스 ══════════════════════════════════════════════════════
@@ -328,10 +444,32 @@ def page_3_down():
 
         sec("03", "주문 규모 감소 사례의 국가별 비교",
             "갈등 위험 급증 이후 주문 규모가 감소한 시점과 이후의 변화 양상을 살펴봅니다.", BLUE)
-        grid(EMB, cols=4, bar_color=BLUE,
-             sub=lambda r: f"{r['embargo']}", height_per_row=310)
+
+        # (2026-10-01) 증가 쪽과 같은 틀 — 타임라인에서 점을 고르면 그 사례 카드가 나온다.
+        #   여기서는 «제재 · 내전으로 거래가 끊긴» 8건만 다룬다. 그 밖의 감소는 사정이 제각각이라 뺐다.
         zero = sum(1 for r in EMB if sum(r["tiv"][-3:]) == 0)
-        note(f"8개 사례 중 3개에서는 이후 3년간 주문 연도 TIV가 0으로 나타났습니다. 차트에 제시된 제재·내전 등의 배경을 고려하면, 이 사례들의 감소를 갈등 위험 변화에 따른 수요 감소로 단정하기 어렵습니다.", "blue")
+        downs = sorted(EMB, key=lambda r: (r["year"], r["ko"]))
+        picked = timeline(downs, key="down_timeline", color_of=lambda r: GOLD, text_of=lambda r: "")
+        if picked is None or picked >= len(downs):
+            picked = min(range(len(downs)), key=lambda i: downs[i]["diff"])   # 가장 많이 줄어든 사례
+        r = downs[picked]
+        case_card(r, bar_color=GOLD,
+                  sub_text=lambda x: f"제재 · 내전 — {x['embargo']} · 변화폭 {x['diff']:+.2f} 칸")
+        st.write("")
+
+        sec("04", "제재 · 내전으로 끊긴 사례 모아 보기",
+            "거래가 막혀 줄어든 경우를 따로 모아, 수요가 줄어든 것과 섞어 읽지 않도록 합니다.", BLUE)
+        if st.button(f"제재 · 내전 {len(EMB)}건 펼치기", key="down_grid_btn",
+                     type="primary" if st.session_state.get("down_grid") else "secondary",
+                     help="제재 · 내전으로 거래가 끊긴 사례만 모아 전후 3년을 나란히 봅니다"):
+            st.session_state["down_grid"] = not st.session_state.get("down_grid")
+            st.rerun()
+        if st.session_state.get("down_grid"):
+            grid(EMB, cols=4, bar_color=BLUE, mark_year=True,
+                 sub=lambda r: f"{r['embargo']}", height_per_row=330)
+        note(f"주문 규모가 줄어든 {len(DOWN)}건 가운데 <b>제재 · 내전으로 거래가 끊긴 {len(EMB)}건</b>만 여기에서 다룹니다. "
+             f"그중 {zero}개 사례는 이후 3년간 주문 연도 TIV 가 0 이었습니다. "
+             "거래 자체가 막힌 경우라, 이 감소를 갈등 위험 변화에 따른 수요 감소로 읽으면 안 됩니다.", "blue")
     
 
     # ══ 4. 결론 ═══════════════════════════════════════════════════════════
@@ -359,11 +497,12 @@ def page_4_conclusion():
             f'<div class="fbox up"><div class="tag" style="color:{RED}">'
             f'증가 사례 ({len(UP)}건 중 {a_cnt + b_cnt}건)</div>'
             '<div class="h">일시적 집중 구매 후 감소</div>'
-            '<div class="d">주문 규모가 증가한 17개 사례 중 14개는 갈등 위험 급증 후 2년 이내에 정점에 이르렀습니다.</div></div>'
+            f'<div class="d">주문 규모가 증가한 {len(UP)}개 사례 중 {a_cnt + b_cnt}개(78%)는 갈등 위험 급증 후 2년 이내에 정점에 이르렀습니다.</div></div>'
             f'<div class="fbox dn"><div class="tag" style="color:{BLUE}">'
-            f'감소 사례 ({len(EMB)}건 전체)</div>'
+            f'감소 사례 중 제재 · 내전 {len(EMB)}건</div>'
             '<div class="h">거래 전면 단절</div>'
-            '<div class="d">감소 사례에서는 제재·내전 등 다른 여건도 함께 살펴봐야 합니다.</div></div>'
+            f'<div class="d">제재 · 내전으로 거래가 끊긴 {len(EMB)}건은 수요가 준 것이 아니라 «살 수 없게 된» 경우라, '
+            '나머지 감소와 섞어 읽으면 안 됩니다.</div></div>'
             '</div>'
 
             '<div class="farr">&rsaquo;</div>'

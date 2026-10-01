@@ -700,8 +700,64 @@ button[kind="primary"] p, button[kind="primary"] {
     border-color: #e5e0d5 !important;
 }
 
+/* ---- 세부 분석 › 증가 케이스 › 고른 사례 카드 (.case-*) — 밝은 배경용 (2026-10-01)
+   이 카드만 어두운 남색으로 남아 옆 그래프 칸과 따로 놀았다. 같은 흰 카드로 맞춘다. */
+.st-key-surge_app .case-x {
+    background: #ffffff !important;
+    border-color: #e5e0d5 !important;
+}
+
 /* 중동 무기 거래 분석 · 증가 케이스: 표를 담은 카드 (2026-10-01) */
 .st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) > [data-testid="stColumn"]:has([data-testid="stDataFrame"]) > [data-testid="stVerticalBlock"] {
+    background: #ffffff !important;
+    border-color: #e5e0d5 !important;
+}
+
+.st-key-surge_app .case-h,
+.st-key-surge_app .case-w,
+.st-key-surge_app .case-p span {
+    color: #1c1a17 !important;
+}
+
+.st-key-surge_app .case-r {
+    color: #4a443b !important;
+    border-bottom-color: #e5e0d5 !important;
+}
+
+.st-key-surge_app .case-r b {
+    color: #b7791f !important;
+}
+
+.st-key-surge_app .case-p {
+    border-bottom-color: #e5e0d5 !important;
+}
+
+.st-key-surge_app .case-p b {
+    color: #b91c1c !important;
+}
+
+.st-key-surge_app .case-p i {
+    background: #a39a8c !important;
+    color: #ffffff !important;
+}
+
+.st-key-surge_app .case-r span,
+.st-key-surge_app .case-p em,
+.st-key-surge_app .case-n {
+    color: #6b6255 !important;
+}
+
+.st-key-surge_app .case-e {
+    background: #b7791f !important;
+    color: #ffffff !important;
+}
+
+.st-key-surge_app .case-n {
+    border-top-color: #e5e0d5 !important;
+}
+
+/* 사례 카드 왼쪽 그래프 칸 — 밝은 배경용 (2026-10-01) */
+.st-key-casechart {
     background: #ffffff !important;
     border-color: #e5e0d5 !important;
 }

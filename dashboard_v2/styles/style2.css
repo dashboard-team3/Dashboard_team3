@@ -2092,3 +2092,126 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 .st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) [data-testid="stMarkdownContainer"] {
     margin-bottom: 0 !important;             /* 글 칸의 아래 -16px 를 없애야 설명 상자 전체 높이로 줄 높이가 정해진다 */
 }
+
+/* ---------------------------------------------------------------- 세부 분석 › A·B·C 고르기 단추 (2026-10-01)
+   유형 색을 단추에 그대로 입혀, 단추가 곧 타임라인·격자의 범례가 되게 한다.
+   고른 것은 색을 채우고(primary), 끈 것은 테두리만 남긴다(secondary). */
+[class*="st-key-shapebtn-"] button p {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+[class*="st-key-shapebtn-A"] button[kind="primary"],
+[class*="st-key-shapebtn-A"] button[data-testid$="-primary"] {
+    background: #0072b2 !important;
+    border-color: #0072b2 !important;
+}
+
+[class*="st-key-shapebtn-B"] button[kind="primary"],
+[class*="st-key-shapebtn-B"] button[data-testid$="-primary"] {
+    background: #56b4e9 !important;
+    border-color: #56b4e9 !important;
+    color: #0b1220 !important;
+}
+
+[class*="st-key-shapebtn-C"] button[kind="primary"],
+[class*="st-key-shapebtn-C"] button[data-testid$="-primary"] {
+    background: #009e73 !important;
+    border-color: #009e73 !important;
+}
+
+[class*="st-key-shapebtn-B"] button[kind="primary"] p,
+[class*="st-key-shapebtn-B"] button[data-testid$="-primary"] p {
+    color: #0b1220 !important;
+}
+
+[class*="st-key-shapebtn-A"] button[kind="secondary"],
+[class*="st-key-shapebtn-A"] button[data-testid$="-secondary"] {
+    border-color: #0072b2 !important;
+}
+
+[class*="st-key-shapebtn-B"] button[kind="secondary"],
+[class*="st-key-shapebtn-B"] button[data-testid$="-secondary"] {
+    border-color: #56b4e9 !important;
+}
+
+[class*="st-key-shapebtn-C"] button[kind="secondary"],
+[class*="st-key-shapebtn-C"] button[data-testid$="-secondary"] {
+    border-color: #009e73 !important;
+}
+
+[class*="st-key-shapebtn-A"] button[kind="secondary"] p { color: #0072b2 !important; }
+[class*="st-key-shapebtn-B"] button[kind="secondary"] p { color: #56b4e9 !important; }
+[class*="st-key-shapebtn-C"] button[kind="secondary"] p { color: #009e73 !important; }
+
+/* 작은 쪽(격자 펼치기) 단추는 글자·여백을 줄인다 */
+[class*="st-key-shapebtn-"][class*="-sm"] button {
+    padding: 4px 10px !important;
+    min-height: 0 !important;
+}
+
+[class*="st-key-shapebtn-"][class*="-sm"] button p {
+    font-size: 13px !important;
+}
+
+
+/* ---------------------------------------------------------------- 사례 카드 두 칸 높이 맞추기 (2026-10-01)
+   왼쪽 그래프 칸(.st-key-casechart)과 오른쪽 설명 칸(.st-key-casecard)이 사례마다 글 길이가 달라
+   어긋나 보였다. 줄 전체를 늘여(stretch) 두 칸이 언제나 같은 높이가 되게 한다.
+   그래프 종이 바탕색은 카드와 같은 색이라, 남는 자리가 생겨도 한 덩어리로 보인다. */
+[data-testid="stHorizontalBlock"]:has(> div .st-key-casechart) {
+    align-items: stretch !important;
+}
+
+[data-testid="stHorizontalBlock"]:has(> div .st-key-casechart) > [data-testid="stColumn"],
+[data-testid="stHorizontalBlock"]:has(> div .st-key-casechart) > [data-testid="stColumn"] > div {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.st-key-casechart,
+.st-key-casecard {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.st-key-casechart {
+    background: #111a2e;
+    border: 1px solid #1f2b44;
+    border-radius: 14px;
+    justify-content: center;
+    padding: 4px 8px;
+}
+
+.st-key-casechart [data-testid="stElementContainer"] {
+    width: 100% !important;
+    flex: 0 0 auto !important;   /* 늘어나지 않아야 justify-content:center 가 먹는다 */
+}
+
+/* 그래프는 상자 가운데에 — 카드가 길어져 상자가 커져도 위로 붙지 않게 (2026-10-01) */
+.st-key-casechart > [data-testid="stLayoutWrapper"],
+.st-key-casechart > [data-testid="stVerticalBlock"] {
+    flex: 0 0 auto !important;
+    margin: auto 0 !important;
+    width: 100% !important;
+}
+
+.st-key-casecard > [data-testid="stElementContainer"],
+.st-key-casecard [data-testid="stMarkdown"],
+.st-key-casecard [data-testid="stMarkdown"] > div,
+.st-key-casecard [data-testid="stMarkdownContainer"] {
+    height: 100% !important;
+}
+
+.st-key-casecard [data-testid="stMarkdownContainer"] {
+    margin-bottom: 0 !important;   /* 스트림릿 기본 -16px 때문에 카드가 4px 삐져나왔다 */
+}
+
+/* 두 칸 사이에 끼는 포장 div 도 함께 늘여야 카드가 줄 높이를 다 쓴다 */
+[data-testid="stLayoutWrapper"]:has(> .st-key-casechart),
+[data-testid="stLayoutWrapper"]:has(> .st-key-casecard) {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
