@@ -132,7 +132,7 @@ def draw_trend(df, M, how, by):
                                  customdata=[f"{m}/{need}" for m in months],
                                  hovertemplate=f"합계 %{{y:,.1f}} {U} · 관측 %{{customdata}}개월<extra></extra>"))
     fmt = {"월별": "%Y-%m", "분기별": "%Y-%m", "연간": "%Y"}[how]
-    _layout(fig, barmode="stack", height=450, hovermode="x unified", bargap=0.15,
+    _layout(fig, barmode="stack", height=460, hovermode="x unified", bargap=0.15,
             title=dict(text=ctitle(f"{how} {M['value_label']} 추이", f"단위 {U} · 쌓기 기준 = {by}"), x=0),
             legend=dict(orientation="h", y=-0.2, yanchor="top", x=0, font=dict(size=14)))
     _axes(fig)
@@ -207,6 +207,76 @@ def draw_rank(df, M):
         st.markdown("**무기 모델 TOP 15 (주문 TIV)**")
         st.dataframe(w.rename(columns={"weapon": "모델", "weapon_desc": "종류", "tiv": "주문 TIV", "n": "계약", "qty": "수량"}).round(0),
                      hide_index=True, width="stretch", height=380)
+
+
+# ---------------------------------------------------------------- 추이 탭 오른쪽 상자 (2026-10-01)
+
+SIDE_COLORS = ["#f5c542", "#f87171", "#60a5fa", "#34d399", "#a78bfa"]   # 수입국 · 수출국 상위 5 막대 색
+
+
+def _side_flow(df, M):
+    """흐름 요약: 가장 많았던 해 · 최근 5년 vs 그 전 5년 · 최근 해. 월 자료(Comtrade)는 12달이 다 있는 해끼리만 견준다."""
+    U = M["unit"]
+    yt = df.groupby("year")["value"].sum()
+    if M["periods"] != ["연간"]:                         # 월 자료: 12달이 다 찬 해만 '완결된 해'
+        full = df.groupby("year")["period"].nunique()
+        done = sorted(int(y) for y in full[full >= 12].index)
+    else:
+        done = sorted(int(y) for y in yt.index)
+    y_last = int(yt.index.max())
+    peak = int(yt.idxmax())
+    part = ""
+    if M["periods"] != ["연간"]:
+        mm = df.loc[df["year"] == y_last, "period"].nunique()
+        part = f" (1~{mm}월)" if mm < 12 else ""
+    h = [f'<div class="ts-k">'
+         f'<div class="ts-kc"><div class="ts-kl">가장 많았던 해</div><div class="ts-kv">{peak}년</div>'
+         f'<div class="ts-ks">{yt.max():,.0f} {U}</div></div>']
+    if len(done) >= 10:
+        e = done[-1]
+        r5 = yt.reindex(range(e - 4, e + 1)).fillna(0).sum()
+        p5 = yt.reindex(range(e - 9, e - 4)).fillna(0).sum()
+        ch = r5 / p5 - 1 if p5 else None
+        cls = "" if ch is None else ("up" if ch > 0 else "down")
+        h.append(f'<div class="ts-kc"><div class="ts-kl">최근 5년 vs 그 전 5년</div>'
+                 f'<div class="ts-kv {cls}">{"—" if ch is None else f"{ch:+.0%}"}</div>'
+                 f'<div class="ts-ks">{e - 4}–{e} {r5:,.0f} · {e - 9}–{e - 5} {p5:,.0f}</div></div>')
+    else:
+        h.append('<div class="ts-kc"><div class="ts-kl">최근 5년 vs 그 전 5년</div><div class="ts-kv">—</div>'
+                 '<div class="ts-ks">고른 기간이 10년보다 짧아 비교하지 않음</div></div>')
+    h.append(f'<div class="ts-kc"><div class="ts-kl">최근 해 {y_last}{part}</div><div class="ts-kv">{yt.loc[y_last]:,.0f}</div>'
+             f'<div class="ts-ks">{U}</div></div></div>')
+    return "".join(h)
+
+
+def _side_top(df, M, by):
+    """쌓기 기준 상위 5: 금액 · 비중 · 막대 (막대 색은 그래프의 같은 항목 색)."""
+    key = {M["cat_label"]: "cat", "수입국": "target_name", M["exporter_label"]: "exporter"}[by]
+    s = df.groupby(key)["value"].sum().sort_values(ascending=False)
+    tot = s.sum()
+    h = []
+    for i, (n, v) in enumerate(s.head(5).items()):
+        col = (M["colors"].get(n) if key == "cat" else None) or SIDE_COLORS[i]
+        h.append(f'<div class="ts-row"><div class="ts-top"><span class="ts-n">{n}</span>'
+                 f'<span class="ts-v">{v:,.0f}<small>{v / tot:.0%}</small></span></div>'
+                 f'<div class="ts-bar"><i style="width:{v / s.iloc[0] * 100:.0f}%;background:{col}"></i></div></div>')
+    rest = tot - s.head(5).sum()
+    if rest > 0:
+        h.append(f'<div class="ts-s ts-rest">나머지 {len(s) - 5}개 {rest:,.0f} ({rest / tot:.0%})</div>')
+    return "".join(h)
+
+
+def trend_side(df, M, by, k):
+    """추이 그래프 오른쪽 상자: 위 버튼으로 '{쌓기 기준} 상위 5'(처음) ↔ '흐름 요약' 을 바꿔 본다."""
+    top_lbl = f"{by} 상위 5"
+    with st.container(key=f"trend_side_{k}"):
+        pick = st.segmented_control("오른쪽 상자", ["상위 5", "흐름 요약"], default="상위 5",   # 상위 5 가 한눈에 들어와 먼저
+                                    key=f"arms_trend_side_{k}", label_visibility="collapsed") or "상위 5"
+        if pick == "흐름 요약":
+            st.markdown('<div class="ts-s">연 단위 합계 기준 · 고른 기간 안</div>' + _side_flow(df, M), unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="ts-h">{top_lbl}</div><div class="ts-s">고른 기간 합계 · 비중</div>' + _side_top(df, M, by),
+                        unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------- 국가별 보기
@@ -398,28 +468,42 @@ def page(filter_box=None, on_open=None, compact=False, show_title=True):
 
     t_map, t_trend, t_rank, t_pair = st.tabs(["지도", "추이", "순위", "국가쌍"])
     with t_map:
-        # v2 (2026-10-01): 리스크 분석처럼 [지도 | 요약 카드] 2단. 지도는 560 → 410px (오른쪽 카드 아래 끝에 맞춤)
-        left, right = st.columns([2.3, 1], gap="medium") if compact else (st.container(), None)
+        # v2 (2026-10-01): 지도 탭 · 추이 탭을 같은 틀로 — [조작 한 줄 + 그림 460px | 오른쪽 상자 460px], 비율 2:1
+        left, right = st.columns([2, 1], gap="medium") if compact else (st.container(), None)
         with left:
-            m1, m2 = st.columns([1.5, 2])
-            arc = f"{M['role_label']} 흐름(호)"
-            overlay = m1.segmented_control("표시", [arc, "수입국별"], default=arc, key=f"arms_overlay_{k}") or arc
-            top_n = m2.slider(f"표시할 흐름 수 ({M['value_label']} 큰 순)", 5, 100, 40, step=5, key=f"arms_topn_{k}")
-            draw_map(sub, M, overlay, top_n, height=410 if compact else 560)
+            with st.container(horizontal=True, vertical_alignment="bottom", gap="medium", key=f"tab_ctl_map_{k}"):
+                arc = f"{M['role_label']} 흐름(호)"
+                overlay = st.segmented_control("표시", [arc, "수입국별"], default=arc, key=f"arms_overlay_{k}") or arc
+                top_n = st.slider(f"표시할 흐름 수 ({M['value_label']} 큰 순)", 5, 100, 40, step=5, key=f"arms_topn_{k}")
+            draw_map(sub, M, overlay, top_n, height=460 if compact else 560)
             if missing:
                 st.caption(f"좌표가 없어 지도에 못 그린 {M['exporter_label']}: {', '.join(missing)}")
         if right is not None:
             with right:
-                st.markdown(f'<div class="pill-t">요약 · {per_txt}</div>' + strip(items, vertical=True), unsafe_allow_html=True)
+                with st.container(key=f"trend_side_map_{k}"):
+                    st.markdown(f'<div class="ts-h">요약 · {per_txt}</div>' + strip(items[:3], vertical=True),   # 관측 월(계약) 카드는 빼고 3개만 — 원래 크기로 460px 상자에 들어가게
+                                unsafe_allow_html=True)
     with t_trend:
-        a, b, c = st.columns([1.2, 1.4, 1.4])
-        scope = a.segmented_control("범위", ["전체", "국가별"], default="전체", key=f"arms_trend_scope_{k}") or "전체"
-        how = b.radio("집계", M["periods"], index=M["periods"].index(M["default_period"]), horizontal=True, key=f"arms_how_{k}")
-        if scope == "전체":
-            by = c.radio("쌓기 기준", [M["cat_label"], "수입국", M["exporter_label"]], horizontal=True, key=f"arms_by_{k}")
-            draw_trend(sub, M, how, by)
-        else:
-            by = c.radio("쌓기 기준", [M["cat_label"], M["exporter_label"]], horizontal=True, key=f"arms_by_country_{k}")
+        # 범위 · 집계 · 쌓기 기준을 그래프 위 한 줄로 (지도 탭과 같은 높이) — 집계 · 쌓기는 오른쪽 끝
+        scope_now = st.session_state.get(f"arms_trend_scope_{k}") or "전체"
+        tl, tr = st.columns([2, 1], gap="medium") if scope_now == "전체" else (st.container(), None)
+        with tl:
+            with st.container(horizontal=True, wrap=False, vertical_alignment="bottom", gap="xsmall", key=f"tab_ctl_trend_{k}"):
+                scope = st.segmented_control("범위", ["전체", "국가별"], default="전체", key=f"arms_trend_scope_{k}") or "전체"
+                st.space("stretch")
+                how = st.segmented_control("집계", M["periods"], default=M["default_period"], key=f"arms_how_{k}") or M["default_period"]
+                if scope == "전체":
+                    opts = [M["cat_label"], "수입국", M["exporter_label"]]
+                    by = st.segmented_control("쌓기 기준", opts, default=opts[0], key=f"arms_by_{k}") or opts[0]
+                else:
+                    opts = [M["cat_label"], M["exporter_label"]]
+                    by = st.segmented_control("쌓기 기준", opts, default=opts[0], key=f"arms_by_country_{k}") or opts[0]
+            if scope == "전체":
+                draw_trend(sub, M, how, by)
+        if scope == "전체" and tr is not None:
+            with tr:
+                trend_side(sub, M, by, k)
+        elif scope != "전체":
             country = country_picker(sub, f"arms_trend_country_{k}")
             one = sub[sub["target_iso3"] == country]
             st.markdown(f"**{COUNTRIES[country]}** · {one['value'].sum():,.0f} {U} · {M['obs_label']} {one['obs'].nunique()}")
