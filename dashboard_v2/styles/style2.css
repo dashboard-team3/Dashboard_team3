@@ -1736,17 +1736,31 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 .brand {
     font-family: "A2Z", "Nanum Gothic", sans-serif !important;
     font-size: 19px;
-    font-weight: 700;
+    font-weight: 800;
     color: #ffffff;
     margin: 0 0 6px;
+    letter-spacing: -0.3px;
 }
 
 .brand span {
-    font-family: "Nanum Gothic", sans-serif;
-    font-size: 14px;
+    font-family: "Nanum Gothic", sans-serif !important;
+    font-size: 15px;
     font-weight: 400;
     color: #8b98ad;
     margin-left: 12px;
+    padding-left: 12px;
+    border-left: 1.5px solid #6b7891;
+    letter-spacing: -0.3px;
+}
+
+@media (max-width: 640px) {
+    .brand {
+        display: flex;
+        flex-direction: column;
+    }
+    .brand span {
+        margin-left: 0;
+    }
 }
 
 .page-sub {
