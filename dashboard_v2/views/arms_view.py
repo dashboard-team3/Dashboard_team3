@@ -108,6 +108,8 @@ def draw_map(df, M, overlay, top_n, height=560):
 
 # ---------------------------------------------------------------- 추이
 
+TOP_COLOR = "#D55E00"   # 쌓기 그래프에서 비율이 가장 큰 항목 색
+
 def draw_trend(df, M, how, by, show_count=True):
     U = M["unit"]
     key = {M["cat_label"]: "cat", "수입국": "target_name", M["exporter_label"]: "exporter"}[by]
@@ -120,10 +122,17 @@ def draw_trend(df, M, how, by, show_count=True):
         if other.sum() > 0:
             t["기타"] = other
     fig = go.Figure()
+    # 비율이 가장 큰 항목은 가장 잘 보이는 Vermillion(#D55E00)으로 (2026-10-02 팀 요청, 원래 그 색이던 항목과 맞바꿈)
+    colors = dict(M["colors"])
+    if key == "cat" and len(t.columns) and t.sum().max() > 0:
+        top = t.sum().idxmax()
+        had = next((c for c, v in colors.items() if v.upper() == TOP_COLOR), None)
+        if had and had != top:
+            colors[had], colors[top] = colors.get(top), TOP_COLOR
 
     for col in t.columns:
         fig.add_trace(go.Bar(
-            x=t.index, y=t[col], name=col, marker_color=M["colors"].get(col) if key == "cat" else None,
+            x=t.index, y=t[col], name=col, marker_color=colors.get(col) if key == "cat" else None,
             hovertemplate=f"{col} %{{y:,.1f}} {U}<extra></extra>"))
     monthly_source = M["periods"] != ["연간"]
 

@@ -14,7 +14,7 @@ from core import theme
 from sources import relations
 from sources.realtime import COUNTRY_POS, SHORT_NAME
 from views import realtime_view, risk_view
-from views.realtime_view import LABEL_OUT, LEFT_SIDE, SEQ_DARK, SEQ_LIGHT, _scale
+from views.realtime_view import LABEL_DARK, LABEL_OUT, LEFT_SIDE, SEQ_DARK, SEQ_LIGHT, _scale
 
 VIEWS = ["실시간 모니터링", "리스크 추이"]
 YEARS = 10                       # 오른쪽 좁은 칸의 그래프 기간 (좁은 칸에 46년을 넣으면 선이 뭉개진다)
@@ -130,7 +130,7 @@ def _risk_map(sel, small=False):
     # 국가쌍: 고른 나라 → 리스크가 큰 상대국 3곳으로 화살표 (점선 · 끝에 화살촉, 굵기 = 리스크). 이름 · 숫자보다 먼저 그려 글자 아래에 깔리게
     if pair and val:
         top = sorted((c for c in val if c != sel), key=lambda c: -val[c])[:ARROWS]
-        col = "#4f46e5" if light else "#ffffff"
+        col = "#ffffff"          # 흰 화살표 (밝은 테마도 — 보라 칸 위에서 잘 보이게, 2026-10-02). 그림자는 CSS
         for c in top:
             a, b = _pos(names[sel]), _pos(names[c])
             # 끝을 비율이 아니라 «거리»로 남긴다: 이름이 가운데 있는 나라는 이름 앞 1.4°, 이름을 바깥으로 뺀 좁은 나라는 0.3° 앞까지
@@ -168,7 +168,11 @@ def _risk_map(sel, small=False):
         lat=[p[0] for p in pos], lon=[p[1] for p in pos], mode="text", hoverinfo="skip", text=txt,
         textposition=[("middle left" if kr in LEFT_SIDE else "middle right") if kr in LABEL_OUT else "middle center"
                       for kr, _, _ in rows],
-        textfont=dict(size=11 if small else 13, color="#1c1a17" if light else "#ffffff", family="JetBrains Mono, Pretendard, sans-serif")))
+        textfont=dict(size=11 if small else 13, family="JetBrains Mono, Pretendard, sans-serif",
+                      # 밝은 테마: 진한 보라 칸 안의 이름만 흰 글씨 (바깥으로 뺀 이름 · 기준 나라는 그대로)
+                      color=["#ffffff" if not light or (kr not in LABEL_OUT and c in val and not (pair and c == sel)
+                                                        and (val[c] - 0.15) / 0.55 >= LABEL_DARK) else "#1c1a17"
+                             for kr, _, c in rows])))
     fig.update_layout(
         geo=dict(projection_type="mercator", fitbounds="locations", visible=True,
                  showland=True, landcolor="#ffffff" if light else "#13142a",          # 주변 땅 = 지도 상자 바탕색 (그래프 상자처럼 한 색, 2026-10-02)

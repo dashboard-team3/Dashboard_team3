@@ -135,7 +135,9 @@ def _label_placement(radius, side):
 # (2026-10-01) 중동_스토리맵의 지도 모양 · LIVE 패널 · 범례 상자를 가져왔다.
 # 나라 면을 오늘 사건 수로 주황 한 색의 밝기로 칠하고, 이름 · 숫자를 나라 위에 적는다.
 SEQ_DARK = ["#262a33", "#4a3a33", "#7d4f36", "#b8673b", "#e98a55", "#f6b98d"]    # 스토리맵과 같은 주황
-SEQ_LIGHT = ["#f4ede7", "#f6d6bf", "#f1b48a", "#e98a55", "#cf6430", "#a8481f"]
+# 밝은 테마는 보라 (2026-10-02 팀 요청, 예전 주황 #f4ede7 → #a8481f). 진한 칸(LABEL_DARK 이상) 위 이름은 흰 글씨
+SEQ_LIGHT = ["#f5f3ff", "#ddd6fe", "#c4b5fd", "#a78bfa", "#7c3aed", "#4c1d95"]
+LABEL_DARK = 0.7
 
 
 # 나라: (실제 위치 위도, 경도, 이름 위도, 경도)
@@ -177,6 +179,10 @@ def draw_map():
         customdata=poly["hover"], hovertemplate="%{customdata}<extra></extra>"))
     # 2) 이름 + 숫자. 좁은 나라(LABEL_OUT)는 이름을 바깥으로 빼고 가는 선으로 잇는다
     name_col = "#1c1a17" if light else "#ffffff"
+    frac = {c: (n ** 0.5) / zmax for c, n in zip(stats["country"], stats["count"])}     # 색 막대에서의 자리 (0~1)
+
+    def col(c):   # 밝은 테마: 진한 보라 칸 안의 이름만 흰 글씨 (바깥으로 뺀 이름은 흰 땅 위라 그대로)
+        return "#ffffff" if light and c not in LABEL_OUT and frac.get(c, 0) >= LABEL_DARK else name_col
     pos = {r.country: (LABEL_OUT[r.country][2:] if r.country in LABEL_OUT else (r.lat, r.lon)) for r in stats.itertuples()}
     llat, llon = [], []
     for name, (a_lat, a_lon, t_lat, t_lon) in LABEL_OUT.items():
@@ -190,7 +196,7 @@ def draw_map():
               for c, lb, n in zip(stats["country"], stats["label"], stats["count"])],
         textposition=[("middle left" if c in LEFT_SIDE else "middle right") if c in LABEL_OUT else "middle center"
                       for c in stats["country"]],
-        textfont=dict(size=13, color=name_col, family="JetBrains Mono, Pretendard, sans-serif")))
+        textfont=dict(size=13, color=[col(c) for c in stats["country"]], family="JetBrains Mono, Pretendard, sans-serif")))
     # 3) 최근 1시간 안에 사건이 난 나라: 빨간 점 (CSS 로 깜빡임)
     hot = live_side_data(realtime.last_slot() or "")["active"]
     act = stats[stats["country"].isin(hot)]

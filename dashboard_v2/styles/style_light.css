@@ -2,7 +2,7 @@
    배경·글자·상자 색만 뒤집는다. 그래프 색은 app2.py 의 LIGHT 분기와 dashboard/theme.py 가 맡는다.
    앞부분 = 화면 공통, 맨 뒤 '사이드바 제목 · 필터 상자 · 계산식 · 데이터 소개' 부분 = 예전 style2_light.css (2026-09-29 합침). */
 [data-testid="stAppViewContainer"], .stApp, .block-container {
-    background: #f7f5f0 !important;
+    background: #f6f7fb !important;
 }
 
 [data-testid="stHeader"] {
@@ -38,7 +38,7 @@ html, body, .stMarkdown, .stMarkdown p, .stMarkdown li, label, label p, [data-te
 /* 상자 */
 .kpi, .pill, .note, .summary, .verdict, .strip .cell, .cond, .empty, .feed-item, .map-legend, .stTabs [aria-selected="true"], [data-testid="stExpander"] details, [data-testid="stPopover"] > div {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
     box-shadow: 0 1px 3px rgba(28,26,23,0.06) !important;
 }
 
@@ -76,7 +76,7 @@ html, body, .stMarkdown, .stMarkdown p, .stMarkdown li, label, label p, [data-te
 }
 
 .note.amber {
-    border-left-color: #b7791f !important;
+    border-left-color: #e69f00 !important;
 }
 
 .pill-g {
@@ -84,16 +84,16 @@ html, body, .stMarkdown, .stMarkdown p, .stMarkdown li, label, label p, [data-te
 }
 
 .empty {
-    border-color: #d8cfbd !important;
+    border-color: #ddd6fe !important;
 }
 
 [data-testid="stSidebar"] .sb-foot {
-    border-top-color: #e5e0d5 !important;
+    border-top-color: #ddd6fe !important;
 }
 
 /* 탭·메뉴·위젯 */
 .stTabs [data-baseweb="tab-list"] {
-    border-bottom-color: #e5e0d5 !important;
+    border-bottom-color: #ddd6fe !important;
 }
 
 .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] div {
@@ -122,7 +122,7 @@ html, body, .stMarkdown, .stMarkdown p, .stMarkdown li, label, label p, [data-te
 }
 
 [data-testid="stSidebar"] [role="radiogroup"] label span[data-testid="stIconMaterial"] {
-    color: #8a8175;
+    color: #3d3d3d;
 }
 
 [data-testid="stSidebar"] button[kind="primary"] {
@@ -144,12 +144,12 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 [data-testid="stVerticalBlockBorderWrapper"] {
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
     background: #ffffff;
 }
 
 .map-head {
-    border-bottom-color: #e5e0d5 !important;
+    border-bottom-color: #ddd6fe !important;
 }
 
 .stTabs [data-baseweb="tab"] {
@@ -183,7 +183,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .brand {
-    border-bottom-color: #e5e0d5 !important;
+    border-bottom-color: #ddd6fe !important;
 }
 
 .brand-name, .ph-title {
@@ -200,7 +200,7 @@ button[kind="primary"] p, button[kind="primary"] {
 
 .chip {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
     color: #1c1a17 !important;
 }
 
@@ -217,7 +217,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .kpi.live:hover, .pill:hover {
-    border-color: #cfc6b4 !important;
+    border-color: #ddd6fe !important;
 }
 
 .sec-no {
@@ -230,7 +230,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 [data-testid="stDataFrame"] {
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 .sb-foot .status {
@@ -238,12 +238,12 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #d8cfbd !important;
+    background: #ddd6fe !important;
 }
 
 .foot {
-    border-top-color: #e5e0d5 !important;
-    color: #8a8175 !important;
+    border-top-color: #ddd6fe !important;
+    color: #3d3d3d !important;
 }
 
 .kpi .delta.down {
@@ -256,7 +256,7 @@ button[kind="primary"] p, button[kind="primary"] {
 
 [data-testid="stPills"] button {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
     color: #1c1a17 !important;
 }
 
@@ -299,9 +299,9 @@ button[kind="primary"] p, button[kind="primary"] {
 
 /* 표 머리글·행 머리글 (기본값이 너무 옅다) */
 .feed-group {
-    background: #f3efe8 !important;
+    background: #f5f3ff !important;
     color: #4a443b !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 .feed-late {
@@ -379,7 +379,7 @@ button[kind="primary"] p, button[kind="primary"] {
 
 .di-card, .di-formula {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 /* 자료출처 카드 · 계산식 상자 */
@@ -387,7 +387,7 @@ button[kind="primary"] p, button[kind="primary"] {
 /* 탭 첫 줄 소제목 상자 (app2 는 어두운 상자라 밝게) */
 .sec {
     background: #ffffff !important;
-    border: 1px solid #e5e0d5 !important;
+    border: 1px solid #ddd6fe !important;
     border-left: 5px solid #b91c1c !important;
 }
 
@@ -422,7 +422,7 @@ button[kind="primary"] p, button[kind="primary"] {
 
 /* 최근 사건: 보도량 기준 한 줄 */
 .feed-legend {
-    color: #6b6456 !important;
+    color: #3d3d3d !important;
 }
 
 /* ---------------------------------------------------------------- 세부 분석 결과 탭 (dashboard/surge_page.py)
@@ -430,23 +430,23 @@ button[kind="primary"] p, button[kind="primary"] {
    그 앱이 글 · 테두리에 직접 넣은 강조색(빨강 #f87171 · 파랑 #60a5fa · 노랑 #f5c542, 화면에서는 rgb(…) 로 바뀌어 붙는다. _scope_css 가 쉼표로 선택자를 나누므로 앞부분 'rgb(245' 까지만 맞춘다)은 밝은 배경에서 읽히는 진한 색으로 바꾼다 */
 .st-key-surge_app .key, .st-key-surge_app .lead {
     background: #ffffff !important;
-    border-top-color: #e5e0d5 !important;
-    border-right-color: #e5e0d5 !important;
-    border-bottom-color: #e5e0d5 !important;
+    border-top-color: #ddd6fe !important;
+    border-right-color: #ddd6fe !important;
+    border-bottom-color: #ddd6fe !important;
 }
 
 .st-key-surge_app .fc {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 .st-key-surge_app .fc.dark {
-    background: #fbf7ee !important;
-    border-color: #b7791f !important;
+    background: #f5f3ff !important;
+    border-color: #e69f00 !important;
 }
 
 .st-key-surge_app .fbox {
-    background: #f7f5f0 !important;
+    background: #f6f7fb !important;
     border-left-color: #a39a8c !important;
 }
 
@@ -459,7 +459,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .st-key-surge_app .note.gold {
-    border-left-color: #b7791f !important;
+    border-left-color: #e69f00 !important;
 }
 
 .st-key-surge_app .key .t, .st-key-surge_app .key .s b, .st-key-surge_app .lead b, .st-key-surge_app .lead .big, .st-key-surge_app .ft, .st-key-surge_app .fbox .h {
@@ -471,7 +471,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .st-key-surge_app .fc.dark .ft:not([style]), .st-key-surge_app .farr {
-    color: #b7791f !important;
+    color: #e69f00 !important;
 }
 
 /* 인라인 색이 있는 칸(파랑)은 아래 규칙이 맡는다 */
@@ -484,7 +484,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .st-key-surge_app [style^="color: rgb(245"] {
-    color: #b7791f !important;
+    color: #e69f00 !important;
 }
 
 .st-key-surge_app [style^="color: rgb(139"] {
@@ -500,7 +500,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .st-key-surge_app [style*="border-left-color: rgb(245"], .st-key-surge_app [style*="solid rgb(245"] {
-    border-left-color: #b7791f !important;
+    border-left-color: #e69f00 !important;
 }
 
 .st-key-surge_app .fc.dark[style*="border-color: rgb(96"] {
@@ -522,7 +522,7 @@ button[kind="primary"] p, button[kind="primary"] {
 
 [data-testid="stMain"] [data-testid="stElementContainer"]:has(> [data-testid="stFullScreenFrame"] > [data-testid="stPlotlyChart"]) {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 /* (2026-10-02) 실시간 지도 · 네트워크도 그래프처럼 상자 안 — 바탕 · 테두리를 지우던 규칙 뺌 */
@@ -543,7 +543,7 @@ button[kind="primary"] p, button[kind="primary"] {
 /* ④ 리스크와 무기 거래 개요 카드 (밝은 테마) */
 .ra-card {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 .ra-card.on {
@@ -566,7 +566,7 @@ button[kind="primary"] p, button[kind="primary"] {
 /* 처음 보는 사람용 (밝은 테마) */
 .pq {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 .pq b, .st-hero .h-q, .st-h, .rk-def, .rk-mark b, .mn-q, .rk-ex b, .st-find b, .st-warn b, [data-testid="stSidebar"] .gl dt {
@@ -583,7 +583,7 @@ button[kind="primary"] p, button[kind="primary"] {
 
 .rk-card, .mn-card, .st-find {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 .rk-mark::after {
@@ -611,7 +611,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .tipi:hover {
-    background: #efe9dd !important;
+    background: #f5f3ff !important;
     color: #111827 !important;
 }
 
@@ -651,7 +651,7 @@ button[kind="primary"] p, button[kind="primary"] {
 
 /* ---- 페이지 안 «세부 보기» 띠 (ui.tabbar) — 밝은 배경용 ---- */
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] > div {
-    border-color: #d8cfbd !important;
+    border-color: #ddd6fe !important;
     background: #ffffff !important;
 }
 
@@ -666,7 +666,7 @@ button[kind="primary"] p, button[kind="primary"] {
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] {
     background: rgba(185, 28, 28, 0.8) !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, .12) !important;
-    border:1px solid #d8cfbd !important;
+    border:1px solid #ddd6fe !important;
 }
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] p {
@@ -690,20 +690,20 @@ button[kind="primary"] p, button[kind="primary"] {
 .st-key-pair_cards,
 .st-key-cty_cards {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 /* ---- 세부 분석 › 증가 케이스 › 고른 사례 카드 (.case-*) — 밝은 배경용 (2026-10-01)
    이 카드만 어두운 남색으로 남아 옆 그래프 칸과 따로 놀았다. 같은 흰 카드로 맞춘다. */
 .st-key-surge_app .case-x {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 /* 종합 분석 · 증가 케이스: 표를 담은 카드 (2026-10-01) */
 .st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) > [data-testid="stColumn"]:has([data-testid="stDataFrame"]) > [data-testid="stVerticalBlock"] {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 .st-key-surge_app .case-h,
@@ -714,15 +714,15 @@ button[kind="primary"] p, button[kind="primary"] {
 
 .st-key-surge_app .case-r {
     color: #4a443b !important;
-    border-bottom-color: #e5e0d5 !important;
+    border-bottom-color: #ddd6fe !important;
 }
 
 .st-key-surge_app .case-r b {
-    color: #b7791f !important;
+    color: #e69f00 !important;
 }
 
 .st-key-surge_app .case-p {
-    border-bottom-color: #e5e0d5 !important;
+    border-bottom-color: #ddd6fe !important;
 }
 
 .st-key-surge_app .case-p b {
@@ -746,39 +746,39 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .st-key-surge_app .case-n {
-    border-top-color: #e5e0d5 !important;
+    border-top-color: #ddd6fe !important;
 }
 
 /* 사례 카드 왼쪽 그래프 칸 — 밝은 배경용 (2026-10-01) */
 .st-key-casechart {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 /* 무기 거래 추이 · 추이 탭 오른쪽 상자 (2026-10-01) */
 [class*="st-key-trend_side_"] {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 .ts-h, .ts-kv { color: #111827 !important; }
 .ts-kv.up { color: #dc2626 !important; }
 .ts-kv.down { color: #2563eb !important; }
 .ts-s, .ts-kl, .ts-ks { color: #4b5563 !important; }
-.ts-kc { background: #faf8f3 !important; border-color: #e5e0d5 !important; }
+.ts-kc { background: #f5f3ff !important; border-color: #ddd6fe !important; }
 
 /* 무기 거래 추이 새 모양 (2026-10-01) */
 [class*="st-key-tab_row_"] {
-    border-bottom-color: #e5e0d5 !important;
+    border-bottom-color: #ddd6fe !important;
 }
 
 [class*="st-key-grp_"], .chip {
-    background: #faf8f3 !important;
-    border-color: #e5e0d5 !important;
+    background: #f5f3ff !important;
+    border-color: #ddd6fe !important;
 }
 
 [class*="st-key-cty_row_"] {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 .grp-l, .flt-h, .chip {
@@ -808,7 +808,7 @@ button[kind="primary"] p, button[kind="primary"] {
 
 .ccard {
     background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
     border-color: #ddd6fe !important;
 }
 
@@ -823,7 +823,7 @@ button[kind="primary"] p, button[kind="primary"] {
 
 .cevs-t { color: #1c1a17 !important; }
 .cevs-n { color: #3d3d3d !important; }
-.cev { border-color: #e5e0d5 !important; color: #3d3d3d !important; }
+.cev { border-color: #ddd6fe !important; color: #3d3d3d !important; }
 .cev b { color: #1c1a17 !important; }
 .cev.up { border-color: #b91c1c !important; color: #b91c1c !important; }
 .cev.dn { border-color: #1d4ed8 !important; color: #1d4ed8 !important; }
@@ -909,7 +909,41 @@ button[kind="primary"] p, button[kind="primary"] {
 .st-key-surge_app .ov-big, .st-key-surge_app .ov-t, .st-key-surge_app .ov-note-t, .st-key-surge_app .ov-name, .st-key-surge_app .ov-num, .st-key-surge_app .ov-info b { color: #111827 !important; }
 
 .st-key-riskmap_bigchart { background: #eef3fb !important; border-color: #cfdcf3 !important; }
-.st-key-risk_map path.js-line[style*="dasharray"], .st-key-risk_map .scattergeo path.point { filter: drop-shadow(0 0 2px rgba(255,255,255,.9)) !important; }
+/* 흰 화살표 (2026-10-02): 옅은 칸 · 흰 땅 위에서도 보이게 어두운 그림자 */
+.st-key-risk_map path.js-line[style*="dasharray"], .st-key-risk_map .scattergeo path.point { filter: drop-shadow(0 0 1.5px rgba(30,27,75,.85)) drop-shadow(0 0 3px rgba(30,27,75,.45)) !important; }
 .rm-t { color: #111827 !important; }
 .rm-s { color: #6b7280 !important; }
 .rm-cards-t { color: #111827 !important; }
+
+/* (2026-10-02) 팀원분 라이트테마 색을 나머지에도: style2.css 에 박힌 베이지 덮기 */
+[data-testid="stSidebar"] .st-key-menu_page { border-top-color: #ddd6fe !important; border-bottom-color: #ddd6fe !important; }
+[class*="st-key-lagbtn-"] button[kind="secondary"] p { color: #e69f00 !important; }
+
+/* ================================================================ (2026-10-02) 국가 카드 모양(팀원분 라이트테마)을 다른 페이지에도
+   큰 칸 = .chead (흰색→연회색 그라데이션) · 작은 수치 칸 = .cstat (연보라 바탕) · 목록 · 그래프 칸 = .ccard (흰 바탕) · 테두리는 모두 #ddd6fe */
+.st-key-main_panel, .st-key-feed_panel,
+.st-key-riskmap_panel, .st-key-riskmap_side, .st-key-riskmap_bigchart,
+[class*="st-key-trend_side_"],
+.st-key-surge_app .ov-key {
+    background: linear-gradient(135deg, #ffffff 0%, #f6f7fb 100%) !important;
+    border-color: #ddd6fe !important;
+}
+.st-key-surge_app .ov-key { border-left-color: #4f46e5 !important; }
+.st-key-main_panel .map-legend { background: transparent !important; border-color: #ddd6fe !important; }
+.st-key-feed_panel .feed-item { background: #ffffff !important; border-color: #ddd6fe !important; }
+.lv-lg, .lv-src, .st-key-feed_panel .lv,
+.st-key-main_panel .lv-lg, .st-key-main_panel .lv-src,
+.st-key-riskmap_panel .lv-lg, .st-key-riskmap_panel .lv-src { border-top-color: #ddd6fe !important; border-bottom-color: #ddd6fe !important; }
+.lv-spark i:not(.today) { background: #c4b5fd !important; }
+
+/* 작은 수치 칸: 리스크 상위 5개국 카드 · 무기 거래 요약 칸 */
+.pill:not(.hi), .strip .cell, .st-key-surge_app .ov-info {
+    background: #f5f3ff !important;
+    border-color: #ddd6fe !important;
+}
+
+/* 종합 분석: 큰 카드는 흰 바탕 · 그래프 상자는 연보라 칸, 뱃지는 번호 동그라미와 같은 색 */
+.st-key-ov_card1, .st-key-ov_card2 { background: #ffffff !important; border-color: #ddd6fe !important; }
+.st-key-ov_chartbox { background: #f5f3ff !important; border: 1px solid #ddd6fe !important; }
+.st-key-surge_app .ov-note, .st-key-surge_app .ov-chip, .st-key-surge_app .ov-tbl { border-color: #ddd6fe !important; }
+.st-key-surge_app .ov-badge { background: #ede9fe !important; color: #4f46e5 !important; }
