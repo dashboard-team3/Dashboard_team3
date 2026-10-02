@@ -2289,6 +2289,26 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
     font-size: 14px !important;
 }
 
+/* 선택된 기간 버튼 */
+[class*="st-key-flt_quick_"] button[kind="primary"] {
+    background: var(--color-main-570) !important;
+    border-color: var(--color-main-570) !important;
+    color: #ffffff !important;
+}
+
+[class*="st-key-flt_quick_"] button[kind="primary"] p {
+    color: #ffffff !important;
+}
+
+[role="radiogroup"]:is([aria-label="보기"], [aria-label="표시"])
+button[data-variant="segmented_control"][aria-checked="true"] {
+    background: color-mix(
+        in srgb,
+        var(--color-main-480) 12%,
+        transparent
+    ) !important;
+}
+
 /* 탭 줄: 왼쪽 보기 탭(지도 · 추이 · 순위 · 국가쌍) · 오른쪽 그 탭의 조작 묶음 */
 [class*="st-key-tab_row_"] {
     border-bottom: 1px solid var(--color-main-dark-820);
@@ -2682,12 +2702,53 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 [data-testid="stMultiSelectTagsContainer"] span[role="group"] {
     filter: hue-rotate(262deg) saturate(.95);
 }
-[data-testid="stButtonGroup"] button[aria-checked="true"] {
+/* [data-testid="stButtonGroup"] button[aria-checked="true"] {
     border-color: var(--color-main-480) !important;
 }
 [data-testid="stButtonGroup"] button[aria-checked="true"] p,
-[data-testid="stButtonGroup"] button[aria-checked="true"] span {
+[data-testid="st--colorButtonGroup"] button[aria-checked="true"] span {
     color: var(--color-main-350) !important;
+} */
+
+/* 선택된 버튼: 테두리와 배경 */
+[data-testid="stButtonGroup"] button:is(
+    [aria-checked="true"],
+    [aria-pressed="true"]
+) {
+    border-color: var(--color-main-480) !important;
+}
+
+/* 선택된 버튼: 글자색 */
+[data-testid="stButtonGroup"] button:is(
+    [aria-checked="true"],
+    [aria-pressed="true"]
+) p,
+[data-testid="stButtonGroup"] button:is(
+    [aria-checked="true"],
+    [aria-pressed="true"]
+) span {
+    color: var(--color-main-350) !important;
+}
+
+/* 품목 버튼의 선택 배경 */
+[data-testid="stButtonGroup"]
+button[data-variant="pills"][aria-pressed="true"] {
+    background: color-mix(
+        in srgb,
+        var(--color-main-480) 12%,
+        transparent
+    ) !important;
+}
+
+/* 국가명 박스 */
+[data-testid="stMultiSelectTagsContainer"] span[data-tag] {
+    background: var(--color-main-570) !important;
+    color: #ffffff !important;
+}
+
+[data-testid="stMultiSelectTagsContainer"] span[data-tag] span,
+[data-testid="stMultiSelectTagsContainer"] span[data-tag] button {
+    color: #ffffff !important;
 }
 
 /* 실시간 (2026-10-01): 오른쪽 위 LIVE 패널 · 지도 칸 아래 범례 상자 (중동_스토리맵에서 가져옴) */
@@ -2803,3 +2864,14 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 .ov-info-t svg { width: 13px; height: 13px; vertical-align: -2px; }
 /* 리스크 추이 카드 묶음 제목 «리스크 상위 5개국» */
 .rm-cards-t { font-size: 20px; font-weight: 800; color: #e5eaf3; margin-top: 22px; margin-bottom: 2px; letter-spacing: -0.2px; }
+
+
+/* 셀렉트박스 · 멀티셀렉트 포커스 */
+[data-testid="stSelectbox"] [data-baseweb="select"] > div:focus-within,
+[data-testid="stSelectbox"] [role="combobox"]:focus-within,
+[data-testid="stMultiSelect"]
+.react-aria-ComboBox > div[role="group"]:focus-within,
+[data-testid="stSelectbox"]
+.react-aria-ComboBox > div[role="group"]:focus-within {
+    border-color: var(--color-main-dark-410) !important;
+}

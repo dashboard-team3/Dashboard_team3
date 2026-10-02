@@ -946,3 +946,14 @@ button[kind="primary"] p, button[kind="primary"] {
 .st-key-ov_chartbox { background: var(--color-main-40) !important; border: 1px solid var(--color-main-130) !important; }
 .st-key-surge_app .ov-note, .st-key-surge_app .ov-chip, .st-key-surge_app .ov-tbl { border-color: var(--color-main-130) !important; }
 .st-key-surge_app .ov-badge { background: var(--color-main-light-70) !important; color: var(--color-main-light-650) !important; }
+
+
+/* 셀렉트박스 · 멀티셀렉트 포커스 */
+[data-testid="stSelectbox"] [data-baseweb="select"] > div:focus-within,
+[data-testid="stSelectbox"] [role="combobox"]:focus-within,
+[data-testid="stMultiSelect"]
+.react-aria-ComboBox > div[role="group"]:focus-within,
+[data-testid="stSelectbox"]
+.react-aria-ComboBox > div[role="group"]:focus-within {
+    border-color: var(--color-main-light-380) !important;
+}
