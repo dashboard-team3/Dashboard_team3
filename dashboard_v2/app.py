@@ -27,6 +27,7 @@ PAGES = {                              # 3. 메뉴 이름 → 그 페이지를 �
 if page != "홈":                         #    홈은 첫 화면이 제목을 크게 보여 주므로 위 제목 줄은 뺀다
     ui.brand()                         #    모든 페이지 맨 위: 대시보드 제목 · 부제
     start_view.reopen_sidebar()        #    홈 카드로 들어왔으면 접어 둔 왼쪽 메뉴를 다시 편다
+    ui.page_backdrop()                 #    (2026-10-02) 홈 배경 지도를 어둡게 · 흐리게 깔기 (어두운 테마만)
 PAGES[page]()
 
 sidebar.sidebar_footer()               #    사이드바 맨 아래 실시간 수집 시각 (필터까지 그린 뒤)

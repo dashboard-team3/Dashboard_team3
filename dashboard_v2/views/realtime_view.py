@@ -202,8 +202,8 @@ def draw_map():
             marker=dict(size=9, color="#e66767", line=dict(width=0))))
     fig.update_layout(
         geo=dict(projection_type="mercator", fitbounds="locations", visible=True,
-                 showland=True, landcolor="#dfe5ef" if light else "#1c1d38",          # 어두운 바탕(#13142a)보다 한 칸 밝게
-                 showcountries=True, countrycolor="#c9d2e0" if light else "#2a2a48", countrywidth=0.6,
+                 showland=True, landcolor="#ffffff" if light else "#13142a",          # 주변 땅 = 지도 상자 바탕색 (리스크 추이와 같게, 2026-10-02)
+                 showcountries=True, countrycolor="#e5e7eb" if light else "#24254a", countrywidth=0.6,
                  showcoastlines=False, showocean=False, showlakes=False, showframe=False,
                  bgcolor="rgba(0,0,0,0)"),
         margin=dict(l=0, r=0, t=0, b=0), showlegend=False, autosize=True,
@@ -212,10 +212,10 @@ def draw_map():
         hoverlabel=dict(bgcolor="#1e293b", bordercolor="#334155", font=dict(color="#e5eaf3", size=15)))
     st.markdown("""<style>
       .st-key-live_map_chart .js-plotly-plot {opacity: 1 !important; animation: none !important;}   /* 타일 지도용 '준비될 때까지 숨김' 끔 */
-      .st-key-main_panel, .st-key-feed_panel {min-height: 840px !important;}   /* 오른쪽에 LIVE · 사건이 함께 들어가서 조금 높게 */
+      .st-key-main_panel, .st-key-feed_panel {min-height: 932px !important;}   /* (2026-10-02) 지도 크기를 리스크 추이 지도와 같게 (720px) → 지도도 같은 크기 */
+      [data-testid="stHorizontalBlock"]:has(.st-key-feed_panel) > [data-testid="stColumn"]:last-child {flex: 0 0 max(340px, 29.3%) !important;}   /* 칸 폭도 리스크 추이(2.3 : 1)와 같게 */
 
-      .st-key-live_map_chart .stPlotlyChart {-webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 88%, transparent 100%);
-        mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 88%, transparent 100%);}
+      /* (2026-10-02) 가장자리 흐림(mask)은 뺐다 — 지도는 그래프처럼 상자 안 */
       .st-key-live_map_chart .scattergeo path.point {animation: lvping 1.6s ease-in-out infinite;}
       @keyframes lvping {0%, 100% {opacity: 1;} 50% {opacity: .15;}}
       .st-key-main_panel:has(.st-key-live_map_chart) {background: #13142a !important;}   /* 리스크 추이 칸 · 다른 카드와 같은 바탕 */
@@ -573,12 +573,15 @@ def live_main_panel():
         title, hint = VIEWS[view]
         choice = "전체"
         # 제목과 버튼을 한 줄에 두되, 폭이 모자라면 버튼 묶음이 제목 아래 줄로 내려간다 (잘리지 않게).
-        with st.container(horizontal=True, wrap=True, vertical_alignment="center", gap="small"):
-            st.markdown(f'<div class="map-head" style="border:none;padding-bottom:0"><b>{title}</b>'
-                        f' {info_icon(hint)}</div>', unsafe_allow_html=True, width="stretch")   # 안내는 ⓘ 말풍선
+        sub = (f"오늘(UTC) {realtime.today_utc()[:4]}-{realtime.today_utc()[4:6]}-{realtime.today_utc()[6:]} · 나라별 사건 수 · 15분마다 갱신"
+               if view == "지도" else "오늘(UTC) · 분쟁 원인별 국가쌍 관계 · 선 굵기 = 사건 수")
+        with st.container(horizontal=True, wrap=True, vertical_alignment="top", gap="small"):
+            # (2026-10-02) 리스크 추이와 같은 머리글: 큰 제목 ⓘ / 그 밑 작은 줄
+            st.markdown(f'<div class="rm-h"><div class="rm-t">{title} {info_icon(hint)}</div>'
+                        f'<div class="rm-s">{sub}</div></div>', unsafe_allow_html=True, width="stretch")
             # 버튼 묶음. 네트워크일 때만 그 왼쪽에 분쟁 원인 선택 상자를 둔다.
             with st.container(horizontal=True, horizontal_alignment="right",
-                              vertical_alignment="center", gap="small", width="content"):
+                              vertical_alignment="top", gap="small", width="content"):
                 if view == "네트워크":
                     choice = st.selectbox("분쟁 원인", ["전체"] + list(realtime.CATEGORIES),
                                           key="net_category", label_visibility="collapsed",
@@ -604,10 +607,11 @@ def live_feed():
     with st.container(border=True, key="feed_panel"):
         live_panel()   # (2026-10-01) 위: 스토리맵 LIVE 패널 · 아래: 최근 사건
         # 제목은 남는 폭을 쓰고, 버튼은 글자 폭만큼 확보한다. 좁은 화면에서도 버튼이 잘리지 않는다.
-        with st.container(horizontal=True, vertical_alignment="center", gap="small"):
-            st.markdown('<div class="map-head" style="border:none;padding-bottom:0"><b>최근 사건</b> '
+        with st.container(horizontal=True, vertical_alignment="top", gap="small"):
+            st.markdown('<div class="rm-h"><div class="rm-t">최근 사건 '
                         + info_icon('오늘(UTC) 사건을 최신순으로 · 시각은 한국 시간 · 보도량 = 그 사건을 다룬 기사 수 '
-                                    '(적음 1–2 · 보통 3–7 · 많음 8건+) · 같은 기사 N건 = 한 기사에서 나온 사건 묶음') + '</div>', unsafe_allow_html=True, width="stretch")
+                                    '(적음 1–2 · 보통 3–7 · 많음 8건+) · 같은 기사 N건 = 한 기사에서 나온 사건 묶음')
+                        + '</div><div class="rm-s">오늘(UTC) 최신순 · 시각은 한국 시간</div></div>', unsafe_allow_html=True, width="stretch")
             clicked = st.button("다시 시작" if paused else "일시정지", key="feed_toggle", width="content")
         if clicked:
             st.session_state["feed_paused"] = not paused

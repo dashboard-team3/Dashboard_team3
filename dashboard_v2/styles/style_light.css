@@ -529,10 +529,7 @@ button[kind="primary"] p, button[kind="primary"] {
     border-color: #e5e0d5 !important;
 }
 
-.st-key-main_panel [data-testid="stElementContainer"]:has(> [data-testid="stFullScreenFrame"] > [data-testid="stPlotlyChart"]) {
-    background: transparent !important;
-    border: none !important;
-}
+/* (2026-10-02) 실시간 지도 · 네트워크도 그래프처럼 상자 안 — 바탕 · 테두리를 지우던 규칙 뺌 */
 
 .side-filter-t {
     color: #4B5563 !important;
@@ -891,7 +888,7 @@ button[kind="primary"] p, button[kind="primary"] {
 /* 리스크 추이 지도 칸 · 오른쪽 칸 (밝은 테마) */
 .st-key-riskmap_panel, .st-key-riskmap_side { background: #eef3fb !important; border-color: #cfdcf3 !important; }
 .st-key-riskmap_panel .lv-lg, .st-key-riskmap_panel .lv-src { border-top-color: #cfdcf3 !important; }
-.st-key-riskmap_panel [data-testid="stElementContainer"]:has(> [data-testid="stFullScreenFrame"] > [data-testid="stPlotlyChart"]) { background: transparent !important; border: none !important; }
+
 
 /* 종합 분석 새 레이아웃 (2026-10-01): 흰 카드 · 인디고 강조 · 진한 빨강/파랑 */
 .st-key-surge_app .ov-key { background: #ffffff !important; border-color: #e5e7eb !important; }
@@ -913,6 +910,9 @@ button[kind="primary"] p, button[kind="primary"] {
 .st-key-surge_app .ov-cb-h { color: #6b7280 !important; }
 .st-key-surge_app .ov-no, .st-key-surge_app .ov-info-t { color: #4f46e5 !important; }
 .st-key-surge_app .ov-big, .st-key-surge_app .ov-t, .st-key-surge_app .ov-note-t, .st-key-surge_app .ov-name, .st-key-surge_app .ov-num, .st-key-surge_app .ov-info b { color: #111827 !important; }
-.st-key-riskmap_side .st-key-risk_map { background: transparent !important; border: none !important; }
+
 .st-key-riskmap_bigchart { background: #eef3fb !important; border-color: #cfdcf3 !important; }
 .st-key-risk_map path.js-line[style*="dasharray"], .st-key-risk_map .scattergeo path.point { filter: drop-shadow(0 0 2px rgba(255,255,255,.9)) !important; }
+.rm-t { color: #111827 !important; }
+.rm-s { color: #6b7280 !important; }
+

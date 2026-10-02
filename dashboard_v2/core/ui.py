@@ -114,3 +114,20 @@ def tabbar(label, options, key, default=None, **kw):
     with st.container(key=f"tabbar-{key}"):
         return st.segmented_control(label, options, default=first, key=key,
                                     label_visibility="collapsed", **kw) or first
+
+def page_backdrop(blur=10, dim=0.38):
+    """(2026-10-02) 홈 화면 배경(중동 지도 · 별)을 어둡게 · 흐리게 해서 다른 페이지 뒤에 깐다.
+    그림은 assets/home_bg.jpg (홈 배경을 카드 · 제목 없이 찍은 것). 밝은 테마에는 깔지 않는다."""
+    import base64
+    from pathlib import Path
+    f = Path(__file__).resolve().parent.parent / "assets" / "home_bg.jpg"
+    if not f.exists():
+        return
+    data = base64.b64encode(f.read_bytes()).decode()
+    st.markdown(f"""<style>
+      html:not([data-theme="light"]) .stApp::before {{content: ""; position: fixed; inset: -40px; z-index: 0; pointer-events: none;
+        background: url(data:image/jpeg;base64,{data}) center / cover no-repeat;
+        filter: blur({blur}px) brightness({dim}) saturate(.9);}}
+      html:not([data-theme="light"]) [data-testid="stAppViewContainer"] {{position: relative; z-index: 1; background: transparent !important;}}
+      html:not([data-theme="light"]) [data-testid="stMain"], html:not([data-theme="light"]) [data-testid="stHeader"] {{background: transparent !important;}}
+    </style>""", unsafe_allow_html=True)

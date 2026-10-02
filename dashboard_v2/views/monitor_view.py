@@ -171,8 +171,8 @@ def _risk_map(sel, small=False):
         textfont=dict(size=11 if small else 13, color="#1c1a17" if light else "#ffffff", family="JetBrains Mono, Pretendard, sans-serif")))
     fig.update_layout(
         geo=dict(projection_type="mercator", fitbounds="locations", visible=True,
-                 showland=True, landcolor="#dfe5ef" if light else "#1c1d38",          # 어두운 바탕(#13142a)보다 한 칸 밝게
-                 showcountries=True, countrycolor="#c9d2e0" if light else "#2a2a48", countrywidth=0.6,
+                 showland=True, landcolor="#ffffff" if light else "#13142a",          # 주변 땅 = 지도 상자 바탕색 (그래프 상자처럼 한 색, 2026-10-02)
+                 showcountries=True, countrycolor="#e5e7eb" if light else "#24254a", countrywidth=0.6,   # 주변 나라는 옅은 경계선만
                  showcoastlines=False, showocean=False, showlakes=False, showframe=False, bgcolor="rgba(0,0,0,0)"),
         margin=dict(l=0, r=0, t=0, b=0), showlegend=False, height=236 if small else 720, paper_bgcolor="rgba(0,0,0,0)",
         dragmode=False, clickmode="event+select",
@@ -313,10 +313,12 @@ def _side_panel(code, big):
     names = relations.COUNTRIES
     d = _data(code, _mode())
     mat, in_range, items, p0, p1 = d["mat"], d["in_range"], d["items"], d["p0"], d["p1"]
-    hd1, hd2 = st.columns([1.5, 1], vertical_alignment="center")
-    hd1.markdown(f'<div class="chart-h">{"지도" if big else "리스크 추이"} '
-                 f'{info_icon("나라를 누르면 왼쪽 그래프가 그 나라로 바뀝니다" if big else d["tip"])}</div>',
-                 unsafe_allow_html=True)
+    hd1, hd2 = st.columns([1.5, 1], vertical_alignment="top")
+    if big:
+        hd1.markdown(_head_html("지도", "나라를 누르면 왼쪽 그래프가 바뀜", "나라를 누르면 왼쪽 그래프가 그 나라로 바뀝니다"),
+                     unsafe_allow_html=True)
+    else:
+        hd1.markdown(_head_html("리스크 추이", f"{d['head']} · 최근 {YEARS}년", d["tip"]), unsafe_allow_html=True)
     if hd2.button("지도 크게 보기 ⤢" if big else "크게 보기 ⤢", key="riskmap_swap", width="stretch",
                   help="왼쪽 넓은 칸에 그래프(1980년부터)와 지도를 바꿔 보여 줍니다"):
         st.session_state["riskmap_big"] = not big
@@ -344,11 +346,33 @@ def _side_panel(code, big):
                           args=(FOCUS_KEY, (code, mode, q)), width="stretch")
 
 
-def _left_head(title, tip):
-    """왼쪽 칸 머리글: 제목 ⓘ · 오른쪽 국가쌍/국가별 고르기."""
-    h1, h2 = st.columns([2.2, 1], vertical_alignment="center")
-    h1.markdown(f'<div class="map-head" style="border:none;padding-bottom:0"><b>{title}</b> {info_icon(tip)}</div>',
-                unsafe_allow_html=True)
+def _head_html(title, sub, tip):
+    """칸 머리글: 큰 제목 ⓘ / 그 밑 작은 줄(나라 · 달 · 기간). (2026-10-02 제목 키우고 옆 내용은 밑으로)"""
+    return (f'<div class="rm-h"><div class="rm-t">{title} {info_icon(tip)}</div>'
+            f'<div class="rm-s">{sub}</div></div>')
+
+
+def _on_pick():
+    st.session_state["riskmap_sel"] = st.session_state["riskmap_pick"]
+
+
+def _left_head(title, sub, tip, sel=None):
+    """왼쪽 칸 머리글: 큰 제목 ⓘ / 작은 줄 · 오른쪽 국가쌍/국가별 고르기.
+    sel 을 주면 작은 줄 맨 앞(나라 이름 자리)에 나라 고르기 상자를 둔다 — 지도에서 작은 나라를 누르기 어려워서.
+    지도에서 나라를 누르면 상자도 그 나라로 맞춘다 (상자를 그리기 전에 값만 바꿔 둠)."""
+    names = relations.COUNTRIES
+    h1, h2 = st.columns([2.2, 1], vertical_alignment="top")
+    if sel is None:
+        h1.markdown(_head_html(title, sub, tip), unsafe_allow_html=True)
+    else:
+        with h1:
+            st.markdown(f'<div class="rm-h"><div class="rm-t">{title} {info_icon(tip)}</div></div>', unsafe_allow_html=True)
+            with st.container(horizontal=True, vertical_alignment="center", gap="small", key="rm_sub"):
+                if st.session_state.get("riskmap_pick") != sel:
+                    st.session_state["riskmap_pick"] = sel
+                st.selectbox("나라", list(names), key="riskmap_pick", format_func=names.get, on_change=_on_pick,
+                             label_visibility="collapsed", width=150)
+                st.markdown(f'<div class="rm-s" style="margin:0">{sub}</div>', unsafe_allow_html=True)
     with h2:
         _mode_toggle()
 
@@ -365,18 +389,20 @@ def risk_map_page():
     if big:
         with left, st.container(border=True, key="riskmap_bigchart"):
             d = _data(sel, _mode())
-            _left_head(f"리스크 추이 · {d['head']}", d["tip"].replace("최근 10년 평균", "1980년부터 · 최근 10년 평균"))
+            _left_head("리스크 추이", ("→ 상대국" if _mode() == "국가쌍" else "강조 · 국가별 종합 리스크")
+                       + f" · 1980년부터 · 기준 달 {base_month():%Y-%m}",
+                       d["tip"].replace("최근 10년 평균", "1980년부터 · 최근 10년 평균"), sel=sel)
             _chart(sel, big=True)
     else:
         with left, st.container(border=True, key="riskmap_panel"):
             if _mode() == "국가쌍":
-                _left_head(f"국가쌍 리스크 · {base_month():%Y-%m} · {names[sel]} → 상대국",
+                _left_head("국가쌍 리스크", f"→ 상대국 · {base_month():%Y-%m} (다 모인 마지막 달)",
                            f"고른 나라(기준)에서 각 상대국으로의 {base_month():%Y-%m} 국가쌍 리스크로 칠함 (하루도 빠짐없이 모인 마지막 달) · "
-                           "화살표 = 리스크가 가장 큰 3곳 (오른쪽 카드 1~3위와 같음) · 나라를 누르면 그 나라 기준")
+                           "화살표 = 리스크가 가장 큰 3곳 (오른쪽 카드 1~3위와 같음) · 나라를 누르거나 왼쪽 상자에서 고르면 그 나라 기준", sel=sel)
             else:
-                _left_head(f"나라별 종합 리스크 · {base_month():%Y-%m}",
+                _left_head("나라별 종합 리스크", f"강조 · {base_month():%Y-%m} (다 모인 마지막 달)",
                            f"나라마다 그 나라가 낀 모든 관계로 낸 {base_month():%Y-%m} 종합 리스크 (하루도 빠짐없이 모인 마지막 달) · "
-                           "나라를 누르면 오른쪽에 그 나라의 리스크 추이")
+                           "나라를 누르거나 왼쪽 상자에서 고르면 오른쪽에 그 나라의 리스크 추이", sel=sel)
             _risk_map(sel)
     with right, st.container(border=True, key="riskmap_side"):
         _side_panel(sel, big)
