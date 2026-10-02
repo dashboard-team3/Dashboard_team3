@@ -2887,3 +2887,7 @@ button[data-variant="pills"][aria-pressed="true"] {
 .react-aria-ComboBox > div[role="group"]:focus-within {
     border-color: var(--color-main-dark-410) !important;
 }
+
+/* 리스크 상위 5개국 카드 사이 간격 (2026-10-02): 글 상자의 기본 아래 여백 -16px 가 카드 사이 간격을 덮어 카드끼리 붙어 보였다 */
+.st-key-riskmap_cards [data-testid="stMarkdownContainer"] { margin-bottom: 0 !important; }
+.st-key-riskmap_cards { gap: 10px !important; }
