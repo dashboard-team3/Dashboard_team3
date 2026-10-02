@@ -21,8 +21,8 @@ MENU_CARDS = [
     ("리스크 모니터링", "GDELT 2.0 기반 중동 16개국 갈등 사건 · 15분마다 갱신"),
     ("리스크 추이", "1980년부터 국가쌍 · 국가별 월별 리스크 추이"),
     ("무기 거래 추이", "SIPRI 무기 계약 · UN Comtrade 교역 기록 기반 중동 16개국 무기 거래 흐름"),
-    ("리스크와 무기 거래", "나라별 리스크와 무기 거래 연도별 비교"),
-    ("종합 분석", "중동 16개국 전체 리스크 급증 해 전후 무기 주문 변화 사례 분석"),
+    ("리스크와 무기 거래", "국가별 리스크·무기 거래의 연도별 비교"),
+    ("종합 분석", "중동 16개국의 리스크 급증 전후 무기 주문 변화 분석"),
 ]
 
 CSS = """<style>
@@ -247,7 +247,7 @@ def page():
     with st.container(key="landing"):                        # 앞쪽 내용
         st.markdown('<div class="ld-head"><div class="ld-k">DATA · 1980–2026 · MIDDLE EAST 16</div>'
                     '<div class="ld-t">Conflict Risk &amp; Arms Dashboard</div>'
-                    '<div class="ld-s">중동 지역 갈등 편중도와 무기 거래</div></div>', unsafe_allow_html=True)
+                    '<div class="ld-s">중동 지역 갈등 리스크와 무기 거래</div></div>', unsafe_allow_html=True)
         cols = st.columns(len(MENU_CARDS), gap="medium")
         for i, (col, (name, desc)) in enumerate(zip(cols, MENU_CARDS)):
             with col, st.container(key=f"ldcard_{i}"):

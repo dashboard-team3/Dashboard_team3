@@ -28,7 +28,7 @@ def live_card(label, value, sub, tone="", delta=None, spark="", label_tip=""):
     if delta is not None:
         cls = "up" if delta > 0 else "down" if delta < 0 else "flat"
         d = tip(f'{"▲" if delta > 0 else "▼" if delta < 0 else "–"} {abs(delta):,}',
-                "어제 같은 시각까지의 건수와 비교한 차이", f"delta {cls}")
+                "전일 동일 시각 대비 사건 건수 증감", f"delta {cls}")
     return f"""
 <div class="kpi live {tone}">
   <div>
@@ -72,34 +72,34 @@ def live_kpis():
     y_same, y_all = yesterday_same_time(slot)
 
     if y_same is not None:
-        sub = (f"어제 같은 시각({slot[8:10]}:{slot[10:12]} UTC)까지 {y_same:,}건 · 어제 하루 {y_all:,}건 · "
+        sub = (f"전일 동일 시각({slot[8:10]}:{slot[10:12]} UTC)까지 {y_same:,}건 · 전일 전체 {y_all:,}건 · "
                f"최근 {len(totals)}일 추이")
     else:
         sub = f"중동 국가 간 · 최근 {len(totals)}일 추이"
     c1, c2, c3 = st.columns(3)
-    c1.markdown(live_card("오늘(UTC) 누적 이벤트", f"{k['total']:,}", sub, "blue",
+    c1.markdown(live_card("당일 누적 사건 (UTC)", f"{k['total']:,}", sub, "blue",
                           label_tip="UTC 기준 오늘 0시(한국 오전 9시)부터 들어온 중동 16개국끼리의 갈등 사건 수. "
                                     "오른쪽 작은 선 = 최근 7일 하루 건수",
                           delta=(k["total"] - y_same) if y_same is not None else None,   # 전일 동시간대 대비
                           spark=spark_svg(totals, "#93c5fd")),
                 unsafe_allow_html=True)
-    c2.markdown(live_card("최근 수신", f"+{k['recent']}", "직전 15분 배치",
-                          label_tip="가장 최근 15분 구간에 새로 들어온 사건 수 (수집기가 15분마다 GDELT 를 받음)"),
+    c2.markdown(live_card("최근 수신", f"+{k['recent']}", "최신 15분 수집 구간",
+                          label_tip="최신 15분 구간에 수집된 사건 수 · GDELT 자료 15분 단위 수집"),
                 unsafe_allow_html=True)
     
     if k["top"]:
         name, count, partner = k["top"]
-        c3.markdown(live_card("최다 관여국", name, f"{count}건 · 최다 상대 {partner}", "red",
-                              label_tip="오늘 사건에 주체 · 대상으로 가장 많이 나온 나라와, 그 나라와 가장 많이 얽힌 상대국"),
+        c3.markdown(live_card("최다 관여국", name, f"{count}건 · 최다 상대국 {partner}", "red",
+                              label_tip="당일 사건의 행위 주체·대상으로 가장 많이 기록된 국가 및 최다 상대국"),
                     unsafe_allow_html=True)
     else:
-        c3.markdown(live_card("최다 관여국", "-", "오늘 수집된 이벤트 없음", "red"),
+        c3.markdown(live_card("최다 관여국", "-", "당일 수집 사건 없음", "red"),
                     unsafe_allow_html=True)
 
     if k["slot_kst"]:
         st.caption(f"마지막 수신 구간 {k['slot_kst']} KST (UTC {k['slot_utc']}) · 60초마다 자동 갱신")
     else:
-        st.caption(":exclamation: 실시간 수집기 상태를 찾을 수 없습니다.")
+        st.caption(":exclamation: 실시간 수집 상태 미확인")
 
 
 MAP_CENTER = dict(lat=27.2, lon=44.0)   # 튀르키예(북)와 예멘(남) 사이 가운데
@@ -166,7 +166,7 @@ def draw_map():
     stats["hover"] = stats.apply(lambda r: (
         f"<b>{r['country']}</b> 오늘 {r['count']}건<br>"
         + "<br>".join(f"{cat} {n}" for cat, n in r["by_category"].items() if n)
-        + (f"<br>최다 상대 {r['top_partner']}" if r["top_partner"] else "")
+        + (f"<br>최다 상대국 {r['top_partner']}" if r["top_partner"] else "")
     ) if r["count"] else f"<b>{r['country']}</b> 오늘 0건", axis=1)
     poly = stats.dropna(subset=["iso"])
     zmax = max(1.0, float(poly["count"].max()) ** 0.5)
@@ -281,7 +281,7 @@ def live_panel():
     L = live_side_data(realtime.last_slot() or "")
     if not L["slot_kst"]:
         st.markdown('<div class="lv"><div class="lv-hd"><span class="lv-dot off"></span>LIVE</div>'
-                    '<div class="lv-when stale">실시간 수집기 상태를 찾을 수 없습니다.</div></div>',
+                    '<div class="lv-when stale">실시간 수집 상태 미확인</div></div>',
                     unsafe_allow_html=True)
         return
     m = L["mins"]
@@ -327,13 +327,13 @@ def live_legend():
     st.markdown(f"""
 <div class="lv-lg">
   <div class="lv-lg-a">
-    <div class="lv-lg-t">오늘(UTC) 나라별 사건 수</div>
+    <div class="lv-lg-t">당일 국가별 사건 수 (UTC)</div>
     <div class="lv-grad" style="background:linear-gradient(90deg,{','.join(seq)})"></div>
     <div class="lv-ticks"><span>0</span><span>{mid}</span><span>{max_count}건</span></div>
   </div>
   <div class="lv-lg-b">
     <div class="lv-cats">{cats}</div>
-    <div class="lv-note">한 사건은 주체 · 대상 두 나라에 모두 셈 · <span class="lv-dot sm"></span> 최근 1시간 안에 사건</div>
+    <div class="lv-note">단일 사건은 행위 주체·대상 국가에 각각 집계 · <span class="lv-dot sm"></span> 최근 1시간 내 사건 발생</div>
     <div class="lv-note lv-src">출처 GDELT 2.0 → GDELT2_중동_선택EventCode_필터링 (RDS MySQL pjl){upd}</div>
   </div>
 </div>""", unsafe_allow_html=True)
@@ -346,7 +346,7 @@ def draw_network(choice):
     pos = realtime.network_positions()
 
     if pairs.empty:
-        st.info(f"오늘(UTC) '{choice}' 유형으로 연결된 국가쌍이 아직 없습니다.")
+        st.info(f"오늘(UTC) '{choice}' 유형에 해당하는 국가쌍 없음")
         return
 
     fig = go.Figure()
@@ -481,7 +481,7 @@ FIT_SCRIPT = """
     setTimeout(() => { w.__mapSelf = false; }, 300);
     return true;
   };
-  // 지도 나라 이름: layout.meta.labels(이름 · 위치 · 방향 · 거리 · 색)로 지도 엔진에 '우리' 이름표 레이어를 올린다.
+  // 지도 국가 이름: layout.meta.labels(이름 · 위치 · 방향 · 거리 · 색)로 지도 엔진에 '우리' 이름표 레이어를 올린다.
   // Plotly 트레이스가 아니라서 Plotly 가 다시 그려도 초기화되지 않는다 → 로딩 중 이름이 튀거나 떨리지 않는다.
   // 지도가 좁으면 글자를 줄이고(19px 그대로면 지도 엔진이 겹치는 이름을 숨긴다), 줄인 만큼 em 거리를 키워 원과의 px 거리는 그대로 둔다.
   const placeLabels = (gd, map) => {
@@ -568,8 +568,8 @@ def fit_charts_to_panel():
 
 
 VIEWS = {
-    "지도": ("국가별 이벤트 발생 현황", "원 안 숫자 = 오늘 이벤트 수 · 원에 마우스를 올리면 상세"),
-    "네트워크": ("분쟁 원인별 국가 간 관계 네트워크", "선에 마우스를 올리면 방향별 건수"),
+    "지도": ("국가별 사건 발생 현황", "원 안 숫자 = 당일 사건 수 · 마우스를 올리면 상세 정보 표시"),
+    "네트워크": ("사건 유형별 국가 간 관계 네트워크", "선에 마우스를 올리면 행위 방향별 사건 건수 표시"),
 }
 
 
@@ -581,8 +581,8 @@ def live_main_panel():
         title, hint = VIEWS[view]
         choice = "전체"
         # 제목과 버튼을 한 줄에 두되, 폭이 모자라면 버튼 묶음이 제목 아래 줄로 내려간다 (잘리지 않게).
-        sub = (f"오늘(UTC) {realtime.today_utc()[:4]}-{realtime.today_utc()[4:6]}-{realtime.today_utc()[6:]} · 나라별 사건 수 · 15분마다 갱신"
-               if view == "지도" else "오늘(UTC) · 분쟁 원인별 국가쌍 관계 · 선 굵기 = 사건 수")
+        sub = (f"오늘(UTC) {realtime.today_utc()[:4]}-{realtime.today_utc()[4:6]}-{realtime.today_utc()[6:]} · 국가별 사건 수 · 15분 단위 갱신"
+               if view == "지도" else "당일(UTC) · 사건 유형별 국가쌍 관계 · 선 굵기 = 사건 수")
         with st.container(horizontal=True, wrap=True, vertical_alignment="top", gap="small"):
             # (2026-10-02) 리스크 추이와 같은 머리글: 큰 제목 ⓘ / 그 밑 작은 줄
             st.markdown(f'<div class="rm-h"><div class="rm-t">{title} {info_icon(hint)}</div>'
@@ -591,7 +591,7 @@ def live_main_panel():
             with st.container(horizontal=True, horizontal_alignment="right",
                               vertical_alignment="top", gap="small", width="content"):
                 if view == "네트워크":
-                    choice = st.selectbox("분쟁 원인", ["전체"] + list(realtime.CATEGORIES),
+                    choice = st.selectbox("사건 유형", ["전체"] + list(realtime.CATEGORIES),
                                           key="net_category", label_visibility="collapsed",
                                           width=160)
                 st.segmented_control("보기", list(VIEWS), default="지도", key="main_view",
@@ -618,9 +618,9 @@ def live_feed():
         with st.container(horizontal=True, vertical_alignment="top", gap="small"):
             st.markdown('<div class="rm-h"><div class="rm-t">최근 사건 '
                         + info_icon('오늘(UTC) 사건을 최신순으로 · 시각은 한국 시간 · 보도량 = 그 사건을 다룬 기사 수 '
-                                    '(적음 1–2 · 보통 3–7 · 많음 8건+) · 같은 기사 N건 = 한 기사에서 나온 사건 묶음')
-                        + '</div><div class="rm-s">오늘(UTC) 최신순 · 시각은 한국 시간</div></div>', unsafe_allow_html=True, width="stretch")
-            clicked = st.button("다시 시작" if paused else "일시정지", key="feed_toggle", width="content")
+                                    '(적음 1–2 · 보통 3–7 · 많음 8건+) · 동일 기사 N건 = 한 기사에서 나온 사건 묶음')
+                        + '</div><div class="rm-s">당일(UTC) 최신순 · 시각: 한국 시간</div></div>', unsafe_allow_html=True, width="stretch")
+            clicked = st.button("갱신 재개" if paused else "일시정지", key="feed_toggle", width="content")
         if clicked:
             st.session_state["feed_paused"] = not paused
             if not paused:   # 방금 멈췄다 → 지금 목록을 저장
@@ -635,7 +635,7 @@ def live_feed():
 
         with st.container(border=False, key="feed_list"):   # 남은 높이를 채우고, 넘치면 이 안에서만 스크롤
             if not items:
-                st.caption("오늘(UTC) 수집된 사건이 아직 없습니다.")
+                st.caption("당일(UTC) 수집 사건 없음")
             rows = []
             for it in items:
                 esc = html_lib.escape
@@ -649,7 +649,7 @@ def live_feed():
                     f'<div class="feed-tags">'
                     f'<span class="feed-badge" style="color:{it["color"]};border-color:{it["color"]}66;'
                     f'background:{it["color"]}1f">{it["root"]} {it["category"] or "기타"}</span>'
-                    + (f'<span class="feed-group">같은 기사 {it["count"]}건</span>'
+                    + (f'<span class="feed-group">동일 기사 {it["count"]}건</span>'
                        if it["count"] > 1 else "")
                     + (f'<span class="feed-late">{it["days_before"]}일 전 사건</span>'
                        if it["days_before"] else "")
@@ -662,18 +662,18 @@ def live_feed():
                     f'</div></div>')
             st.markdown("".join(rows), unsafe_allow_html=True)
         if paused:
-            st.caption("일시정지 중 · 새 사건은 '다시 시작'을 누르면 보입니다.")
+            st.caption("갱신 일시정지 중 · 갱신 재개 선택 시 신규 사건 표시")
 
 
 def page(show_title=True):
     if show_title:
         st.title('실시간 모니터링')
-        page_sub(term("GDELT 2.0") + " 데이터를 기반으로 중동 16개국 사이에서 일어난 " + term("실시간 갈등 뉴스") + "를 보여줍니다. 날짜 기준은 " + term("UTC") + " 오늘입니다.")
+        page_sub(term("GDELT 2.0") + " 기반 중동 16개국 간 " + term("실시간 갈등 뉴스") + " 현황 제공 · 날짜 기준: " + term("UTC") + " 당일")
     k = realtime.kpis()
     if k["top"]:
         name, count, partner = k["top"]
         st.markdown(f'<div class="summary">오늘(UTC) 중동 국가 간 갈등 사건 <b>{k["total"]:,}건</b> · '
-                    f'가장 많이 관여한 나라는 <b>{name}</b>({count}건, 최다 상대 {partner})</div>', unsafe_allow_html=True)
+                    f'최다 관여국: <b>{name}</b>({count}건, 최다 상대국 {partner})</div>', unsafe_allow_html=True)
 
     # (2026-10-01) KPI 카드 3개(live_kpis)는 빼고, 같은 내용을 오른쪽 위 LIVE 패널로
 

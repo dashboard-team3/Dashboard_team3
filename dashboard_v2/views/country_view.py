@@ -54,7 +54,7 @@ def _recent(df, last, win=WIN):
     return df[df["date"] > last - pd.DateOffset(months=win)]
 
 
-@st.cache_data(show_spinner="나라 요약을 만드는 중…")
+@st.cache_data(show_spinner="국가별 요약 산출 중…")
 def profile(code):
     """나라 하나의 요약값 묶음. 화면에서 쓰는 수는 전부 여기서 나온다."""
     c = relations.load_country()
@@ -107,9 +107,9 @@ def _list_card(title, tip, rows):
 def page():
     names = relations.COUNTRIES
     st.title("리스크와 무기 거래")
-    page_sub("나라 하나를 골라 " + term("리스크") + " · 상대국 · 무기 거래 · " + term("급증") + " 이력을 한 장으로 봅니다.")
+    page_sub("선택 국가의 " + term("리스크") + "·주요 상대국·무기 거래·" + term("급증") + " 이력 통합 비교")
 
-    code = st.selectbox("나라", list(names), format_func=names.get, key="card_country",
+    code = st.selectbox("국가", list(names), format_func=names.get, key="card_country",
                         label_visibility="collapsed")
     d = profile(code)
     g = relations.grade(d["risk"])
@@ -117,21 +117,21 @@ def page():
     txt = relations.GRADES[g] if g is not None else "자료 없음"
     period = f"{d['last'] - pd.DateOffset(months=WIN - 1):%Y-%m}–{d['last']:%Y-%m}"
     # 둘 중 큰 쪽에만 표를 단다 — «어느 쪽이 더 센가» 가 이 두 칸을 나란히 두는 이유다
-    up_out = "<em>우세</em>" if d["out"] > d["inr"] else ""
-    up_in = "<em>우세</em>" if d["inr"] > d["out"] else ""
+    up_out = "<em>상대적으로 높음</em>" if d["out"] > d["inr"] else ""
+    up_in = "<em>상대적으로 높음</em>" if d["inr"] > d["out"] else ""
 
     # ── 머리: 큰 숫자 네 칸. 칸마다 «무슨 기간인지» 를 제목 옆에 붙인다 (2026-10-01)
     st.markdown(
         f'<div class="chead"><div class="ch-l"><div class="ch-n">{names[code]}<span>{code}</span></div>'
-        f'<div class="ch-s">리스크는 <b>최근 12개월</b> ({period})<br>'
-        f'무기 수입은 <b>최근 1년</b> ({d["ly"]}년 주문)</div></div>'
+        f'<div class="ch-s">리스크: <b>최근 12개월</b> ({period})<br>'
+        f'무기 수입: <b>최근 1년</b> ({d["ly"]}년 주문)</div></div>'
         f'<div class="ch-r">'
         + _stat("종합 리스크 <small>최근 12개월</small>", f"{d['risk']:.3f}",
                 f'<i style="background:{col}"></i>{txt}')
-        + _stat("갈등 유발 <small>최근 12개월</small>", f"{d['out']:.3f}",
-                f"그 나라가 주어인 사건 {up_out}")
-        + _stat("갈등 대상 <small>최근 12개월</small>", f"{d['inr']:.3f}",
-                f"그 나라가 대상인 사건 {up_in}")
+        + _stat("행위 주체 리스크 <small>최근 12개월</small>", f"{d['out']:.3f}",
+                f"해당 국가가 행위 주체인 사건 {up_out}")
+        + _stat("행위 대상 리스크 <small>최근 12개월</small>", f"{d['inr']:.3f}",
+                f"해당 국가가 행위 대상인 사건 {up_in}")
         + _stat(f"무기 수입 <small>최근 1년</small>", f"{d['tiv_ly']:,.0f}", unit="TIV",
                 sub=f"{d['ly']}년 주문 {d['n_ly']}건")
         + '</div></div>', unsafe_allow_html=True)
@@ -140,18 +140,18 @@ def page():
     c1, c2, c3 = st.columns(3, gap="medium")
     with c1:
         st.markdown(_list_card(
-            "리스크가 높은 상대국 <small>최근 12개월</small>",
-            f"{names[code]} 가 기사 문장의 주어인 사건으로 낸 월 리스크를 최근 12개월 평균한 값. 괄호는 상대가 주어인 경우.",
+            "상위 리스크 상대국 <small>최근 12개월</small>",
+            f"{names[code]}가 행위 주체로 기록된 국가쌍의 월별 리스크 · 최근 12개월 평균 기준",
             [(n, f"{v:.2f}") for n, v in d["top_out"]]), unsafe_allow_html=True)
     with c2:
         st.markdown(_list_card(
-            "많이 산 무기 <small>누적 TIV</small>",
-            "SIPRI 주문 연도 기준 TIV 합 (전 기간). 품목별 전후 비교는 계약 수가 적어 하지 않습니다.",
+            "주요 도입 무기 <small>누적 TIV</small>",
+            "전 기간의 무기 종류별 주문 TIV 합계 · 계약 건수 제한으로 품목별 전후 비교 제외",
             [(n, f"{v:,.0f}") for n, v in d["weapons"]]), unsafe_allow_html=True)
     with c3:
         st.markdown(_list_card(
-            "주 공급국 <small>누적 TIV</small>",
-            "그 나라가 산 무기를 판 나라. 괄호 안은 그 나라 전체 TIV 가운데 차지하는 몫.",
+            "주요 공급국 <small>누적 TIV</small>",
+            "해당 국가의 무기 공급국 · 괄호: 전체 주문 TIV 대비 공급국별 비중",
             [(n, f"{v:,.0f} ({q:.0f}%)") for n, v, q in d["suppliers"]]), unsafe_allow_html=True)
 
     # ── 리스크 추이 + 무기 수입 막대 + 급증한 해 (2026-10-01: 아래에 따로 있던 막대를 여기로 합침)
@@ -161,15 +161,15 @@ def page():
     g = m[(m["country"] == code) & m["year"].between(*years)].sort_values("year")
 
     section_head("01", "리스크 추이와 무기 수입",
-                 "선은 <b>월별 종합 리스크</b>의 12개월 이동평균(1980~), 막대는 <b>SIPRI 무기 수입</b>"
-                 f"(주문 연도 TIV · {years[0]}~). 세로 금색 점선은 그 나라의 «0년»(갈등이 크게 튄 해)입니다. "
-                 "두 축은 단위가 달라 높이를 직접 비교하지 않습니다.")
+                 "선: <b>월별 종합 리스크</b>의 12개월 이동평균(1980~) · 막대: <b>SIPRI 무기 수입</b>"
+                 f"(주문 연도 TIV · {years[0]}~) · 금색 세로 점선: 리스크 급증 기준 연도(0년) · "
+                 "리스크·TIV의 단위 차이에 따라 두 축의 높이 직접 비교 불가")
     # 토글은 그래프 오른쪽 위에 (그래프 제목과 같은 줄처럼 보이게) — 2026-10-01
     _, tog = st.columns([2.4, 1], vertical_alignment="center")
     with tog:
         with st.container(horizontal=True, horizontal_alignment="right", width="stretch"):
-            show_ev = st.toggle(f"급증한 해 점선 ({len(d['events'])}번)", value=True, key="card_surge",
-                                help="그 나라의 «0년»(갈등이 크게 튄 해)을 금색 세로 점선으로 그립니다.")
+            show_ev = st.toggle(f"급증 기준 연도 표시 ({len(d['events'])}건)", value=True, key="card_surge",
+                                help="해당 국가의 리스크 급증 기준 연도(0년)를 금색 세로 점선으로 표시")
     sm = relations.smooth(d["series"], HOW)
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(go.Bar(x=[pd.Timestamp(int(y), 7, 1) for y in g["year"]], y=g["tiv"],
@@ -198,10 +198,10 @@ def page():
 
     # ── 시차 상관 («리스크와 무기 거래» 쪽과 같은 함수. 막대 묶음은 위에 합쳤으므로 annual=False)
     if not g.empty:
-        st.markdown(f'<div class="summary"><b>{names[code]}</b> {years[0]}–{years[1]}: 연 리스크 평균 '
+        st.markdown(f'<div class="summary"><b>{names[code]}</b> {years[0]}–{years[1]}: 연간 리스크 평균 '
                     f'<b>{g["risk"].mean():.3f}</b> · 무기 수입 합 <b>{g["tiv"].sum():,.0f} TIV</b> '
-                    f'(가장 많이 산 해 {int(g.set_index("year")["tiv"].idxmax())}년)</div>', unsafe_allow_html=True)
+                    f'(최대 주문 연도 {int(g.set_index("year")["tiv"].idxmax())}년)</div>', unsafe_allow_html=True)
     risk_arms_view.country_sections(code, years, no=2, annual=False)
 
     st.caption(f"리스크 · GDELT 1.0 국가별 월별 · 무기 · SIPRI 주문 연도 TIV (중고 {d['used']}건 포함) · "
-               "상대국은 중동 16개국 사이만 셉니다.")
+               "상대국 분석 범위: 중동 16개국")

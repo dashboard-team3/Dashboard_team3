@@ -87,7 +87,7 @@ CSS = f"""
     .flow {{flex-direction:column;}} .farr {{display:none;}}
   }}
 
-  /* 고른 사례 한 건의 «그 해 무슨 일이 있었나» 칸 (2026-10-01) */
+  /* 선택한 사례 한 건의 «그 해 무슨 일이 있었나» 칸 (2026-10-01) */
   .case-x {{background:{CARD}; border:1px solid {LINE}; border-radius:14px;
             padding:1.1rem 1.3rem; height:100%;}}
   .case-h {{font-size:19px; font-weight:800; color:#fff; margin-bottom:.8rem;}}
@@ -258,7 +258,7 @@ def timeline(rows, key="up_timeline", color_of=None, text_of=None):
                     color=[col(r) for r in rows], line=dict(width=1.2, color=BG)),
         customdata=[[r["ko"], r["year"], A.SHAPES[r["shape"]][0], r["diff"]] for r in rows],
         hovertemplate="<b>%{customdata[0]} · %{customdata[1]}년</b><br>%{customdata[2]}"
-                      "<br>변화폭 %{customdata[3]:+.2f} 칸<extra></extra>", showlegend=False))
+                      "<br>표준화 주문 규모 변화 %{customdata[3]:+.2f} (표준편차 단위)<extra></extra>", showlegend=False))
     fig.update_layout(paper_bgcolor=BG, plot_bgcolor=BG, height=60 + 34 * len(order),
                       font=dict(color=INK, size=13, family="Malgun Gothic, sans-serif"),
                       margin=dict(l=10, r=20, t=16, b=10), clickmode="event+select",
@@ -282,7 +282,7 @@ def lag_buttons(ks, key="corr_lag"):
             with st.container(key=f"lagbtn-{i}"):
                 if st.button(name, key=f"btn_{key}_{i}", width="stretch",
                              type="primary" if i == cur else "secondary",
-                             help=f"리스크가 오른 해와 «{name}» 무기 수입을 견준 값"):
+                             help=f"리스크 기준 연도와 «{name}» 무기 수입의 상관계수"):
                     st.session_state[key] = i
                     st.rerun()
     return cur
@@ -329,17 +329,17 @@ def case_card(r, sub_text=None, bar_color=None):
       with st.container(key="casecard"):
         st.markdown(
             f'<div class="case-x"><div class="case-h">{r["ko"]} · {int(r["year"])}년</div>'
-            f'<div class="case-r">그 해 종합 리스크 <b>{risk:.3f}</b>'
-            f'<span>0~1 · 그 해 모든 날의 평균</span></div>'
+            f'<div class="case-r">해당 연도 종합 리스크 <b>{risk:.3f}</b>'
+            f'<span>0~1 · 해당 연도의 일별 평균</span></div>'
             + '<div class="case-p">' + "".join(
                 f'<span><i>{i + 1}</i>{ko}<b>{v:.2f}</b></span>' for i, (_, ko, v) in enumerate(tops))
-            + '<em>리스크가 가장 높았던 상대국</em></div>'
+            + '<em>상위 리스크 상대국</em></div>'
             + (f'<div class="case-e">{A.EMBARGO[(r["country"], int(r["year"]))]}</div>'
                if (r["country"], int(r["year"])) in A.EMBARGO else "")
             + (f'<div class="case-w">{A.EVENTS[(r["country"], int(r["year"]))]}</div>'
                if (r["country"], int(r["year"])) in A.EVENTS else "")
-            + '<div class="case-n">상대국은 중동 16개국 사이만 셉니다. 미국·러시아 같은 역외 국가는 '
-              '국가쌍 자료에 없어, 실제 교전 상대가 역외인 사례는 여기에 안 나옵니다.</div></div>',
+            + '<div class="case-n">상대국 분석 범위: 중동 16개국 · 미국·러시아 등 역외 국가는 '
+              '국가쌍 자료 범위에서 제외</div></div>',
             unsafe_allow_html=True)
 
 
@@ -350,7 +350,7 @@ def grid(rows, cols=5, bar_color=None, sub=None, height_per_row=290, mark_year=F
     세로축은 칸마다 다르다 — 레바논은 최대 59, 이스라엘은 3,381 이라 같은 축에 두면 작은 쪽이 사라진다.
     """
     if not rows:
-        st.info("해당하는 사례가 없습니다.")
+        st.info("선택 조건에 해당하는 사례 없음")
         return
 
     nrow = int(np.ceil(len(rows) / cols))
@@ -381,7 +381,7 @@ def grid(rows, cols=5, bar_color=None, sub=None, height_per_row=290, mark_year=F
                                zeroline=False, tickfont=dict(size=10),
                                rangemode="tozero", nticks=3)})
 
-        label = sub(r) if callable(sub) else f"{r['diff']:+.2f} 칸"
+        label = sub(r) if callable(sub) else f"{r['diff']:+.2f} (표준편차 단위)"
         ann += [_ann(tx, ty, f"<b>{r['ko']} · {r['year']}</b>", 14, INK),
                _ann(tx, sy, label, 12, "#BCBCBC")]
 
@@ -440,18 +440,18 @@ def page_1_corr():
 
     # ── 핵심 분석
     st.markdown(
-        '<div class="ov-key"><div class="ov-kick"><span class="ov-badge">핵심 분석 1</span><span class="ov-mono">상쇄 효과</span></div>'
-        '<div class="ov-big">16개국을 합치면 0인데, 나라별로는 완전히 다른 방향으로 갈립니다.</div>'
-        f'<div class="ov-body">시차 0~3년의 중동 전체 상관계수는 <b class="ov-num">{min(pooled):+.3f} ~ {max(pooled):+.3f}</b>로 0에 가깝습니다. '
-        f'그러나 {ks[lag]} 기준으로 나라별로 나눠 보면 <b class="ov-pos-t">양(+)의 상관 {plus}개국</b>과 '
-        f'<b class="ov-neg-t">음(−)의 상관 {minus}개국</b>으로 갈려, 합칠 때 서로 지워진 값이 0으로 보인 것입니다.</div></div>',
+        '<div class="ov-key"><div class="ov-kick"><span class="ov-badge">핵심 분석 1</span><span class="ov-mono">국가별 차이</span></div>'
+        '<div class="ov-big">전체 집계의 상관관계는 미약하나, 국가별 방향 차이 확인</div>'
+        f'<div class="ov-body">시차 0~3년의 전체 상관계수: <b class="ov-num">{min(pooled):+.3f} ~ {max(pooled):+.3f}</b> · 0에 근접 · '
+        f'{ks[lag]} 기준: <b class="ov-pos-t">양(+)의 상관 {plus}개국</b>과 '
+        f'<b class="ov-neg-t">음(−)의 상관 {minus}개국</b> · 국가별 결과를 함께 검토할 필요</div></div>',
         unsafe_allow_html=True)
 
     # ── 01 시차별 상관계수
     with st.container(border=True, key="ov_card1"):
         st.markdown(
             '<div class="ov-head"><div><div class="ov-t"><span class="ov-no">01</span> 시차별 상관계수</div>'
-            '<div class="ov-s">리스크가 크게 오른 해와 0~3년 뒤의 무기 주문(TIV)을 견줘, 어느 시점에서 관계가 보이는지 봅니다.</div></div>'
+            '<div class="ov-s">연간 리스크·0~3년 후 무기 주문(log(1+TIV))의 시차별 상관계수 비교</div></div>'
             '<div class="ov-leg"><span><i class="sq red"></i>전체 국가 집계</span><span><i class="sq blue"></i>국가별 중앙값</span></div></div>',
             unsafe_allow_html=True)
         c1, c2 = st.columns([1.9, 1], gap="medium")
@@ -479,14 +479,14 @@ def page_1_corr():
             st.plotly_chart(theme.adapt(fig), width="stretch", config=CFG)
         with c2:
             st.markdown(
-                '<div class="ov-note"><div class="ov-note-t">국가별 세부 분해 필수</div>'
-                '<div class="ov-note-b">중동 전체를 합쳐 계산하면 나라마다 반대로 움직인 추세가 서로 지워져, '
-                '변화가 0에 가깝게 보입니다. 외교 관계 · 제재 여부 · 국방 예산처럼 나라마다 다른 사정이 크므로 '
-                '나라 단위로 나눠 봐야 합니다.</div>'
-                '<div class="ov-info"><div class="ov-info-t">' + INFO_SVG + ' 해석할 때 고려할 점</div>'
+                '<div class="ov-note"><div class="ov-note-t">국가별 분석 필요</div>'
+                '<div class="ov-note-b">전체 집계값으로 국가별 변화 방향을 판단하기 어려움 · '
+                '외교 관계·제재·국방 예산 등 '
+                '국가별 여건을 고려한 분석 필요</div>'
+                '<div class="ov-info"><div class="ov-info-t">' + INFO_SVG + ' 해석 시 고려사항</div>'
                 '<b>국가별 차이</b> 전체 값으로 개별 국가를 판단할 수 없음<br>'
-                '<b>시점 차이</b> SIPRI 는 주문 연도 기준이라 실제 인도는 몇 해 뒤 (보통 1~3년)<br>'
-                '<b>다른 요인</b> 국방 예산 · 정책 · 제재 · 공급 여건도 주문에 영향</div></div>',
+                '<b>시점 차이</b> 주문 연도 기준 집계 · 실제 인도 시점과 차이 가능<br>'
+                '<b>추가 요인</b> 국방 예산 · 정책 · 제재 · 공급 여건도 주문에 영향</div></div>',
                 unsafe_allow_html=True)
 
     # ── 국가별 개별 상관계수
@@ -494,43 +494,43 @@ def page_1_corr():
         h1, h2 = st.columns([1.25, 1], vertical_alignment="top")
         with h1:
             st.markdown(
-                '<div class="ov-t">국가별 개별 상관계수</div>'
-                '<div class="ov-s">피어슨 r 기준: <b class="ov-pos-t">양(+)의 상관 (갈등 뒤 무기 주문 증가)</b> vs '
-                '<b class="ov-neg-t">음(−)의 상관 (제재 · 단절로 감소)</b></div>'
+                '<div class="ov-t">국가별 상관계수</div>'
+                '<div class="ov-s">피어슨 r: <b class="ov-pos-t">양(+): 리스크·주문 규모의 같은 방향 변화</b> · '
+                '<b class="ov-neg-t">음(−): 리스크·주문 규모의 반대 방향 변화</b></div>'
                 f'<div class="ov-leg l"><span><i class="dot red"></i>양(+)의 상관 {plus}개국</span>'
                 f'<span><i class="dot blue"></i>음(−)의 상관 {minus}개국</span></div>', unsafe_allow_html=True)
         with h2:
             with st.container(key="ov_lag_box"):          # 작은 알약 단추 (띠 모양 tabbar 는 칸이 좁아 글자가 잘림)
                 st.segmented_control("시차", opts, default=opts[LAG_DEFAULT], key=LAG_KEY,
                                      label_visibility="collapsed", width="stretch",
-                                     help="리스크가 크게 오른 해와 몇 년 뒤의 무기 주문을 견줄지 · ★ = 기본(1년 뒤)")
-            st.markdown(f'<div class="ov-chip" title="흔히 «약한 상관» 의 경계로 쓰는 값. 통계적 유의성 기준이 아님">'
-                        f'약한 상관 기준선 ±{LIM:.2f}</div>', unsafe_allow_html=True)
+                                     help="연간 리스크·무기 주문의 비교 시차 선택 · ★ = 기본값(1년 후)")
+            st.markdown(f'<div class="ov-chip" title="상관계수 크기 비교를 위한 참고 기준 · 통계적 유의성 기준과는 구별">'
+                        f'상관계수 참고선 ±{LIM:.2f}</div>', unsafe_allow_html=True)
         st.markdown(_diverging(per1, LIM), unsafe_allow_html=True)
-        note("<b>기준선을 넘는 국가는 소수</b><br>"
-             + (f"±{LIM} 를 넘는 국가는 <b>{' · '.join(strong)}</b> 로, 방향도 서로 일치하지 않습니다. " if strong
-                else f"이 시점에서는 ±{LIM} 를 넘는 국가가 없습니다. ")
-             + f"±{LIM} 는 통용되는 «약한 상관» 의 경계이며, 통계적 유의성이나 인과관계를 의미하지 않습니다.", "gold")
+        note("<b>참고선 기준 국가별 비교</b><br>"
+             + (f"|r| ≥ {LIM} 국가: <b>{' · '.join(strong)}</b> · " if strong
+                else f"선택 시차에서 |r| ≥ {LIM}인 국가 없음 · ")
+             + f"±{LIM}: 계수 크기 참고 기준 · 통계적 유의성 또는 인과관계 판단 기준과는 구별", "gold")
 
 
     # ══ 2. 증가 케이스 ════════════════════════════════════════════════════
 
 def page_2_up():
         key("분석 2",
-            "갈등 위험 급증 이후 무기 주문 규모의 변화",
-            f"갈등 위험이 급증한 뒤 무기 주문 규모가 증가한 사례를 선정해 전후 3년의 변화를 비교했습니다. 주문 규모가 정점에 이르는 시점과 이후의 흐름은 사례별로 다르게 나타났습니다.", RED)
+            "리스크 급증 이후 무기 주문 증가 양상",
+            f"주문 증가 사례의 급증 기준 연도 전후 3년 비교 · 정점 도달 시기·이후 추세의 사례별 차이 확인", RED)
 
         sec("02", "주문 규모 증가 사례의 국가별 비교",
-            "갈등 위험 급증 이후 주문 규모가 증가한 사례를 국가별로 비교해, 증가 시점과 이후 변화 양상을 살펴봅니다.", RED)
+            "급증 기준 연도 전후 3년의 주문 TIV·정점 시기 비교", RED)
         with st.expander("분석 대상과 급증 시점의 선정 기준"):
             d1, d2 = st.columns(2, vertical_alignment="top")
             with d1:
-                note(f"<b>급증</b> = 직전 12개월 평균보다 표준편차 {A.K:.0f}배 이상, "
-                     f"상승폭 {A.MIN_JUMP} 이상, 리스크 {A.FLOOR} 이상인 달.<br>"
-                     "(0.02 에서 0.05로의 변화도 급증으로 분류되기 때문에 표준편차 사용)")
+                note(f"<b>급증</b>: 직전 12개월 평균 대비 상승폭이 표준편차의 {A.K:.0f}배 초과·"
+                     f"{A.MIN_JUMP} 이상이고, 리스크가 {A.FLOOR} 이상인 월 · 세 조건 동시 충족<br>"
+                     "최소 상승폭·리스크 수준 조건으로 소규모 변동의 과대 분류 방지")
             with d2:
-                note("<b>0년</b> = 그 해 급증한 달들의 <b>상승폭 합</b>이 큰 해부터 그 나라 해 수의 25%.<br>"
-                     "(0·1·2 에 몰려 있어 상위 25%가 의도한 기준점대로 명확히 구분하기 위해 개월 수로 끊지 않음)")
+                note("<b>0년</b>: 급증 월의 연간 <b>상승폭 합</b>을 기준으로 선정한 상위 25% 연도<br>"
+                     "국가별로 선정 · 급증 발생 연도가 부족한 경우 해당 연도만 포함")
         lab = {k: f"{k}형 {v[0]}" for k, v in A.SHAPES.items()}
 
         # (2026-10-01) 위 단추 = 타임라인 거르개. 누른 유형«만» 남는다 (안 누르면 전부).
@@ -548,10 +548,10 @@ def page_2_up():
         st.write("")
 
         # 사례를 한꺼번에 늘어놓은 격자는 접어 둔다 — 단추를 눌러야 그 유형만 펼쳐진다
-        sec("03", "유형별로 모아 보기", "같은 유형끼리 모아, 급증 뒤 주문 규모가 어떤 모양으로 움직였는지 한눈에 견줍니다.", RED)
+        sec("03", "유형별 사례 비교", "급증 이후 주문 규모의 변화 양상에 따른 유형별 비교", RED)
         g_pick = shape_filter(cnt, "up_shape_grid", small=True, none_is_all=False)
         if g_pick is None:
-            note("위 <b>A형 · B형 · C형</b> 단추를 누르면 그 유형의 사례가 모두 펼쳐집니다.")
+            note("<b>A형·B형·C형</b> 선택 시 해당 유형의 전체 사례 표시")
         else:
             grid(sorted([r for r in UP if r["shape"] == g_pick], key=lambda r: -r["diff"]),
                  bar_color=A.SHAPE_COLOR[g_pick], mark_year=True, height_per_row=330,
@@ -563,11 +563,11 @@ def page_2_up():
 
 def page_3_down():
         key("분석 3",
-            "무기 주문 규모가 감소한 사례의 변화 양상",
-            "일부 국가별 사례에서는 갈등 위험이 급증한 뒤 무기 주문 규모가 크게 줄거나 0으로 나타났습니다. 제재와 내전 등 거래 여건의 변화도 함께 관찰되어, 주문 규모의 감소를 갈등 위험 변화만으로 설명하기는 어렵습니다.", BLUE)
+            "리스크 급증 이후 무기 주문 감소 양상",
+            "주문 감소·미발생 사례 확인 · 제재·내전 등 거래 여건을 고려한 해석 필요", BLUE)
 
         sec("03", "주문 규모 감소 사례의 국가별 비교",
-            "갈등 위험 급증 이후 주문 규모가 감소한 시점과 이후의 변화 양상을 살펴봅니다.", BLUE)
+            "급증 기준 연도 전후 3년의 주문 TIV·감소 시기 비교", BLUE)
 
         # (2026-10-01) 증가 쪽과 같은 틀 — 타임라인에서 점을 고르면 그 사례 카드가 나온다.
         #   여기서는 «제재 · 내전으로 거래가 끊긴» 8건만 다룬다. 그 밖의 감소는 사정이 제각각이라 뺐다.
@@ -578,30 +578,30 @@ def page_3_down():
             picked = min(range(len(downs)), key=lambda i: downs[i]["diff"])   # 가장 많이 줄어든 사례
         r = downs[picked]
         case_card(r, bar_color=GOLD,
-                  sub_text=lambda x: f"제재 · 내전 — {x['embargo']} · 변화폭 {x['diff']:+.2f} 칸")
+                  sub_text=lambda x: f"제재·내전: {x['embargo']} · 표준화 규모 변화 {x['diff']:+.2f} (표준편차 단위)")
         st.write("")
 
-        sec("04", "제재 · 내전으로 끊긴 사례 모아 보기",
-            "거래가 막혀 줄어든 경우를 따로 모아, 수요가 줄어든 것과 섞어 읽지 않도록 합니다.", BLUE)
+        sec("04", "제재·내전 관련 감소 사례 비교",
+            "제재·내전 관련 사례의 주문 감소 양상 비교", BLUE)
         if st.button(f"제재 · 내전 {len(EMB)}건 펼치기", key="down_grid_btn",
                      type="primary" if st.session_state.get("down_grid") else "secondary",
-                     help="제재 · 내전으로 거래가 끊긴 사례만 모아 전후 3년을 나란히 봅니다"):
+                     help="제재·내전 관련 사례의 급증 기준 연도 전후 3년 비교"):
             st.session_state["down_grid"] = not st.session_state.get("down_grid")
             st.rerun()
         if st.session_state.get("down_grid"):
             grid(EMB, cols=4, bar_color=BLUE, mark_year=True,
                  sub=lambda r: f"{r['embargo']}", height_per_row=330)
-        note(f"주문 규모가 줄어든 {len(DOWN)}건 가운데 <b>제재 · 내전으로 거래가 끊긴 {len(EMB)}건</b>만 여기에서 다룹니다. "
-             f"그중 {zero}개 사례는 이후 3년간 주문 연도 TIV 가 0 이었습니다. "
-             "거래 자체가 막힌 경우라, 이 감소를 갈등 위험 변화에 따른 수요 감소로 읽으면 안 됩니다.", "blue")
+        note(f"주문 감소 {len(DOWN)}건 중 <b>제재·내전 관련 {len(EMB)}건</b> 분석 · "
+             f"이후 3년간 주문 TIV가 0인 사례 {zero}건 · "
+             "거래 제약을 고려하여 해석 · 주문 감소만으로 수요 감소 판단 불가", "blue")
     
 
     # ══ 4. 결론 ═══════════════════════════════════════════════════════════
 
 def page_4_conclusion():
-        key("결 론",
-            "전체 집계에서는 뚜렷하지 않았던 변화가 국가별 사례에서 나타났습니다.",
-            "전체 국가의 연 단위 상관계수는 0에 가까웠습니다. </br>그러나 갈등 위험 급증 시점을 기준으로 국가별 사례를 살펴보면, 무기 주문 규모가 증가하거나 감소하는 서로 다른 양상이 확인됩니다. 따라서 전체 집계 결과와 국가별 변화를 함께 살펴볼 필요가 있습니다.", GOLD)
+        key("결론",
+            "전체 집계와 국가별 사례의 병행 분석 필요",
+            "전체 상관계수는 0에 근접</br>국가별 사례에서 주문 증가·감소 양상 확인 · 급증 시점·거래 여건을 고려한 해석 필요", GOLD)
 
         # 3단 흐름 — 왜 0으로 보였나 → 안에서 무슨 일이 있었나 → 그래서 무엇인가
         st.markdown(
@@ -611,7 +611,7 @@ def page_4_conclusion():
             '<div class="fn">1. 전체 집계</div>'
             '<div class="fbig">0</div>'
             '<div class="ft">뚜렷한 상관관계 미확인</div>'
-            '<div class="fs">0~3년의 시차에서 전체 국가의 상관계수는 0에 가까웠습니다.</div>'
+            '<div class="fs">시차 0~3년의 전체 상관계수는 0에 근접</div>'
             '</div>'
 
             '<div class="farr">&rsaquo;</div>'
@@ -620,13 +620,13 @@ def page_4_conclusion():
             '<div class="fn">2. 국가별 사례</div>'
             f'<div class="fbox up"><div class="tag" style="color:{RED}">'
             f'증가 사례 ({len(UP)}건 중 {a_cnt + b_cnt}건)</div>'
-            '<div class="h">일시적 집중 구매 후 감소</div>'
-            f'<div class="d">주문 규모가 증가한 {len(UP)}개 사례 중 {a_cnt + b_cnt}개(78%)는 갈등 위험 급증 후 2년 이내에 정점에 이르렀습니다.</div></div>'
+            '<div class="h">급증 이후 2년 이내 주문 정점</div>'
+            f'<div class="d">증가 {len(UP)}건 중 {a_cnt + b_cnt}건(78%)에서 급증 후 2년 이내 주문 정점 확인</div></div>'
             f'<div class="fbox dn"><div class="tag" style="color:{BLUE}">'
             f'감소 사례 중 제재 · 내전 {len(EMB)}건</div>'
-            '<div class="h">거래 전면 단절</div>'
-            f'<div class="d">제재 · 내전으로 거래가 끊긴 {len(EMB)}건은 수요가 준 것이 아니라 «살 수 없게 된» 경우라, '
-            '나머지 감소와 섞어 읽으면 안 됩니다.</div></div>'
+            '<div class="h">제재·내전과 거래 제약 고려</div>'
+            f'<div class="d">제재·내전 관련 감소 사례 {len(EMB)}건 · '
+            '거래 제약과 수요 변화를 구분하여 해석</div></div>'
             '</div>'
 
             '<div class="farr">&rsaquo;</div>'
@@ -635,23 +635,23 @@ def page_4_conclusion():
             '<div class="fn" style="color:#8b98ad">3. 종합 해석</div>'
             '<div class="fbig" style="color:#f5c542; font-size:28px">&#9679;</div>'
             '<div class="ft">국가별 시점과 여건 고려</div>'
-            f'<div class="fs">전체 집계값만으로는 국가별 변화 시점과 방향을 파악하기 어렵습니다. 갈등 위험과 무기 주문 규모의 관계는 <b>사례별로 해석해야 합니다.</b></div>'
+            f'<div class="fs">국가별 급증 시점·주문 변화·거래 여건을 종합한 <b>사례별 해석 필요</b></div>'
             '</div>'
 
             '</div>', unsafe_allow_html=True)
 
         # ── 이 분석을 어디에 쓰나 — 실시간 모니터링으로 잇는 부분 ──────────
         sec("🔎", "대시보드 활용 방안",
-            "갈등 위험의 변화를 지속적으로 확인하고, 급증 시점을 기준으로 국가별 무기 주문 규모의 전후 양상을 비교합니다.", BLUE)
+            "리스크 변화 모니터링·급증 전후 국가별 무기 주문 비교", BLUE)
 
         st.markdown(
             '<div class="flow">'
 
             '<div class="fc">'
-            f'<div class="fn" style="color:{BLUE}">1. 실시간 감시</div>'
+            f'<div class="fn" style="color:{BLUE}">1. 실시간 모니터링</div>'
             '<div class="fbig" style="font-size:28px">📈</div>'
             '<div class="ft">갈등 리스크 지속적 갱신</div>'
-            '<div class="fs">GDELT를 매일 갱신하고 중동 16개국의 월별 리스크를 이어서, 갈등 관계가 어떻게 변하는지 확인합니다.</div>'
+            '<div class="fs">실시간 갈등 사건·월별 리스크를 통한 중동 16개국의 갈등 변화 확인</div>'
             '</div>'
 
             '<div class="farr">&rsaquo;</div>'
@@ -660,7 +660,7 @@ def page_4_conclusion():
             f'<div class="fn" style="color:{BLUE}">2. 갈등 징후 확인</div>'
             '<div class="fbig" style="font-size:28px">✔️</div>'
             '<div class="ft">갈등 사건의 증가와</br>발생 국가 확인</div>'
-            '<div class="fs">실시간 사건 건수와 유형, 참여 국가를 살펴보며 갈등이 높아지는 국가와 국가쌍을 파악합니다.</div>'
+            '<div class="fs">실시간 사건 건수·유형·관여 국가를 통한 국가별·국가쌍별 갈등 징후 파악</div>'
             '</div>'
 
             '<div class="farr">&rsaquo;</div>'
@@ -668,21 +668,21 @@ def page_4_conclusion():
             '<div class="fc dark" style="border-color:#60a5fa">'
             f'<div class="fn" style="color:{BLUE}">3. 무기 거래 시점 분석</div>'
             '<div class="fbig" style="color:#60a5fa; font-size:28px">&#128197;</div>'
-            '<div class="ft" style="color:#60a5fa">무기 거래 시점 예측을 위한</br>자료 제공</div>'
-            f'<div class="fs">리스크가 높아진 시점과 과거 무기 주문 규모의 변화를 연결해, 이후 거래가 집중될 가능성이 있는 시기를 살펴봅니다.'
+            '<div class="ft" style="color:#60a5fa">무기 거래 시점 분석을 위한</br>자료 제공</div>'
+            f'<div class="fs">리스크 급증 시점·과거 주문 변화의 연계 비교를 통한 거래 집중 시기 탐색'
             '</div>'
             '</div>'
 
             '</div>', unsafe_allow_html=True)
 
-        note("<b>이 대시보드는 무기 거래를 예측하기보다, 갈등 위험이 급증한 시점과 무기 주문 규모의 변화를 함께 탐색하는 도구입니다.</b><br>"
-             "결과를 해석할 때에는 제재, 정책, 공급 여건 등 국가별 배경을 함께 고려해야 합니다.", "blue")
+        note("<b>갈등 리스크·무기 주문 변화의 연계 탐색 지원</b><br>"
+             "제재·정책·공급 여건 등 국가별 배경을 고려하여 해석", "blue")
 
 # ══ 쪽 고르기 ════════════════════════════════════════════════════════
 PAGES = {
     "중동 전체 결과": page_1_corr,
-    "증가 케이스": page_2_up,
-    "감소 케이스": page_3_down,
+    "증가 사례": page_2_up,
+    "감소 사례": page_3_down,
     "종합 결론": page_4_conclusion,
 }
 
@@ -707,7 +707,7 @@ def page():
             st.session_state["surge_page"] = "종합 결론"
         _, mid, _ = st.columns([0.6, 3, 0.6])
         with mid:
-            choice = tabbar("쪽 고르기", list(PAGES), key="surge_page")
+            choice = tabbar("분석 항목", list(PAGES), key="surge_page")
         PAGES[choice or list(PAGES)[0]]()          # 고른 쪽만 그린다
 
         st.caption("자료 · GDELT 1.0 (국가별 월별 리스크) × SIPRI Arms Transfers (주문 연도 TIV) · 중동 16개국 · 1980~2025")

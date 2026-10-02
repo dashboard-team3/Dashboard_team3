@@ -25,8 +25,8 @@ def page():
     h1, h2 = st.columns([1.6, 1], vertical_alignment="center", gap="large")   # 버튼 이름이 잘리지 않게
     with h1:
         st.title("리스크 모니터링")
-        page_sub(term("GDELT 2.0") + " 뉴스 기반 갈등 지표로 중동 16개국의 " + term("실시간 갈등 뉴스") + "와 1980년부터의 "
-                 + term("리스크") + " 추이를 봅니다.")
+        page_sub(term("GDELT") + " 기반 중동 16개국의 " + term("실시간 갈등 뉴스") + " 현황·1980년 이후 "
+                 + term("리스크") + " 추이 확인")
     with h2:
         # tabbar 와 같은 띠 모양. 홈 카드 · 예전 주소가 mon_view 를 미리 정해 두면 default 를 주지 않는다 (경고 방지)
         with st.container(key="tabbar-mon_view"):
@@ -109,9 +109,9 @@ def _risk_map(sel, small=False):
     iso = [c for c in names if c in val and not (pair and c == sel)]
     z = [min(max((val[c] - 0.15) / 0.55, 0), 1) for c in iso]          # 0.15 ~ 0.7 을 색 막대 끝에서 끝으로
     if pair:
-        hover = [f"<b>{names[sel]} → {names[c]}</b> {last:%Y-%m} 리스크 {val[c]:.2f}<br>누르면 그 나라 기준으로 바뀜" for c in iso]
+        hover = [f"<b>{names[sel]} → {names[c]}</b> {last:%Y-%m} 리스크 {val[c]:.2f}<br>선택 시 기준 국가 변경" for c in iso]
     else:
-        hover = [f"<b>{names[c]}</b> {last:%Y-%m} 종합 리스크 {val[c]:.2f}<br>누르면 오른쪽에 그 나라 리스크 추이" for c in iso]
+        hover = [f"<b>{names[c]}</b> {last:%Y-%m} 종합 리스크 {val[c]:.2f}<br>선택 시 해당 국가의 리스크 추이 표시" for c in iso]
     fig = go.Figure()
     fig.add_trace(go.Choropleth(
         locations=iso, z=z, locationmode="ISO-3", showscale=False, zmin=0, zmax=1,
@@ -125,7 +125,7 @@ def _risk_map(sel, small=False):
         locations=[sel], z=[0], locationmode="ISO-3", showscale=False,
         colorscale=[[0, base], [1, base]],
         marker_line_color=theme.C["main-light-650"] if light else "#ffffff", marker_line_width=3,
-        customdata=[sel], hovertext=[f"<b>{names[sel]}</b>" + (" (기준 나라)" if pair else "")],
+        customdata=[sel], hovertext=[f"<b>{names[sel]}</b>" + (" (기준 국가)" if pair else "")],
         hovertemplate="%{hovertext}<extra></extra>"))
     # 국가쌍: 고른 나라 → 리스크가 큰 상대국 3곳으로 화살표 (점선 · 끝에 화살촉, 굵기 = 리스크). 이름 · 숫자보다 먼저 그려 글자 아래에 깔리게
     if pair and val:
@@ -194,10 +194,10 @@ def _risk_map(sel, small=False):
             st.rerun()
     seq = SEQ_LIGHT if light else SEQ_DARK
     if pair:
-        note = f"화살표 = {names[sel]} 에서 리스크가 가장 큰 상대국 {ARROWS}곳 (굵을수록 큼) · 다른 나라를 누르면 그 나라 기준으로 바뀜"
+        note = f"화살표 = {names[sel]} 기준 상위 리스크 상대국 {ARROWS}개국 · 선 굵기 = 리스크 · 국가 선택 시 기준 변경"
         src = "risk_monthly_1980_2026 (국가쌍 리스크)"
     else:
-        note = f"나라를 누르면 오른쪽에 그 나라의 리스크 추이 (최근 {YEARS}년)"
+        note = f"국가 선택 시 해당 국가의 리스크 추이 표시 (최근 {YEARS}년)"
         src = "country_monthly_1980_2026 (all_risk)"
     st.markdown(f"""
 <div class="lv-lg">
@@ -207,7 +207,7 @@ def _risk_map(sel, small=False):
     <div class="lv-ticks"><span>0.15</span><span>0.4</span><span>0.7+</span></div>
   </div>
   <div class="lv-lg-b">
-    <div class="lv-note lv-long">0 = 협력 보도만, 1 = 갈등 보도만 (GDELT 보도량 가중) · {last:%Y-%m} 한 달 값 = 하루도 빠짐없이 모인 마지막 달 (카드 큰 숫자 · 그래프 점과 같음)</div>
+    <div class="lv-note lv-long">0: 갈등 가중 합 0 · 1: 협력 가중 합 0(갈등 사건 존재 시) · GDELT 보도량 가중 · {last:%Y-%m} 월별 값 · 일별 수집 완료 기준 월 · 카드 표시값·그래프 점과 동일</div>
     <div class="lv-note lv-long">{note}</div>
     <div class="lv-note lv-src lv-long">출처 GDELT → {src}</div>
   </div>
@@ -227,7 +227,7 @@ def _mode_toggle():
     """국가쌍 · 국가별 고르기 (왼쪽 칸 머리글 오른쪽). 고른 보기에 따라 그래프 · 카드가 바뀐다 (2026-10-01)."""
     with st.container(key="riskmap_mode_box"):
         st.segmented_control("보기", MODES, default=MODES[0], key=MODE_KEY, label_visibility="collapsed",
-                             help="국가쌍 = 고른 나라 → 상대국 리스크 · 국가별 = 나라마다의 종합 리스크")
+                             help="국가쌍: 선택 국가→상대국 리스크 · 국가별: 해당 국가가 관여한 관계의 종합 리스크")
 
 
 @st.cache_data
@@ -255,15 +255,15 @@ def _data(code, mode):
         focus = code
         d = dict(line=lambda q: names[q], dist="all_risk", layer="국가별", title="국가별 리스크",
                  head="국가별 종합 리스크",
-                 tip="선 = 나라마다 그 나라가 낀 모든 관계로 낸 종합 리스크의 12개월 이동평균 (0~1) · 점선 = 중동 전체 · "
-                     f"{p1:%Y-%m} 값 상위 5곳 (고른 나라는 늘 포함 · 굵은 선) · 점 = {p1:%Y-%m} 한 달 값")
+                 tip="선 = 국가별 종합 리스크의 12개월 이동평균(0~1) · 점선 = 중동 전체 · "
+                     f"{p1:%Y-%m} 값 상위 5개국(선택 국가 포함·굵은 선) · 점 = {p1:%Y-%m} 월별 값")
     else:
         items = list(cur.dropna().sort_values(ascending=False).index[:risk_view.CARD_N])
         focus = items[0]
         d = dict(line=lambda q: f"{names[code]} → {names[q]}", dist="pair", layer="국가쌍", title=f"{names[code]} → 상대국",
                  head=f"{names[code]} → 상대국",
-                 tip=f"선 = 국가쌍 월별 리스크의 12개월 이동평균 (0~1) · 점선 = 중동 전체 · {p1:%Y-%m} 값 상위 5곳 (굵은 선 = 1위) · "
-                     f"점 = {p1:%Y-%m} 한 달 값 (지도 · 카드 숫자와 같음)")
+                 tip=f"선 = 국가쌍 월별 리스크의 12개월 이동평균 (0~1) · 점선 = 중동 전체 · {p1:%Y-%m} 값 상위 5개국(굵은 선 = 강조 대상) · "
+                     f"점 = {p1:%Y-%m} 월별 값 (지도 · 카드 숫자와 같음)")
     pick = st.session_state.get(FOCUS_KEY)                   # 카드를 눌러 고른 강조 (같은 나라 · 같은 보기일 때만)
     if pick and pick[0] == code and pick[1] == mode and pick[2] in items:
         focus = pick[2]
@@ -297,9 +297,9 @@ def _chart(code, big=False):
             fig.add_trace(go.Scatter(x=[p1], y=[v], mode="markers", showlegend=False,
                                      marker=dict(color=pcol[q], size=12 if q == focus else 8,
                                                  line=dict(width=1.5, color="#ffffff")),
-                                     hovertemplate=f"{d['line'](q)} {p1:%Y-%m} 한 달 값 %{{y:.3f}}<extra></extra>"))
+                                     hovertemplate=f"{d['line'](q)} {p1:%Y-%m} 월별 값 %{{y:.3f}}<extra></extra>"))
     fig.add_vline(x=p1, line=dict(color=theme.C["main-350"], width=1, dash="dot"))
-    fig.add_annotation(x=p1, y=1.0, yref="paper", text=f"기준 달 {p1:%Y-%m}", showarrow=False, xanchor="right",
+    fig.add_annotation(x=p1, y=1.0, yref="paper", text=f"기준 월 {p1:%Y-%m}", showarrow=False, xanchor="right",
                        yanchor="top", font=dict(size=11, color=theme.C["main-350"]))
     risk_view._gap_bands(fig, relations.gap_months(relations.load_risk()), p0, p1)
     fig.update_layout(**DARK_LAYOUT, height=615 if big else 280, hovermode="x unified" if big else False,   # 작은 그래프는 마우스를 올려도 설명 상자 없음 (상자가 그래프를 다 가려서, 2026-10-02)
@@ -321,12 +321,12 @@ def _side_panel(code, big):
     mat, in_range, items, p0, p1 = d["mat"], d["in_range"], d["items"], d["p0"], d["p1"]
     hd1, hd2 = st.columns([1.5, 1], vertical_alignment="top")
     if big:
-        hd1.markdown(_head_html("지도", "나라를 누르면 왼쪽 그래프가 바뀜", "나라를 누르면 왼쪽 그래프가 그 나라로 바뀝니다"),
+        hd1.markdown(_head_html("지도", "국가 선택 시 그래프 갱신", "국가 선택 시 해당 국가 기준으로 그래프 갱신"),
                      unsafe_allow_html=True)
     else:
         hd1.markdown(_head_html("리스크 추이", f"{d['head']} · 최근 {YEARS}년", d["tip"]), unsafe_allow_html=True)
     if hd2.button("지도 크게 보기 ⤢" if big else "크게 보기 ⤢", key="riskmap_swap", width="stretch",
-                  help="왼쪽 넓은 칸에 그래프(1980년부터)와 지도를 바꿔 보여 줍니다"):
+                  help="지도·그래프 표시 위치 전환 · 확장 그래프: 1980년 이후 추이"):
         st.session_state["riskmap_big"] = not big
         st.rerun()
     if big:
@@ -340,10 +340,10 @@ def _side_panel(code, big):
     # 카드 묶음 제목 (2026-10-02 팀 요청): «리스크 상위 5개국» — 위 그래프(지도)와 떨어져 보이게 위 여백
     st.markdown('<div class="rm-cards-t">리스크 상위 5개국</div>', unsafe_allow_html=True)
     # 제목 줄은 스크롤 상자 밖에 둬서 카드만 움직이게 (2026-10-01)
-    risk_view.grade_pills([], dist, d["title"], title_sub=f"{last_m:%Y-%m} 기준 (다 모인 마지막 달) · 평균 = 최근 {YEARS}년",
-                          title_tip=f"큰 숫자 = 그 달 한 달의 리스크 · 평균 = 최근 {YEARS}년 월별 평균 · "
-                                    f"이 달 상위 % = {d['layer']} 1980년 이후 모든 값과 견준 순위 · "
-                                    "빨간 테두리 = 그래프에서 굵게 보이는 나라 · 카드를 누르면 그 나라를 굵게", **common)
+    risk_view.grade_pills([], dist, d["title"], title_sub=f"{last_m:%Y-%m} 기준 (수집 완료 기준 월) · 평균 = 최근 {YEARS}년",
+                          title_tip=f"표시값 = 그 달 한 달의 리스크 · 평균 = 최근 {YEARS}년 월별 평균 · "
+                                    f"해당 월 상위 % = {d['layer']}의 1980년 이후 전체 관측값 대비 순위 · "
+                                    "빨간 테두리 = 강조 대상 국가 · 카드 선택 시 해당 국가의 선 강조", **common)
     mode = _mode()
     with st.container(key="riskmap_cards", height=280 if big else "content", gap="small"):
         for i, q in enumerate(items):
@@ -378,7 +378,7 @@ def _left_head(title, sub, tip, sel=None):
             with st.container(horizontal=True, vertical_alignment="center", gap="small", key="rm_sub"):
                 if st.session_state.get("riskmap_pick") != sel:
                     st.session_state["riskmap_pick"] = sel
-                st.selectbox("나라", list(names), key="riskmap_pick", format_func=names.get, on_change=_on_pick,
+                st.selectbox("국가", list(names), key="riskmap_pick", format_func=names.get, on_change=_on_pick,
                              label_visibility="collapsed", width=150)
                 st.markdown(f'<div class="rm-s" style="margin:0">{sub}</div>', unsafe_allow_html=True)
     with h2:
@@ -398,19 +398,19 @@ def risk_map_page():
         with left, st.container(border=True, key="riskmap_bigchart"):
             d = _data(sel, _mode())
             _left_head("리스크 추이", ("→ 상대국" if _mode() == "국가쌍" else "강조 · 국가별 종합 리스크")
-                       + f" · 1980년부터 · 기준 달 {base_month():%Y-%m}",
+                       + f" · 1980년부터 · 기준 월 {base_month():%Y-%m}",
                        d["tip"].replace("최근 10년 평균", "1980년부터 · 최근 10년 평균"), sel=sel)
             _chart(sel, big=True)
     else:
         with left, st.container(border=True, key="riskmap_panel"):
             if _mode() == "국가쌍":
-                _left_head("국가쌍 리스크", f"→ 상대국 · {base_month():%Y-%m} (다 모인 마지막 달)",
-                           f"고른 나라(기준)에서 각 상대국으로의 {base_month():%Y-%m} 국가쌍 리스크로 칠함 (하루도 빠짐없이 모인 마지막 달) · "
-                           "화살표 = 리스크가 가장 큰 3곳 (오른쪽 카드 1~3위와 같음) · 나라를 누르거나 왼쪽 상자에서 고르면 그 나라 기준", sel=sel)
+                _left_head("국가쌍 리스크", f"→ 상대국 · {base_month():%Y-%m} (수집 완료 기준 월)",
+                           f"선택 국가(기준)→상대국의 {base_month():%Y-%m} 국가쌍 리스크 기준 색상 표시 · 일별 수집 완료 기준 월 · "
+                           "화살표 = 상위 리스크 상대국 3개국(카드 1~3위) · 지도·선택 목록에서 기준 국가 변경 가능", sel=sel)
             else:
-                _left_head("나라별 종합 리스크", f"강조 · {base_month():%Y-%m} (다 모인 마지막 달)",
-                           f"나라마다 그 나라가 낀 모든 관계로 낸 {base_month():%Y-%m} 종합 리스크 (하루도 빠짐없이 모인 마지막 달) · "
-                           "나라를 누르거나 왼쪽 상자에서 고르면 오른쪽에 그 나라의 리스크 추이", sel=sel)
+                _left_head("국가별 종합 리스크", f"강조 · {base_month():%Y-%m} (수집 완료 기준 월)",
+                           f"해당 국가가 관여한 관계를 통합한 {base_month():%Y-%m} 종합 리스크 · 일별 수집 완료 기준 월 · "
+                           "지도·선택 목록에서 국가 선택 시 해당 국가의 리스크 추이 표시", sel=sel)
             _risk_map(sel)
     with right, st.container(border=True, key="riskmap_side"):
         _side_panel(sel, big)

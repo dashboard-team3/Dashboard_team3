@@ -10,7 +10,7 @@ from core.ui import C_RISK, C_MUTE, C_TEXT, LINE_COLORS, CHART_CONFIG, DARK_LAYO
 from sources import relations
 
 
-def grade_pills(items, dist, title="", hi=None, layer="이 층", title_tip="", month="", period="", title_sub=""):
+def grade_pills(items, dist, title="", hi=None, layer="해당 집계 단위", title_tip="", month="", period="", title_sub=""):
     """등급 카드 (가로형): 왼쪽 = 이름 · 평균 · 이 달 상위 %, 오른쪽 = 등급 배지 · 큰 값.
     items = [(코드, 이름, 마지막 달 값, 기간 평균[, 12개월 이동평균])], dist = 그 층의 값 분포,
     layer = 층 이름, month = 마지막 달('2026-09'), period = 기간 글자, title_sub = 제목 아래 작은 줄('2026-09 기준').
@@ -33,14 +33,14 @@ def grade_pills(items, dist, title="", hi=None, layer="이 층", title_tip="", m
         sub = [tip(f"평균 {avg:.3f}", f"{period} 기간의 월별 리스크 평균")] if avg is not None and not pd.isna(avg) else []
         if pc is not None:
             top = max(100 - pc, 0.1)
-            sub.append(tip(f"이 달 상위 {top:.0f}%", f"큰 숫자({val})를 {layer} 1980년 이후 «모든 나라의 모든 달»과 "
-                                                f"견준 순위 — 이 값보다 높았던 달이 {top:.0f}% 뿐이라는 뜻. "
-                                                f"왼쪽 평균이 아니라 {month} 한 달 값의 순위라, 평균이 같아도 다를 수 있음"))
-        g_tip = (f"{txt} 등급 ({relations.GRADE_DESC[g]}) — 보도된 사건 무게 가운데 갈등의 비중으로 매긴 5단계, 모든 층 같은 잣대"
-                 if g is not None else "자료가 없는 달")
-        v_tip = f"{month} 한 달의 리스크 (그 달 하루하루 값의 평균, 0~1). 1에 가까울수록 갈등 보도 비중이 큼"
+            sub.append(tip(f"해당 월 상위 {top:.0f}%", f"표시값({val})를 {layer} 1980년 이후 전체 대상·전체 월의 관측값과 "
+                                                f"비교한 순위 · 해당 값보다 높은 관측값의 비중 {top:.0f}% · "
+                                                f"{month} 월별 값 기준 · 기간 평균 순위와 구별"))
+        g_tip = (f"{txt} 등급 ({relations.GRADE_DESC[g]}) · 보도된 사건의 가중 합 대비 갈등 비중 기준 5단계 · 집계 단위별 동일 기준 적용"
+                 if g is not None else "자료 미확보 월")
+        v_tip = f"{month} 월별 리스크(일별 값의 평균, 0~1) · 값이 높을수록 갈등 보도 비중 증가"
         if ma is not None and not pd.isna(ma):   # 한 줄이 길어져 화면에서는 빼고 말풍선에만 둔다 (2026-10-01)
-            v_tip += f" · 왼쪽 그래프 선의 마지막 점(12개월 이동평균)은 {ma:.3f} 로, 한 달 값인 이 숫자와 다름"
+            v_tip += f" · 그래프의 마지막 값(12개월 이동평균): {ma:.3f} · 카드의 월별 값과 구별"
         h.append(f'<div class="pill{" hi" if code == hi else ""}">'
                  f'<div class="pl"><div class="pill-n">{name}</div><div class="pill-s">{" · ".join(sub)}</div></div>'
                  f'<div class="pr">{tip(txt, g_tip, "pill-g r", f"background:{col}")}{tip(val, v_tip, "pill-v r")}</div></div>')
@@ -147,7 +147,7 @@ def _pair_filters(risk, names, months):
     f["partners_for"] = country
     opts = f["partners"] or list(rank_all.index)
     # 강조: 고른 상대국만 진하게, 나머지는 회색 (선이 색으로 뒤엉키지 않게)
-    f["focus"] = c3.selectbox("강조할 상대국", opts, index=opts.index(f["focus"]) if f["focus"] in opts else 0,
+    f["focus"] = c3.selectbox("강조 대상 상대국", opts, index=opts.index(f["focus"]) if f["focus"] in opts else 0,
                               format_func=names.get, key=f"rel_focus_{country}") if f["partners"] else None
     p0, p1 = _month_range(c4, "기간 (월)", months, f["period"], key="rel_period")
     f["period"] = (f"{p0:%Y-%m}", f"{p1:%Y-%m}")
@@ -163,14 +163,14 @@ def _country_filters(cmat_full, names, months):
     box = page_filters("국가별 리스크")                   # v2: 본문 맨 위 접이식
     c1, c2 = box.columns(2, gap="medium")                 # 나라 · 강조는 한 줄에 둘, 기간만 아래 한 줄
     c3 = box.container()
-    f["countries"] = c1.multiselect("나라", list(rank.index), default=[c for c in f["countries"] if c in rank.index],
+    f["countries"] = c1.multiselect("국가", list(rank.index), default=[c for c in f["countries"] if c in rank.index],
                                     format_func=names.get, key="cty_countries")   # 선택 수 제한 없음 (카드만 5장)
     opts = f["countries"] or list(rank.index)
-    f["focus"] = c2.selectbox("강조할 나라", opts, index=opts.index(f["focus"]) if f["focus"] in opts else 0,
+    f["focus"] = c2.selectbox("강조 대상 국가", opts, index=opts.index(f["focus"]) if f["focus"] in opts else 0,
                               format_func=names.get, key="cty_focus") if f["countries"] else None
     p0, p1 = _month_range(c3, "기간 (월)", months, f["period"], key="cty_period")
     f["period"] = (f"{p0:%Y-%m}", f"{p1:%Y-%m}")
-    filter_note(f"나라 {len(f['countries'] or [])}곳 · {p0:%Y-%m}–{p1:%Y-%m}")
+    filter_note(f"국가 {len(f['countries'] or [])}곳 · {p0:%Y-%m}–{p1:%Y-%m}")
     return f["countries"], f["focus"], p0, p1
 
 
@@ -185,7 +185,7 @@ def page(show_title=True):
 
     if show_title:
         st.title('리스크 추이')
-        page_sub("뉴스 기반 갈등 지표를 통해 중동 " + term("국가쌍별") + " · " + term("국가별") + " " +term("리스크") + "의 장기 추세와 시기별 변화를 비교합니다.")
+        page_sub("뉴스 기반 갈등 지표를 통해 중동 " + term("국가쌍별") + " · " + term("국가별") + " " +term("리스크") + "의 장기 추세·시기별 변화 비교")
     # page_sub("1980년부터 " + term("국가쌍") + " · " + term("국가별") + " 월별 " + term("리스크") + "를 " + term("12개월 이동평균") + "으로 보여 줍니다. 선이 높을수록 그 시기 갈등 쪽 보도가 많았다는 뜻입니다.")
     # v2: 탭 대신 보기 버튼. 고른 보기만 그려서 사이드바 필터도 그 보기 것만 나온다
     view = tabbar("보기", ["국가쌍 리스크", "국가별 리스크"], key="rel_view")
@@ -193,10 +193,10 @@ def page(show_title=True):
     # ---------------------------------------------------------------- 탭 1: 국가쌍 리스크
     # 그래프 위를 가볍게 (2026-09-29 팀 의견): 소제목 · 한 줄 설명 → 필터 → 토글 → 그래프(제목 두 줄) → 요약 한 줄
     if view == "국가쌍 리스크":
-        section_head("01", "국가쌍 리스크", "행위주체국이 주어로 기록된 사건을 바탕으로 계산한 상대국과의 월간 리스크(0~1).")
+        section_head("01", "국가쌍 리스크", "행위 주체국→상대국 방향으로 기록된 사건의 월별 리스크(0~1)")
         country, partners, focus, series, p0, p1 = _pair_filters(risk, names, months)
         if not partners:
-            st.info("왼쪽 필터에서 상대국을 한 곳 이상 골라 주세요.")
+            st.info("필터에서 상대국 1개국 이상 선택 필요")
         else:
             in_range = _in_period(series, p0, p1)
             ranking = in_range.mean().sort_values(ascending=False)
@@ -205,8 +205,8 @@ def page(show_title=True):
             # v2: [그래프 | 등급 카드] 2단 · 핵심 요약(결론)은 그래프 바로 아래에 (2026-09-30)
             left, right = st.columns([2, 1], gap="medium")   # (2026-10-01) 2.3:1 → 2:1, 카드 상자 안 글자가 안 잘리게
             with left:
-                show_region = _chart_head("pair_region", "선 = 국가쌍 월별 리스크의 12개월 이동평균 (0~1). 굵은 선 = 강조한 상대국 · "
-                                                         "점선 = 중동 전체 기준선 · 범례 이름을 누르면 그 선을 숨기거나 다시 보입니다")
+                show_region = _chart_head("pair_region", "선 = 국가쌍 월별 리스크의 12개월 이동평균 (0~1). 굵은 선 = 선택 상대국 · "
+                                                         "점선 = 중동 전체 기준선 · 범례 선택 시 해당 선 표시·숨김 전환")
                 fig = go.Figure()
                 if show_region:
                     rs = _in_period(relations.smooth(region, how), p0, p1)   # 전체로 먼저 이동평균, 그다음 자르기
@@ -234,7 +234,7 @@ def page(show_title=True):
                                   legend=dict(orientation="h", y=-0.1, yanchor="top", x=0, font=dict(size=14)))   # 범례는 x축 아래 (좁은 화면에서 두 줄이 돼도 제목과 안 겹치게, 2026-10-01)
                 _time_axes(fig, p0, p1)
                 st.plotly_chart(theme.adapt(fig), width="stretch", config=CHART_CONFIG)
-                st.markdown(f'<div class="summary"><b>{names[country]}</b> → 상대국 리스크는 <b>{names[top]}</b>{relations.jo(names[top])} 가장 높습니다 '
+                st.markdown(f'<div class="summary"><b>{names[country]}</b> → 상대국 중 <b>{names[top]}</b>{relations.jo(names[top])} 기간 평균 리스크 최고 기록 '
                             f'(기간 평균 {ranking.iloc[0]:.2f}, 최고 {peak:%Y년 %m월}) · {_pstr(p0, p1)}</div>', unsafe_allow_html=True)
 
             with right:
@@ -246,11 +246,11 @@ def page(show_title=True):
                     grade_pills([(q, names[q], in_range[q].iloc[-1], in_range[q].mean(), ma_pair[q])
                                  for q in _card_items(partners, in_range.mean(), focus)],
                                 dists["pair"], f"{names[country]} → 상대국", hi=focus, layer="국가쌍", title_sub=f"{last_m:%Y-%m} 기준",
-                                title_tip=f"큰 숫자 = {last_m:%Y-%m} 한 달의 리스크 · 평균 = {_pstr(p0, p1)} 월별 평균 · "
-                                          "큰 숫자에 마우스를 올리면 그래프 선의 마지막 점(12개월 이동평균) 값도 보임 · "
-                                          f"이 달 상위 % = 큰 숫자를 국가쌍 1980년 이후 모든 쌍·모든 달과 견준 순위 "
-                                          "(평균의 순위가 아님) · 빨간 테두리 = 강조한 상대국 · "
-                                          "카드는 고른 상대국 중 기간 평균 상위 5곳",
+                                title_tip=f"표시값 = {last_m:%Y-%m} 한 달의 리스크 · 평균 = {_pstr(p0, p1)} 월별 평균 · "
+                                          "표시값에 마우스를 올리면 12개월 이동평균의 마지막 값 표시 · "
+                                          f"해당 월 상위 % = 국가쌍의 1980년 이후 전체 월별 관측값 대비 표시값의 순위 "
+                                          "(평균의 순위가 아님) · 빨간 테두리 = 선택 상대국 · "
+                                          "카드: 선택 상대국 중 기간 평균 상위 5개국",
                                 month=f"{last_m:%Y-%m}", period=_pstr(p0, p1))
                 grade_legend()
             # (v2, 2026-09-30) 국가쌍 아래 '계산 기준' 팝오버 · 평균/최고 리스크 표는 뺐다
@@ -261,18 +261,18 @@ def page(show_title=True):
         ccol = "all_risk"          # 국가별은 그 나라가 낀 모든 관계를 합친 종합 값
         cmat_full = relations.load_country().pivot(index="date", columns="country", values=ccol)
         # 국가쌍 탭과 같은 순서: 소제목 · 한 줄 설명 → 필터 → 토글 → 그래프(제목 두 줄)
-        section_head("02", "국가별 종합 리스크", "국가쌍이 아니라 나라 하나가 낀 모든 관계를 합쳐 계산한 월간 리스크(0~1).")
+        section_head("02", "국가별 종합 리스크", "해당 국가가 관여한 모든 관계의 갈등·협력 가중 합을 통합하여 산출한 월별 리스크(0~1)")
         clist, cfocus, q0, q1 = _country_filters(cmat_full, names, months)
         if not clist:
-            st.info("왼쪽 필터에서 나라를 한 곳 이상 골라 주세요.")
+            st.info("필터에서 국가 1개국 이상 선택 필요")
         else:
             cmat = _in_period(cmat_full, q0, q1)
             # v2: 국가쌍 탭과 같은 모양 — [그래프 | 등급 카드] 2단
             #     기간 평균 막대는 선 그래프 아래로 내려 왼쪽 단에 함께 둔다
             left, right = st.columns([2, 1], gap="medium")   # (2026-10-01) 2.3:1 → 2:1, 카드 상자 안 글자가 안 잘리게
             with left:
-                c_region = _chart_head("country_region", "선 = 국가별 종합 리스크의 12개월 이동평균 (0~1). 굵은 선 = 강조한 나라 · "
-                                                         "점선 = 중동 전체 기준선 · 범례 이름을 누르면 그 선을 숨기거나 다시 보입니다")
+                c_region = _chart_head("country_region", "선 = 국가별 종합 리스크의 12개월 이동평균 (0~1). 굵은 선 = 선택 국가 · "
+                                                         "점선 = 중동 전체 기준선 · 범례 선택 시 해당 선 표시·숨김 전환")
                 fig_c = go.Figure()
                 if c_region:
                     rs = _in_period(relations.smooth(region, how), q0, q1)
@@ -306,22 +306,22 @@ def page(show_title=True):
                     grade_pills([(c, names[c], cmat[c].iloc[-1], cmat[c].mean(), ma_cty[c])
                                  for c in _card_items(clist, cmat.mean(), cfocus)],
                                 dists[ccol], "국가별 리스크", hi=cfocus, layer="국가별", title_sub=f"{last_c:%Y-%m} 기준",
-                                title_tip=f"큰 숫자 = {last_c:%Y-%m} 한 달의 리스크 · 평균 = {_pstr(q0, q1)} 월별 평균 · "
-                                          "큰 숫자에 마우스를 올리면 그래프 선의 마지막 점(12개월 이동평균) 값도 보임 · "
-                                          "이 달 상위 % = 큰 숫자를 국가별 1980년 이후 모든 나라·모든 달과 견준 순위 "
-                                          "(평균의 순위가 아님) · 빨간 테두리 = 강조한 나라 · "
-                                          "카드는 고른 나라 중 기간 평균 상위 5곳",
+                                title_tip=f"표시값 = {last_c:%Y-%m} 한 달의 리스크 · 평균 = {_pstr(q0, q1)} 월별 평균 · "
+                                          "표시값에 마우스를 올리면 12개월 이동평균의 마지막 값 표시 · "
+                                          "해당 월 상위 % = 국가별 1980년 이후 전체 월별 관측값 대비 표시값의 순위 "
+                                          "(평균의 순위가 아님) · 빨간 테두리 = 선택 국가 · "
+                                          "카드: 선택 국가 중 기간 평균 상위 5개국",
                                 month=f"{last_c:%Y-%m}", period=_pstr(q0, q1))
                 # (2026-10-01) 오른쪽 '중동 전체' 카드는 뺐다 — 중동 전체는 그래프의 점선으로 본다
                 grade_legend()
 
-            info("**국가별 종합 리스크** = 위 식의 하루 갈등·협력 합을 그 나라가 낀 15개 국가쌍 전체(주어·목적어 모두)로 "
-                  "먼저 더한 뒤 나눈 값의 월평균 (국가쌍 리스크의 평균이 아님).\n\n"
-                  "**중동 전체**(점선) = 16개국 사이 모든 사건으로 낸 값. 비교 기준선으로 씁니다.\n\n"
-                  "**등급** = 0.2 간격 (매우 낮음 < 0.2 ≤ 낮음 < 0.4 ≤ 보통 < 0.6 ≤ 높음 < 0.8 ≤ 매우 높음). "
-                  "**이 달 상위 N%** = 카드의 «큰 숫자»(그 달 한 달 값)를, 그 층이 1980년부터 기록한 "
-                  "모든 대상·모든 달의 값과 한 줄로 세워 매긴 순위입니다 (국가별 8,972개 · 국가쌍 109,472개 값). "
-                  "왼쪽 «평균»의 순위가 아니므로, 기간 평균이 같은 두 나라도 그 달 값이 다르면 상위 %가 다릅니다. "
-                  "같은 값이 여럿이면 그중 가장 낮은 순위로 셉니다.\n\n"
-                  "**그래프 선과 카드의 큰 숫자가 다른 이유** = 선은 12개월 이동평균이고 카드의 큰 숫자는 «그 달 한 달» 값입니다. 카드의 큰 숫자에 마우스를 올리면 선 끝점(이동평균) 값을 함께 보여 줍니다.",
+            info("**국가별 종합 리스크** = 해당 국가가 행위 주체·대상으로 관여한 15개 국가쌍의 일별 갈등·협력 가중 합을 "
+                  "통합한 후 산출한 일별 리스크의 월평균 · 개별 국가쌍 리스크의 단순 평균과는 구별\n\n"
+                  "**중동 전체**(점선) = 중동 16개국 간 전체 사건으로 산출한 리스크 · 비교 기준선으로 활용\n\n"
+                  "**등급** = 0.2 간격의 5단계(매우 낮음 < 0.2 ≤ 낮음 < 0.4 ≤ 보통 < 0.6 ≤ 높음 < 0.8 ≤ 매우 높음) · "
+                  "**해당 월 상위 N%** = 카드의 월별 표시값을 해당 집계 단위의 1980년 이후 "
+                  "전체 월별 관측값과 비교한 순위(국가별 8,972개·국가쌍 109,472개 값) · "
+                  "기간 평균과 별도 산출 · 월별 값 차이에 따라 상위 비중 차이 발생 · "
+                  "동일 값은 가장 낮은 순위 기준 적용\n\n"
+                  "**그래프·카드의 산출 기준** = 선: 12개월 이동평균 · 카드: 해당 월의 월별 리스크 · 카드 표시값에 마우스를 올리면 이동평균의 마지막 값 확인 가능",
                  formula=True)

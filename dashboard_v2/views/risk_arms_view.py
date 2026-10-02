@@ -21,7 +21,7 @@ def _ra_filters(names, y0, y1):
     f = st.session_state.setdefault("ra_f", {"country": "SAU", "years": (max(y0, 1990), y1)})
     box = page_filters("리스크와 무기 거래")              # v2: 본문 맨 위 접이식
     c1, c2 = box.columns(2, gap="medium")                 # 나라 · 기간을 한 줄에 둘
-    f["country"] = c1.selectbox("나라", list(names), index=list(names).index(f["country"]),
+    f["country"] = c1.selectbox("국가", list(names), index=list(names).index(f["country"]),
                                 format_func=names.get, key="ra_country")
     f["years"] = c2.slider("기간", y0, y1, f["years"], key="ra_years")
     filter_note(f"{names[f['country']]} · {f['years'][0]}–{f['years'][1]}")
@@ -32,8 +32,8 @@ def page():
     """리스크와 무기 거래: 나라 하나를 골라 연 리스크와 무기 수입을 본다.
     (중동 전체 분석은 2026-09-30 부터 사이드바 메뉴 '중동 무기 거래 분석' 으로 따로 뺐다 → region_page)"""
     st.title("리스크와 무기 거래")
-    page_sub("나라 하나를 골라 연 " + term("리스크") + "와 SIPRI 무기 수입을 1980년부터 나란히 보고, "
-             "리스크가 오른 뒤 몇 해 안에 수입이 늘었는지 시차 상관으로 견줍니다.")
+    page_sub("선택 국가의 연간 " + term("리스크") + "와 SIPRI 무기 수입의 1980년 이후 추이·"
+             "시차별 상관관계 비교")
     _country()
 
 
@@ -41,8 +41,8 @@ def region_page():
     """중동 무기 거래 분석 (사이드바 메뉴): 나라 선택 없이 중동 16개국 전체, 갈등 급증 전후 무기 주문.
     화면 = views/surge_view.py, 계산 = sources/surge.py (팀원의 급증과_무기거래 앱을 옮긴 것)."""
     st.title("종합 분석")
-    page_sub("특정 나라를 따로 떼어 보지 않고 중동 16개국 전체에서 " + term("리스크") + "가 " + term("급증") + "한 해를 찾아, "
-             "그 앞뒤 1~3년의 무기 주문(" + term("TIV") + ") 변화를 여러 방향으로 견줘 봅니다.")
+    page_sub("중동 16개국의 " + term("리스크") + " " + term("급증") + " 기준 연도 전후 "
+             "무기 주문(" + term("TIV") + ") 변화와 국가별 상관관계 분석")
     surge_view.page()
 
 
@@ -68,21 +68,21 @@ def country_sections(country, years, no=1, annual=True):
     m = relations.arms_panel()
     g = m[(m["country"] == country) & m["year"].between(*years)].sort_values("year")
     if g.empty:
-        st.info("이 기간에는 자료가 없습니다.")
+        st.info("선택 기간의 자료 없음")
         return
     if not annual:
         _lag_section(country, years, m, g, no, extras=False)
         return
     gy = g.set_index("year")
-    st.markdown(f'<div class="summary"><b>{names[country]}</b> {years[0]}–{years[1]}: 연 리스크 평균 <b>{g["risk"].mean():.3f}</b> '
-                f'(가장 높았던 해 {int(gy["risk"].idxmax())}년 {gy["risk"].max():.3f}) · 무기 수입 합 <b>{g["tiv"].sum():,.0f} TIV</b> '
-                f'(가장 많이 산 해 {int(gy["tiv"].idxmax())}년 {gy["tiv"].max():,.0f})</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="summary"><b>{names[country]}</b> {years[0]}–{years[1]}: 연간 리스크 평균 <b>{g["risk"].mean():.3f}</b> '
+                f'(최고 리스크 연도 {int(gy["risk"].idxmax())}년 {gy["risk"].max():.3f}) · 무기 수입 합 <b>{g["tiv"].sum():,.0f} TIV</b> '
+                f'(최대 주문 연도 {int(gy["tiv"].idxmax())}년 {gy["tiv"].max():,.0f})</div>', unsafe_allow_html=True)
     span = years[1] - years[0]
     step = 1 if span <= 12 else 2 if span <= 25 else 5
 
     section_head(f"{no:02d}", f"연 리스크와 무기 수입 · {names[country]}",
-                 "선이 그 나라의 <b>연 종합 리스크</b>(월별 값을 그 달 일수로 가중 평균 = 그 해 모든 날의 평균), 막대가 <b>SIPRI 무기 수입</b>(주문 연도 기준 TIV). "
-                 "두 축의 단위가 달라 높이를 직접 비교하지는 않습니다.")
+                 "선: <b>연간 종합 리스크</b>(월별 값을 달력 일수로 가중 평균) · 막대: <b>SIPRI 무기 수입</b>(주문 연도 기준 TIV) · "
+                 "리스크·TIV의 단위 차이에 따라 두 축의 높이 직접 비교 불가")
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(go.Bar(x=g["year"], y=g["tiv"], name="무기 수입 (주문 TIV)", marker_color=C_ARMS, opacity=0.75,
                          hovertemplate="%{x}년 · 수입 %{y:,.0f} TIV<extra></extra>"), secondary_y=False)
@@ -99,11 +99,11 @@ def country_sections(country, years, no=1, annual=True):
     fig.update_yaxes(title_text="무기 수입 (TIV)", gridcolor="#1f2b44", secondary_y=False, tickfont=dict(size=14))
     fig.update_yaxes(title_text="리스크", range=[0, max(0.3, g["risk"].max() * 1.15)], showgrid=False, secondary_y=True)
     st.plotly_chart(theme.adapt(fig), width="stretch", config=CHART_CONFIG)
-    info("**연 리스크** = 그 나라의 월별 종합 리스크를 그 달 일수로 가중해 평균한 값(= 그 해 모든 날의 평균). "
-          "12개월이 모두 있는 해만 계산.\n\n"
-          "**무기 수입** = SIPRI 계약의 주문 연도 기준 TIV 합. 실제 인도는 보통 몇 년 뒤이고, TIV는 달러 금액이 아닙니다. "
-          "주문이 없던 해는 0.", formula=True)
-    with st.expander("숫자로 보기"):
+    info("**연간 리스크** = 해당 국가의 월별 종합 리스크를 달력 일수로 가중 평균한 값 · "
+          "12개월 자료가 확보된 연도만 산출\n\n"
+          "**무기 수입** = SIPRI 계약의 주문 연도 기준 TIV 합계 · 실제 거래 금액과는 구별 · 주문·인도 시점 차이 고려 · "
+          "주문 미발생 연도는 0으로 반영", formula=True)
+    with st.expander("상세 수치"):
         st.dataframe(g[["year", "risk", "tiv"]].rename(columns={"year": "연도", "risk": "연 리스크", "tiv": "무기 수입 (TIV)"}).round(3),
                      hide_index=True, width="stretch")
 
@@ -118,10 +118,10 @@ def _lag_section(country, years, m, g, no, extras=True):
     names = relations.COUNTRIES
     gy = g.set_index("year")      # 아래 «네 방식» 표가 쓴다 (위 묶음을 건너뛰면 여기서 만들어야 한다)
     # ── 시차 상관 (같은 화면 아래에) ──
-    section_head(f"{no:02d}", "리스크가 오른 뒤 무기 수입이 늘었나 · 시차 상관",
-                 "올해 리스크와 <b>k년 뒤</b> 수입(log)의 피어슨 상관. 왼쪽은 고른 나라의 점, 오른쪽은 16개국을 나라 안에서 표준화해 "
-                 "합친 값과 나라별 상관의 중앙값. 함께 움직여도 인과관계나 통계적 유의성을 뜻하지 않습니다.")
-    lag = st.slider("시차 — 리스크가 오른 해로부터 몇 해 뒤의 수입을 볼까", 0, 3, 1, key="ra_lag")
+    section_head(f"{no:02d}", "리스크·무기 수입의 시차별 상관관계",
+                 "연간 리스크와 <b>k년 후</b> 무기 수입(log)의 피어슨 상관계수 · 왼쪽: 선택 국가의 연도별 값 · 오른쪽: 국가 내 표준화 후 16개국 "
+                 "전체 집계값·국가별 상관계수 중앙값 · 상관계수만으로 인과관계 또는 통계적 유의성 판단 불가")
+    lag = st.slider("무기 수입 비교 시차 (년)", 0, 3, 1, key="ra_lag")
 
     # 고른 나라: 연 리스크(t) vs log 수입(t+k)
     gg = g.copy()
@@ -158,7 +158,7 @@ def _lag_section(country, years, m, g, no, extras=True):
         fig_s.update_layout(**DARK_LAYOUT, height=400, showlegend=False,
                             title=dict(text=ctitle(f"리스크와 {'같은 해' if lag == 0 else f'{lag}년 뒤'} 무기 수입",
                                                f"{names[country]} · 점 = 한 해 · 점선 = 추세 · "
-                                               + (f"r = {r_one:+.2f}" if pd.notna(r_one) else "비교할 해가 5개 미만")),
+                                               + (f"r = {r_one:+.2f}" if pd.notna(r_one) else "비교 가능 연도 5개 미만")),
                                        font=dict(size=17, color=C_TEXT), x=0),
                             margin=dict(l=10, r=10, t=70, b=10))
         fig_s.update_xaxes(title_text="연 리스크 (t)", gridcolor="#1f2b44", tickfont=dict(size=14))
@@ -172,14 +172,14 @@ def _lag_section(country, years, m, g, no, extras=True):
             pooled.append(pr); med.append(per.median() if len(per) else float("nan"))
             mine.append(per.get(country, float("nan")))
         fig_b = go.Figure()
-        for vals, name, col in [(pooled, "16개국 전체", C_RISK), (med, "나라별 중앙값", C_COOP), (mine, names[country], C_ARMS)]:
+        for vals, name, col in [(pooled, "16개국 전체", C_RISK), (med, "국가별 중앙값", C_COOP), (mine, names[country], C_ARMS)]:
             fig_b.add_trace(go.Bar(x=ks, y=vals, name=name, marker_color=col,
                                    text=[f"{v:+.2f}" if pd.notna(v) else "-" for v in vals], textposition="outside", cliponaxis=False,
                                    hovertemplate=name + " · %{x} · r = %{y:+.3f}<extra></extra>"))
         lo = min([-0.35] + [v - 0.1 for v in pooled + med + mine if pd.notna(v)])
         hi = max([0.35] + [v + 0.1 for v in pooled + med + mine if pd.notna(v)])
         fig_b.update_layout(**DARK_LAYOUT, height=400, barmode="group",
-                            title=dict(text=ctitle("시차별 상관계수 (피어슨 r)", f"{years[0]}–{years[1]} · 16개국 전체 · 나라별 중앙값 · {names[country]}"), font=dict(size=17, color=C_TEXT), x=0),
+                            title=dict(text=ctitle("시차별 상관계수 (피어슨 r)", f"{years[0]}–{years[1]} · 16개국 전체 · 국가별 중앙값 · {names[country]}"), font=dict(size=17, color=C_TEXT), x=0),
                             # 반쪽 폭이라 범례가 두 줄이 되면 제목과 겹친다 → 그래프 아래로
                             margin=dict(l=10, r=10, t=50, b=80),
                             legend=dict(orientation="h", y=-0.25, yanchor="top", x=0, font=dict(size=14)))
@@ -191,22 +191,22 @@ def _lag_section(country, years, m, g, no, extras=True):
     n_pos = int((per0 > 0).sum())
     if pd.isna(pr0) or not len(per0):
         # 기간이 짧아 시차를 두면 비교할 해가 5개 미만 → r 을 못 구한다 (nan 을 '약하지 않은 상관'으로 읽지 않게)
-        st.info(f"**시차 {lag}년** — {years[0]}–{years[1]}년은 시차 {lag}년을 두면 나라마다 비교할 해가 5개보다 적어 "
-                "상관계수를 계산하지 않았습니다. 기간을 넓히거나 시차를 줄여 보세요.")
+        st.info(f"**시차 {lag}년 · {years[0]}–{years[1]}년** · {lag}년 후 주문 기준 비교 가능 연도 5개 미만으로 "
+                "상관계수 미산출 · 분석 기간 확대 또는 시차 축소 필요")
     else:
-        st.info(f"**시차 {lag}년 · 16개국 전체 r = {pr0:+.3f} · 나라별 중앙값 {per0.median():+.3f} · 양(+)인 나라 {n_pos}/{len(per0)}** — "
-                f"{'리스크가 오른 해에 수입도 늘었다고 보기 어렵습니다. 상관이 0 근처라는 것은 둘이 따로 움직인다는 뜻이지 관계가 없다는 증명은 아닙니다.' if abs(pr0) < 0.3 else '약하지 않은 상관입니다. 다만 인과관계나 유의성을 뜻하지는 않습니다.'} "
-                f"SIPRI는 계약 연도 기준이라 실제 인도는 몇 해 뒤이고, 수입은 예산·정권·공급국 사정처럼 갈등과 무관한 요인에도 크게 좌우됩니다.")
+        st.info(f"**시차 {lag}년 · 16개국 전체 r = {pr0:+.3f} · 국가별 중앙값 {per0.median():+.3f} · 양(+)의 상관 국가 {n_pos}/{len(per0)}** — "
+                f"{'뚜렷한 선형 상관관계 미확인 · 모든 형태의 관계가 없음을 의미하지는 않음' if abs(pr0) < 0.3 else '선형 상관관계 확인 · 인과관계 또는 통계적 유의성과는 구별'} "
+                f"주문·인도 시점 차이와 국방 예산·정책·공급 여건 등 추가 요인 고려")
 
     if extras:
-        st.markdown(f'<div class="pill-t">{names[country]} · 같은 상관을 네 방식으로 '
-                    + info_icon("큰 계약 한 건이나 장기 추세 때문인지 가려 봅니다. 네 값이 같은 방향으로 크면 믿을 만한 관계. "
-                                "Pearson 만 크고 최대 주문 제외에서 꺼지면 계약 한 건 효과, 변화량에서 꺼지면 둘 다 오르는 장기 추세 효과. "
-                                "비교한 해가 5개 미만이면 계산하지 않습니다.") + "</div>", unsafe_allow_html=True)
+        st.markdown(f'<div class="pill-t">{names[country]} · 상관관계의 산출 방식별 비교 '
+                    + info_icon("피어슨·최대 주문 제외·변화량·스피어만 상관계수의 방향·크기 비교 · "
+                                "최대 주문 제외 시 계수 감소: 대규모 계약 영향 가능 · 변화량 기준 계수 감소: 장기 추세 영향 가능 · "
+                                "비교 가능 연도 5개 미만은 미산출") + "</div>", unsafe_allow_html=True)
         lt = relations.lag_table(gy["risk"], gy["tiv"])
         st.dataframe(lt.style.format({c: "{:+.2f}" for c in ["Pearson", "최대 주문 제외", "변화량", "Spearman"]}, na_rep="-"),
                      hide_index=True, width="stretch")
-    info("**16개국 전체** = 나라마다 리스크와 log 수입을 그 나라 평균·표준편차로 표준화한 뒤 16개국 점을 모두 모아 잰 피어슨 r. "
-          "나라 간 규모 차이를 걷어낸 값.\n\n"
-          "**나라별 중앙값** = 나라마다 따로 잰 r의 중앙값. 몇 나라가 결과를 끌고 가는지 보는 용도.\n\n"
-          "**표본** = 고른 기간 안에서 리스크(t)와 수입(t+k)이 모두 있는 해. 비교할 해가 5개 미만인 나라는 뺍니다.")
+    info("**16개국 전체** = 국가 내 리스크·log 수입을 평균·표준편차로 표준화한 후 전체 관측값으로 산출한 피어슨 상관계수 · "
+          "국가 간 규모 차이 조정\n\n"
+          "**국가별 중앙값** = 국가별 피어슨 상관계수의 중앙값 · 일부 국가의 전체 집계 영향 검토\n\n"
+          "**표본** = 선택 기간 내 리스크(t)·수입(t+k)이 모두 확보된 연도 · 비교 가능 연도 5개 미만 국가는 제외")

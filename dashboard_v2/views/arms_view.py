@@ -102,8 +102,8 @@ def draw_map(df, M, overlay, top_n, height=560):
     st.plotly_chart(theme.adapt(fig), width="stretch", key="arms_map_chart",
                     config={"displaylogo": False, "scrollZoom": False, "responsive": True,
                             "modeBarButtons": [["zoomInGeo", "zoomOutGeo", "resetGeo"]]})
-    st.caption((f"호 굵기 = {M['value_label']} · 호(선)에 마우스를 올리면 상세 · 상위 {min(top_n, len(fl))}개 / 전체 {len(fl)}개 흐름"
-                if overlay != "수입국별" else f"색이 진할수록 {M['value_label']} 규모가 큼") + " · 위치는 나라 중심점(대략)")
+    st.caption((f"호 굵기 = {M['value_label']} · 선에 마우스를 올리면 상세 정보 표시 · 상위 {min(top_n, len(fl))}개 / 전체 {len(fl)}개 흐름"
+                if overlay != "수입국별" else f"색이 진할수록 {M['value_label']} 규모가 큼") + " · 위치: 국가 중심점 기준")
 
 
 # ---------------------------------------------------------------- 추이
@@ -142,7 +142,7 @@ def draw_trend(df, M, how, by, show_count=True):
                                  hovertemplate=f"합계 %{{y:,.1f}} {U} · 관측 %{{customdata}}개월<extra></extra>"))
     fmt = {"월별": "%Y-%m", "분기별": "%Y-%m", "연간": "%Y"}[how]
     _layout(fig, barmode="stack", height=460, hovermode="x unified", bargap=0.15,
-            title=dict(text=ctitle(f"{how} {M['value_label']} 추이", f"단위 {U} · 쌓기 기준 = {by}"), x=0),
+            title=dict(text=ctitle(f"{how} {M['value_label']} 추이", f"단위 {U} · 구성 항목 = {by}"), x=0),
             legend=dict(orientation="h", y=-0.2, yanchor="top", x=0, font=dict(size=14)))
     _axes(fig)
     fig.update_xaxes(tickformat=fmt, hoverformat=fmt)
@@ -152,8 +152,8 @@ def draw_trend(df, M, how, by, show_count=True):
     if monthly_source and how != "월별":
         short = int((months < need).sum())
         if short:
-            st.caption(f"관측 월이 부족한 기간 {short}개(툴팁의 '관측 n/{need}개월' 참고)는 합계가 실제보다 작을 수 있습니다. "
-                       "신고가 없는 달은 0이 아니라 '관측 없음'입니다.")
+            st.caption(f"관측 월이 부족한 기간 {short}개 · 도움말의 관측 n/{need}개월 확인 · 신고 누락에 따른 합계 과소 집계 가능 · "
+                       "미신고 월: 관측 없음으로 처리")
             
     if not monthly_source and show_count:               # SIPRI: 계약 건수 추이 (국가별 보기에서는 오른쪽 단에 따로)
         draw_count(df)
@@ -197,7 +197,7 @@ def target_cat_heatmap(df, M, highlight=None, title=None, height=None):
                                hovertemplate=f"%{{y}} · %{{x}}<br>%{{z:,.1f}} {M['unit']}<extra></extra>",
                                colorbar=dict(thickness=10, tickfont=dict(color="#cbd5e1"))))
     _layout(fig, height=height or max(320, 40 + 26 * len(h)),
-            title=dict(text=title or ctitle(f"수입국 × {M['cat_label']}", "칸 색이 진할수록 큼 · 필터 조건"), font=dict(size=16, color="#e5eaf3"), x=0))
+            title=dict(text=title or ctitle(f"수입국 × {M['cat_label']}", "색 농도 = 거래 규모 · 필터 조건"), font=dict(size=16, color="#e5eaf3"), x=0))
     fig.update_yaxes(autorange="reversed")
     st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
 
@@ -209,7 +209,7 @@ def draw_rank(df, M):
     with c1:
         hbar(df.groupby("exporter")["value"].sum(), ctitle(f"{M['exporter_label']} TOP 12", f"단위 {U} · 필터 조건의 합계"), GOLD, U)
     with c2:
-        hbar(df.groupby("target_name")["value"].sum(), ctitle("수입국 TOP 12", f"단위 {U} · 필터 조건의 합계"), "#f87171", U)
+        hbar(df.groupby("target_name")["value"].sum(), ctitle("수입국 상위 12개국", f"단위 {U} · 필터 조건의 합계"), "#f87171", U)
     c3, c4 = st.columns(2)
     # 품목별 막대와 옆 히트맵의 아래 끝을 맞춘다: 히트맵은 수입국 수만큼 길어지므로 둘 다 그 높이로 (2026-10-01)
     hh = max(420, 40 + 26 * df["target_name"].nunique())
@@ -220,7 +220,7 @@ def draw_rank(df, M):
     if "weapon" in df.columns:                          # SIPRI: 무기 모델 표
         w = (df.groupby(["weapon", "weapon_desc"]).agg(tiv=("value", "sum"), n=("obs", "nunique"), qty=("qty", "sum"))
                .reset_index().sort_values("tiv", ascending=False).head(15))
-        st.markdown("**무기 모델 TOP 15 (주문 TIV)**")
+        st.markdown("**무기 모델 상위 15개 (주문 TIV)**")
         st.dataframe(w.rename(columns={"weapon": "모델", "weapon_desc": "종류", "tiv": "주문 TIV", "n": "계약", "qty": "수량"}).round(0),
                      hide_index=True, width="stretch", height=380)
 
@@ -245,7 +245,7 @@ def _side_flow(df, M):
         mm = df.loc[df["year"] == y_last, "period"].nunique()
         part = f" (1~{mm}월)" if mm < 12 else ""
     h = [f'<div class="ts-k">'
-         f'<div class="ts-kc"><div class="ts-kl">가장 많았던 해</div><div class="ts-kv">{peak}년</div>'
+         f'<div class="ts-kc"><div class="ts-kl">최대 규모 연도</div><div class="ts-kv">{peak}년</div>'
          f'<div class="ts-ks">{yt.max():,.0f} {U}</div></div>']
     if len(done) >= 10:
         e = done[-1]
@@ -253,13 +253,13 @@ def _side_flow(df, M):
         p5 = yt.reindex(range(e - 9, e - 4)).fillna(0).sum()
         ch = r5 / p5 - 1 if p5 else None
         cls = "" if ch is None else ("up" if ch > 0 else "down")
-        h.append(f'<div class="ts-kc"><div class="ts-kl">최근 5년 vs 그 전 5년</div>'
+        h.append(f'<div class="ts-kc"><div class="ts-kl">최근 5년·직전 5년 비교</div>'
                  f'<div class="ts-kv {cls}">{"—" if ch is None else f"{ch:+.0%}"}</div>'
                  f'<div class="ts-ks">{e - 4}–{e} {r5:,.0f} · {e - 9}–{e - 5} {p5:,.0f}</div></div>')
     else:
-        h.append('<div class="ts-kc"><div class="ts-kl">최근 5년 vs 그 전 5년</div><div class="ts-kv">—</div>'
-                 '<div class="ts-ks">고른 기간이 10년보다 짧아 비교하지 않음</div></div>')
-    h.append(f'<div class="ts-kc"><div class="ts-kl">최근 해 {y_last}{part}</div><div class="ts-kv">{yt.loc[y_last]:,.0f}</div>'
+        h.append('<div class="ts-kc"><div class="ts-kl">최근 5년·직전 5년 비교</div><div class="ts-kv">—</div>'
+                 '<div class="ts-ks">선택 기간 10년 미만으로 비교 제외</div></div>')
+    h.append(f'<div class="ts-kc"><div class="ts-kl">최신 연도 {y_last}{part}</div><div class="ts-kv">{yt.loc[y_last]:,.0f}</div>'
              f'<div class="ts-ks">{U}</div></div></div>')
     return "".join(h)
 
@@ -268,7 +268,7 @@ def trend_side(df, M, by, k):
     """추이 그래프 오른쪽 상자: 흐름 요약 (가장 많았던 해 · 최근 5년 vs 그 전 5년 · 최근 해).
     (2026-10-01) '상위 5' 쪽은 뺐다 — 쌓은 막대 · 범례와 겹쳐 굳이 필요 없다는 의견"""
     with st.container(key=f"trend_side_{k}"):
-        st.markdown('<div class="ts-h">흐름 요약</div><div class="ts-s">연 단위 합계 기준 · 고른 기간 안</div>' + _side_flow(df, M),
+        st.markdown('<div class="ts-h">흐름 요약</div><div class="ts-s">선택 기간의 연간 합계 기준</div>' + _side_flow(df, M),
                     unsafe_allow_html=True)
 
 
@@ -312,17 +312,17 @@ def draw_rank_country(df, M, country):
     # (2026-10-01) 그 나라 합계 줄은 위 '분석 대상국' 줄의 숫자 칩으로 옮겼다
 
     if one.empty:
-        st.info("이 나라의 기록이 없습니다.")
+        st.info("선택 국가의 자료 없음")
         return
     c1, c2 = st.columns(2)
     with c1:
         hbar(one.groupby("exporter")["value"].sum(), ctitle(f"{name} {M['exporter_label']} TOP 12", f"단위 {U}"), GOLD, U)
     with c2:
         hbar(one.groupby("cat")["value"].sum(), ctitle(f"{name} {M['cat_label']}별", f"단위 {U}"), "#60a5fa", U)
-    target_cat_heatmap(df, M, highlight=name, title=ctitle(f"수입국 × {M['cat_label']}", f"{name}(▶)을 맨 위에 두고 다른 나라와 비교"))
+    target_cat_heatmap(df, M, highlight=name, title=ctitle(f"수입국 × {M['cat_label']}", f"{name}(▶)를 상단에 표시하여 국가 간 비교"))
     share = df.groupby("target_name")["value"].sum().sort_values(ascending=False)
     rank = list(share.index).index(name) + 1
-    st.caption(f"{name}{jo(name, '은는')} 필터 기간 전체의 {total / share.sum():.1%} ({rank}위 / {len(share)}개국).")
+    st.caption(f"{name}{jo(name, '은는')} · 선택 기간 전체 대비 비중 {total / share.sum():.1%} ({rank}위 / {len(share)}개국)")
 
 
 # ---------------------------------------------------------------- 국가쌍
@@ -330,7 +330,7 @@ def draw_rank_country(df, M, country):
 def draw_pairs(df, M):
     U = M["unit"]
     fl = arms.flows(df)
-    st.markdown(f"**{M['exporter_label']} → 수입국 흐름 {len(fl)}개** ({M['value_label']} 큰 순)")
+    st.markdown(f"**{M['exporter_label']} → 수입국 흐름 {len(fl)}개** ({M['value_label']} 내림차순)")
     cols = {"exporter": M["exporter_label"], "target_name": "수입국", "value": f"{M['value_label']} ({U})",
             "obs": M["obs_label"], "top_cat": f"주요 {M['cat_label']}"}
     st.dataframe(fl.rename(columns=cols)[list(cols.values())].round(1), hide_index=True, width="stretch", height=420)
@@ -340,7 +340,7 @@ def draw_pairs(df, M):
     fig = go.Figure(go.Heatmap(z=h.values, x=h.columns, y=h.index, colorscale=[[0, "#111a2e"], [1, GOLD]],
                                hovertemplate=f"%{{x}} → %{{y}}<br>%{{z:,.1f}} {U}<extra></extra>",
                                colorbar=dict(thickness=10, tickfont=dict(color="#cbd5e1"))))
-    _layout(fig, height=460, title=dict(text=ctitle(f"수입국 × 상위 10개 {M['exporter_label']}", f"단위 {U} · 칸 색이 진할수록 큼"), font=dict(size=16, color="#e5eaf3"), x=0))
+    _layout(fig, height=460, title=dict(text=ctitle(f"수입국 × 상위 10개 {M['exporter_label']}", f"단위 {U} · 색 농도 = 거래 규모"), font=dict(size=16, color="#e5eaf3"), x=0))
     st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
 
 
@@ -395,7 +395,7 @@ def _filters(box, f, M, k, y0, y1, cats_all, targets_all, exp_opts, exp_name, mo
     store = st.session_state[skey]
     with box:
         with st.container(horizontal=True, vertical_alignment="center"):
-            st.markdown('<div class="flt-h">조건을 바꾸면 바로 반영됩니다</div>', unsafe_allow_html=True)
+            st.markdown('<div class="flt-h">필터 변경 사항 즉시 반영</div>', unsafe_allow_html=True)
             st.space("stretch")
             st.button("필터 초기화", key=f"arms_reset_{k}", on_click=_reset, args=(skey, [kp, ky, kc, kt, ke]), type="tertiary")
         c1, c2 = st.columns([1.6, 1], gap="large")
@@ -416,12 +416,12 @@ def _filters(box, f, M, k, y0, y1, cats_all, targets_all, exp_opts, exp_name, mo
                     st.button(lbl, key=f"arms_q_{lbl}_{k}", on_click=_put, args=(store, field, val, wkey),
                               type="primary" if tuple(store[field]) == tuple(val) else "secondary")
         with c2:
-            store["exporters"] = st.multiselect(f"{M['exporter_label']} 지정 (비우면 전체)", exp_opts, default=store["exporters"],
+            store["exporters"] = st.multiselect(f"{M['exporter_label']} 선택 (미선택 시 전체)", exp_opts, default=store["exporters"],
                                                 format_func=exp_name.get, key=ke, placeholder=f"전체 {len(exp_opts)}개국")
         store["cats"] = st.pills(f"{M['cat_label']} ({len(cats_all)}개 분야)", cats_all, selection_mode="multi",
                                  default=store["cats"], key=kc) or cats_all
         t1, t2 = st.columns([6, 1], vertical_alignment="bottom")
-        store["targets"] = t1.multiselect(f"수입국 (중동 {len(targets_all)}개국 · 비우면 전체)", targets_all, default=store["targets"],
+        store["targets"] = t1.multiselect(f"수입국 (중동 {len(targets_all)}개국 · 미선택 시 전체)", targets_all, default=store["targets"],
                                           format_func=COUNTRIES.get, key=kt, placeholder="전체") or targets_all
         t2.button("전체 선택", key=f"arms_tall_{k}", on_click=_put, args=(store, "targets", targets_all, kt), width="stretch")
     f["exporters"], f["cats"], f["targets"] = store["exporters"], store["cats"], store["targets"]
@@ -446,7 +446,7 @@ def page(compact=True, show_title=True):
         h1, h2 = st.columns([2.1, 1], vertical_alignment="center", gap="large")
         with h1:
             st.title("무기 거래 추이")
-            page_sub(term("SIPRI") + "와 " + term("UN Comtrade") + " 자료를 통해 중동 16개국의 무기 이전 규모와 교역액 추이를 살펴보고, 주요 공급국과 품목별 거래 현황을 확인합니다. SIPRI 값의 단위는 " + term("TIV") + "입니다.")
+            page_sub(term("SIPRI") + "와 " + term("UN Comtrade") + " 기반 중동 16개국의 무기 이전 규모·교역액·주요 공급국·품목별 거래 현황 비교 · SIPRI 단위: " + term("TIV") + "")
         with h2:
             source = tabbar("자료", ["Comtrade", "SIPRI"], key="arms_source",
                             format_func=lambda s: s)   # 좁은 칸이라 이름만 (단위는 부제 · 말풍선에)
@@ -455,7 +455,7 @@ def page(compact=True, show_title=True):
     M = arms.SOURCES[source]
     U = M["unit"]
     df, missing = arms.load(source)
-    st.markdown(f'<div class="src-note">이 자료는? {info_icon(M["desc"])}</div>', unsafe_allow_html=True)   # 자료 설명은 말풍선
+    st.markdown(f'<div class="src-note">자료 설명 {info_icon(M["desc"])}</div>', unsafe_allow_html=True)   # 자료 설명은 말풍선
 
     cats_all = [c for c in M["colors"] if c in set(df["cat"])]
     targets_all = [c for c in COUNTRIES if c in set(df["target_iso3"])]
@@ -473,14 +473,14 @@ def page(compact=True, show_title=True):
                 f'{M["exporter_label"]} {"전체" if not exporters else str(len(exporters)) + "곳"}')
 
     if source == "Comtrade" and years[0] < arms.FULL_START_YEAR:
-        st.warning(f"{arms.FULL_START_YEAR}년 이전은 신고 수출국이 연 8~11개국뿐이라(2010년부터 41개국 이상) 금액이 실제보다 훨씬 작게 잡힙니다. "
-                   "시기 비교에는 쓰지 마세요.")
+        st.warning(f"{arms.FULL_START_YEAR}년 이전 신고 수출국은 연 8~11개국(2010년부터 41개국 이상)으로 제한 · 교역액 과소 집계 가능 · "
+                   "시기별 비교에 활용 시 주의 필요")
     sub = arms.apply_filters(df, years, cats, targets, exporters)
     if months is not None:                              # 월 단위로 고른 기간이면 달까지 자른다
         m0, m1 = pd.Timestamp(f["period"][0] + "-01"), pd.Timestamp(f["period"][1] + "-01")
         sub = sub[(sub["date"] >= m0) & (sub["date"] <= m1)]
     if sub.empty:
-        st.warning("조건에 맞는 기록이 없습니다.")
+        st.warning("선택 조건에 해당하는 자료 없음")
         return
 
     total = sub["value"].sum()
@@ -511,8 +511,8 @@ def page(compact=True, show_title=True):
                 how = st.segmented_control("집계", M["periods"], default=M["default_period"], key=f"arms_how_{k}",
                                            label_visibility="collapsed") or M["default_period"]
             opts = [M["cat_label"], "수입국", M["exporter_label"]] if scope == "전체" else [M["cat_label"], M["exporter_label"]]
-            with _group("쌓기 기준", f"tr_by_{k}"):
-                by = st.segmented_control("쌓기 기준", opts, default=opts[0],
+            with _group("구성 항목", f"tr_by_{k}"):
+                by = st.segmented_control("구성 항목", opts, default=opts[0],
                                           key=f"arms_by_{k}" if scope == "전체" else f"arms_by_country_{k}",
                                           label_visibility="collapsed") or opts[0]
         elif tab == "순위":
@@ -543,7 +543,7 @@ def page(compact=True, show_title=True):
         with left:
             draw_map(sub, M, overlay, top_n, height=460)
             if missing:
-                st.caption(f"좌표가 없어 지도에 못 그린 {M['exporter_label']}: {', '.join(missing)}")
+                st.caption(f"좌표 미확보로 지도 표시 제외된 {M['exporter_label']}: {', '.join(missing)}")
         with right, st.container(key=f"trend_side_map_{k}"):
             st.markdown(f'<div class="ts-h">요약 · {per_txt}</div>' + strip(items[:3], vertical=True), unsafe_allow_html=True)
     elif tab == "추이":
@@ -573,5 +573,5 @@ def page(compact=True, show_title=True):
             draw_rank_country(sub, M, country)
     else:
         draw_pairs(sub, M)
-    st.markdown(f'<div class="src-note">읽을 때 주의 {info_icon(M["foot"] + " 지도 위치는 나라 중심점이며 실제 경로가 아닙니다.")}</div>',
+    st.markdown(f'<div class="src-note">해석 시 유의사항 {info_icon(M["foot"] + " 지도 위치: 국가 중심점 기준 · 실제 운송 경로와는 구별")}</div>',
                 unsafe_allow_html=True)
