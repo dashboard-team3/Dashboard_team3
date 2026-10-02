@@ -76,7 +76,64 @@ CSS = """<style>
 [class*="st-key-ldcard_"] [data-testid="stElementContainer"]:has(button) button {width: 100% !important; height: 100% !important; max-width: none !important;}
 [class*="st-key-ldcard_"] button {opacity: 0 !important; cursor: pointer;}
 [class*="st-key-ldcard_"] [data-testid="stMarkdownContainer"] {margin-bottom: 0 !important;}
-@media (max-width: 1400px) {.ld-t {font-size: 52px;} .ld-n {font-size: 19px;} .ld-d {font-size: 14px;} .ld-card {height: 270px;}}
+@media (max-width: 1400px) {
+  .ld-t {
+    font-size: 52px;
+  } 
+  .ld-n {
+    font-size: 19px;
+  } 
+  .ld-d {
+    font-size: 14px;
+  } 
+}
+
+@media (max-width: 1150px) {
+  .ld-card {
+    height: 280px;
+  }
+}
+
+@media (max-width: 1032px) {
+  .st-key-landing [data-testid="stHorizontalBlock"]:has([class*="st-key-ldcard_"]) {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 16px !important;
+  }
+
+  .st-key-landing [data-testid="stHorizontalBlock"]:has([class*="st-key-ldcard_"])
+  > [data-testid="stColumn"] {
+    width: calc((100% - 16px) / 2) !important;
+    min-width: 0 !important;
+    flex: 0 0 calc((100% - 16px) / 2) !important;
+  }
+
+  .ld-card {
+    height: 180px;
+  }
+}
+
+@media (max-width: 640px) {
+  .st-key-landing [data-testid="stHorizontalBlock"]:has([class*="st-key-ldcard_"]) {
+    flex-direction: column !important;
+  }
+  .st-key-landing [data-testid="stHorizontalBlock"]:has([class*="st-key-ldcard_"])
+  > [data-testid="stColumn"] {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+
+  .ld-t {
+    font-size: 46px;
+  }
+  .ld-s {
+    font-size: 18px;
+  }
+  .ld-card {
+    height: 180px;
+  }
+}
 HIDE
 </style>"""
 
