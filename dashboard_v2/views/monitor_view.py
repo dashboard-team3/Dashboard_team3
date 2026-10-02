@@ -297,7 +297,8 @@ def _chart(code, big=False):
     fig.add_annotation(x=p1, y=1.0, yref="paper", text=f"기준 달 {p1:%Y-%m}", showarrow=False, xanchor="right",
                        yanchor="top", font=dict(size=11, color="#a78bfa"))
     risk_view._gap_bands(fig, relations.gap_months(relations.load_risk()), p0, p1)
-    fig.update_layout(**DARK_LAYOUT, height=615 if big else 280, hovermode="x unified",
+    fig.update_layout(**DARK_LAYOUT, height=615 if big else 280, hovermode="x unified" if big else False,   # 작은 그래프는 마우스를 올려도 설명 상자 없음 (상자가 그래프를 다 가려서, 2026-10-02)
+                     
                       margin=dict(l=6, r=6, t=10, b=6),
                       legend=dict(orientation="h", y=-0.08 if big else -0.12, yanchor="top", x=0, font=dict(size=13 if big else 12)))
     risk_view._time_axes(fig, p0, p1)
