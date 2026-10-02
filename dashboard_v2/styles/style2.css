@@ -343,6 +343,36 @@
     margin-bottom: 20px;
 }
 
+/* 메뉴 아이콘 추가 */
+/* 사이드바 메뉴: 아이콘과 메뉴명 정렬 */
+[data-testid="stSidebar"] .st-key-menu_page
+label[data-testid="stRadioOption"] [data-testid="stMarkdownContainer"] p {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 메뉴 아이콘 공통 스타일 */
+[data-testid="stSidebar"] .st-key-menu_page
+label[data-testid="stRadioOption"] [data-testid="stMarkdownContainer"] p::before {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    background-color: currentColor;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
+
+/* 기본 라디오 동그라미 숨기기 */
+[data-testid="stSidebar"] .st-key-menu_page
+label[data-testid="stRadioOption"] div:has(+ [data-testid="stMarkdownContainer"]) {
+    display: none !important;
+}
+
 /* ---------------------------------------------------------------- 좁은 화면 대응
    오른쪽 '최근 사건' 열이 380px 아래로 줄지 않게 하고, 모자라는 폭은 왼쪽 지도 열이 양보한다. */
 [data-testid="stHorizontalBlock"]:has(.st-key-feed_panel) {
