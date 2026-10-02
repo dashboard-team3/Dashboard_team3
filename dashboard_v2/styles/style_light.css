@@ -10,8 +10,8 @@
 }
 
 [data-testid="stSidebar"] {
-    background: #ffffff !important;
-    border-right: 1px solid #e5e0d5 !important;
+    background: #f6f7fb !important;
+    border-right: 1px solid #ddd6fe !important;
 }
 
 /* 글자 */
@@ -20,7 +20,7 @@ html, body, .stMarkdown, .stMarkdown p, .stMarkdown li, label, label p, [data-te
 }
 
 [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p, .kpi .kpi .sub, .pill-n, .pill-s, .glegend, .sec-s, .verdict .v2, .strip .l, .strip .s, .cond, .sb-foot, .menu-desc, .map-head span, .map-legend, .feed-time, .feed-side span, .empty {
-    color: #6b6255 !important;
+    color: #3d3d3d !important;
 }
 
 .sb-foot b, .glegend em {
@@ -182,10 +182,6 @@ button[kind="primary"] p, button[kind="primary"] {
     background: transparent !important;
 }
 
-[data-testid="stSidebar"] {
-    background: #ffffff !important;
-}
-
 .brand {
     border-bottom-color: #e5e0d5 !important;
 }
@@ -195,7 +191,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .brand-sub, .ph-desc, .chip em {
-    color: #6b6255 !important;
+    color: #3d3d3d !important;
 }
 
 .ph-eyebrow {
@@ -270,7 +266,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .feed-pair span, .feed-link, .feed-what em, .map-legend em {
-    color: #6b6255 !important;
+    color: #3d3d3d !important;
 }
 
 .feed-what {
@@ -309,7 +305,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .feed-late {
-    color: #6b6255 !important;
+    color: #3d3d3d !important;
 }
 
 .feed-side.hot b {
@@ -357,7 +353,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .f-note {
-    color: #6b6255 !important;
+    color: #3d3d3d !important;
 }
 
 .f-note b {
@@ -374,7 +370,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .di-org {
-    color: #6b6255 !important;
+    color: #3d3d3d !important;
 }
 
 .di-url {
@@ -471,7 +467,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .st-key-surge_app .key .s, .st-key-surge_app .lead .sub, .st-key-surge_app .fs, .st-key-surge_app .fbox .d, .st-key-surge_app .fn, .st-key-surge_app .fbig {
-    color: #6b6255 !important;
+    color: #3d3d3d !important;
 }
 
 .st-key-surge_app .fc.dark .ft:not([style]), .st-key-surge_app .farr {
@@ -492,7 +488,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 .st-key-surge_app [style^="color: rgb(139"] {
-    color: #6b6255 !important;
+    color: #3d3d3d !important;
 }
 
 .st-key-surge_app [style*="border-left-color: rgb(248"], .st-key-surge_app [style*="solid rgb(248"] {
@@ -606,7 +602,7 @@ button[kind="primary"] p, button[kind="primary"] {
 .tip::after {
     background: #ffffff !important;
     color: #111827 !important;
-    border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
     box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
 }
 
@@ -660,7 +656,7 @@ button[kind="primary"] p, button[kind="primary"] {
 }
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button p {
-    color: #6b6255 !important;
+    color: #3d3d3d !important;
 }
 
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button:hover p {
@@ -741,11 +737,11 @@ button[kind="primary"] p, button[kind="primary"] {
 .st-key-surge_app .case-r span,
 .st-key-surge_app .case-p em,
 .st-key-surge_app .case-n {
-    color: #6b6255 !important;
+    color: #3d3d3d !important;
 }
 
 .st-key-surge_app .case-e {
-    background: #b7791f !important;
+   background: #e69f00 !important;
     color: #ffffff !important;
 }
 
@@ -795,16 +791,17 @@ button[kind="primary"] p, button[kind="primary"] {
 
 /* ---- 국가 카드 — 밝은 배경용 (2026-10-01) ---- */
 .chead {
-    background: linear-gradient(135deg, #ffffff 0%, #f7f3ea 100%) !important;
-    border-color: #e5e0d5 !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f6f7fb 100%) !important;
+
+    border-color: #ddd6fe !important;
 }
 
 .ch-n { color: #1c1a17 !important; }
-.ch-n span, .ch-s, .cs-l, .cs-s, .cevs { color: #6b6255 !important; }
+.ch-n span, .ch-s, .cs-l, .cs-s, .cevs { color: #3d3d3d !important; }
 
 .cstat {
-    background: #ffffff !important;
-    border-color: #e5e0d5 !important;
+    background: #f5f3ff !important;
+    border-color: #ddd6fe !important;
 }
 
 .cs-v { color: #1c1a17 !important; }
@@ -812,34 +809,34 @@ button[kind="primary"] p, button[kind="primary"] {
 .ccard {
     background: #ffffff !important;
     border-color: #e5e0d5 !important;
+    border-color: #ddd6fe !important;
 }
 
 .cc-t { color: #1c1a17 !important; }
-.ci li { color: #4a443b !important; border-bottom-color: #ece6da !important; }
+.ci li { color: #4a443b !important; border-bottom-color: #ddd6fe !important; }
 .ci b { color: #1c1a17 !important; }
 
 .ci li::before {
-    background: #ece6da !important;
-    color: #6b6255 !important;
+    background: #f5f3ff !important;
+    color: #4f46e5 !important;
 }
 
 .cevs-t { color: #1c1a17 !important; }
-.cevs-n { color: #6b6255 !important; }
-.cev { border-color: #e5e0d5 !important; color: #6b6255 !important; }
+.cevs-n { color: #3d3d3d !important; }
+.cev { border-color: #e5e0d5 !important; color: #3d3d3d !important; }
 .cev b { color: #1c1a17 !important; }
 .cev.up { border-color: #b91c1c !important; color: #b91c1c !important; }
 .cev.dn { border-color: #1d4ed8 !important; color: #1d4ed8 !important; }
 
 .cs-l small, .cc-t small {
-    color: #6b6255 !important;
-    background: #ece6da !important;
+    color: #3d3d3d !important;
 }
 
-.cs-u { color: #6b6255 !important; }
+.cs-u { color: #3d3d3d !important; }
 .ch-s b { color: #1c1a17 !important; }
 
 .cs-s em {
-    background: #b7791f !important;
+    background: #e69f00 !important;
     color: #ffffff !important;
 }
 
