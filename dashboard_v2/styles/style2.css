@@ -30,8 +30,8 @@
 }
 
 [data-testid="stSidebar"] {
-    background: #0f1020;
-    border-right: 1px solid #2a2a48;
+    background: var(--color-main-bg-940);
+    border-right: 1px solid var(--color-main-dark-820);
 }
 
 /* 실시간 KPI 카드: 라벨 / 큰 값 / 설명 한 줄 */
@@ -41,8 +41,8 @@
     gap: 14px;
     padding: 16px 18px;
     border-radius: 12px;
-    border: 1px solid #2a2a48;
-    background: #13142a;
+    border: 1px solid var(--color-main-dark-820);
+    background: var(--color-main-bg-930);
     height: 160px;
 }
 
@@ -95,7 +95,7 @@
     gap: 12px;
     flex-wrap: wrap;
     padding: 2px 4px 8px;
-    border-bottom: 1px solid #2a2a48;
+    border-bottom: 1px solid var(--color-main-dark-820);
     margin-bottom: 4px;
 }
 
@@ -115,7 +115,7 @@
     align-items: center;
     gap: 6px 16px;
     padding: 8px 4px 2px;
-    border-top: 1px solid #2a2a48;
+    border-top: 1px solid var(--color-main-dark-820);
     font-size: 16px;
     color: #cbd5e1;
 }
@@ -139,7 +139,7 @@
     display: flex;
     gap: 14px;
     padding: 12px 4px;
-    border-bottom: 1px solid #2a2a48;
+    border-bottom: 1px solid var(--color-main-dark-820);
 }
 
 .feed-time {
@@ -287,7 +287,7 @@
     color: #cbd5e1;
     padding: 2px 8px;
     border-radius: 999px;
-    background: #2a2a48;
+    background: var(--color-main-dark-820);
 }
 
 /* 카드 아래 '마지막 수신 구간' 같은 Streamlit 캡션도 조금 키운다 */
@@ -495,7 +495,7 @@ h1, h2, h3 {
 }
 
 [data-testid="stAppViewContainer"] {
-    background: #0b0c16;
+    background: var(--color-main-bg-960);
 }
 
 [data-testid="stHeader"] {
@@ -550,7 +550,7 @@ h1, h2, h3 {
 }
 
 [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
-    background: #1d1b3c;
+    background: var(--color-main-870);
     border-left-color: #f87171;
 }
 
@@ -570,7 +570,7 @@ h1, h2, h3 {
 
 .stTabs [data-baseweb="tab-list"] {
     gap: 4px;
-    border-bottom: 1px solid #2a2a48;
+    border-bottom: 1px solid var(--color-main-dark-820);
 }
 
 .stTabs [data-baseweb="tab"] {
@@ -584,7 +584,7 @@ h1, h2, h3 {
 }
 
 .stTabs [aria-selected="true"] {
-    background: #1d1b3c;
+    background: var(--color-main-870);
     box-shadow: inset 0 -3px 0 #f87171;
 }
 
@@ -603,7 +603,7 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
 [data-testid="stSidebar"] .sb-foot {
     margin-top: 28px;
     padding-top: 12px;
-    border-top: 1px solid #2a2a48;
+    border-top: 1px solid var(--color-main-dark-820);
     font-size: 14px;
     color: #6b7891;
     line-height: 1.6;
@@ -646,7 +646,7 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
     color: #e5eaf3;
     padding: 12px 16px;
     border-left: 3px solid #f87171;
-    background: #13142a;
+    background: var(--color-main-bg-930);
     border-radius: 0 10px 10px 0;
     margin: 4px 0 14px;
 }
@@ -673,8 +673,8 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
 .pill {
     flex: 1;
     min-width: 140px;
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 12px;
     padding: 10px 12px;
 }
@@ -708,7 +708,7 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
 
 .pill-g {
     display: inline-block;
-    color: #0b0c16;
+    color: var(--color-main-bg-960);
     font-size: 14px;
     font-weight: 700;
     padding: 1px 8px;
@@ -753,7 +753,7 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
     gap: 16px;
     align-items: center;
     border-left: 5px solid #f87171;
-    background: #13142a;
+    background: var(--color-main-bg-930);
     padding: 12px 18px;
     border-radius: 0 12px 12px 0;
     margin: 6px 0 16px;
@@ -800,7 +800,7 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
 
 /* 분석 결과: 맨 위 결론 상자 */
 .verdict {
-    background: #1d1b3c;
+    background: var(--color-main-870);
     border: 1px solid #23407a;
     border-left: 6px solid #f87171;
     border-radius: 0 14px 14px 0;
@@ -828,8 +828,8 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
 
 /* 소결론 (그래프 아래 한 단락) */
 .note {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 12px;
     padding: 12px 16px;
     margin: 6px 0 10px;
@@ -870,8 +870,8 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
     gap: 8px;
     white-space: nowrap;
     overflow: hidden;
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 10px;
     padding: 8px 14px;
 }
@@ -1018,22 +1018,22 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
     margin-top: 8px;
 }
 
-/* ① 가공 방법: 소제목 · 계산식(다른 카드와 같은 상자, 가운데 크게. 글자 · 빨강 갈등 · 초록 협력 색은 .formula 기본색) · 아래 목록 */
+/* ① 가공 방법: 소제목 · 계산식(다른 카드와 같은 상자, 크게 · 왼쪽 정렬 2026-10-02. 글자 · 빨강 갈등 · 초록 협력 색은 .formula 기본색) · 아래 목록 */
 .di-sub {
     font-size: 16px;
     font-weight: 700;
     color: #e5eaf3;
     margin: 0 0 8px;
-    text-align: center;
+    text-align: left;
 }
 
 .di-formula {
     display: table;
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 14px;
     padding: 22px 40px;
-    margin: 10px auto 22px;
+    margin: 10px 0 22px;
 }
 
 .di-formula .formula {
@@ -1083,14 +1083,6 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
     line-height: 1.8;
 }
 
-.di-center {
-    display: table;
-    margin: 4px auto 0;
-    padding-left: 18px;
-}
-
-/* 계산식 아래 목록: 덩어리째 가운데 (글머리는 왼쪽 정렬) */
-
 /* ② 수집 대상: 16개국 · 기간 */
 .di-block p {
     color: #e5eaf3;
@@ -1115,8 +1107,8 @@ div[data-baseweb="select"] > div, .stSlider, .stMultiSelect {
 }
 
 .di-card {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 14px;
     padding: 20px 22px 18px;
     display: flex;
@@ -1285,8 +1277,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 
 /* 그래프 칸(높이 고정)이 아니라 그 바깥 칸에 카드를 입힌다 → 안쪽 여백을 줘도 축 글자가 안 잘림 */
 [data-testid="stMain"] [data-testid="stElementContainer"]:has(> [data-testid="stFullScreenFrame"] > [data-testid="stPlotlyChart"]) {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 14px;
     padding: 12px 14px 8px;
 }
@@ -1371,8 +1363,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 .ra-card {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 14px;
     padding: 16px 20px;
     opacity: .6;
@@ -1415,8 +1407,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 .pq {
     margin: -4px 0 18px;
     padding: 12px 16px;
-    background: #121330;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 12px;
 }
 
@@ -1469,8 +1461,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 .rk-card {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 14px;
     padding: 20px 24px;
 }
@@ -1588,8 +1580,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 .mn-card {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 14px;
     padding: 16px 18px;
     min-height: 200px;
@@ -1623,8 +1615,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
     font-size: 16px;
     color: #b8c2d3;
     line-height: 1.7;
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 14px;
     padding: 16px 20px;
     word-break: keep-all;
@@ -1724,7 +1716,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 
 .tipi:hover {
     color: #ffffff;
-    background: #2a2a48;
+    background: var(--color-main-dark-820);
 }
 
 .kpi {
@@ -1948,7 +1940,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
     gap: 0 !important;
     padding: 2px !important;
     margin: 20px auto 20px !important;
-    /* border: 1px solid #2a2a48 !important; */
+    /* border: 1px solid var(--color-main-dark-820) !important; */
     border-radius: 20px !important;
     background: rgba(148, 163, 184, .07) !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, .35) !important;
@@ -2039,8 +2031,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 /* 오른쪽 등급 카드 묶음: 제목 ~ 카드를 그래프 카드와 같은 상자 하나로. 위 여백 = 왼쪽 '리스크 추이' 줄 높이 */
 .st-key-pair_cards,
 .st-key-cty_cards {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 14px;
     padding: 6px 10px 12px;
     margin-top: 40px;
@@ -2099,8 +2091,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 /* 표 쪽: 표를 카드 상자에 넣어 설명 상자와 높이를 맞춤 (표 아래는 카드 배경) */
 .st-key-surge_app [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"]) > [data-testid="stColumn"]:has([data-testid="stDataFrame"]) > [data-testid="stVerticalBlock"] {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 12px;
     padding: 12px;
     box-sizing: border-box;
@@ -2140,7 +2132,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 [class*="st-key-shapebtn-B"] button[data-testid$="-primary"] {
     background: #56b4e9 !important;
     border-color: #56b4e9 !important;
-    color: #0b0c16 !important;
+    color: var(--color-main-bg-960) !important;
 }
 
 [class*="st-key-shapebtn-C"] button[kind="primary"],
@@ -2151,7 +2143,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 
 [class*="st-key-shapebtn-B"] button[kind="primary"] p,
 [class*="st-key-shapebtn-B"] button[data-testid$="-primary"] p {
-    color: #0b0c16 !important;
+    color: var(--color-main-bg-960) !important;
 }
 
 [class*="st-key-shapebtn-A"] button[kind="secondary"],
@@ -2206,8 +2198,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 .st-key-casechart {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 14px;
     justify-content: center;
     padding: 4px 8px;
@@ -2248,8 +2240,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 /* ================================================================ 무기 거래 추이 · 추이 탭 오른쪽 상자 (2026-10-01)
    흐름 요약 (2026-10-01 '상위 5' 는 뺐다). 상자 모양은 리스크 분석 카드 상자와 같게 */
 [class*="st-key-trend_side_"] {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 14px;
     padding: 12px 16px 16px;
     min-height: 460px;                        /* 왼쪽 추이 그래프 카드 높이 (draw_trend height=460) — 버튼을 바꿔도 상자 높이 그대로 */
@@ -2262,7 +2254,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 .ts-h { font-size: 16px; font-weight: 700; color: #e5eaf3; margin: 2px 0 2px; }
 .ts-s { font-size: 14px; color: #8b98ad; margin-bottom: 10px; }
 .ts-k { display: grid; grid-template-columns: 1fr; gap: 10px; }
-.ts-kc { background: #10111f; border: 1px solid #2a2a48; border-radius: 10px; padding: 10px 14px; }
+.ts-kc { background: var(--color-main-bg-940); border: 1px solid var(--color-main-dark-820); border-radius: 10px; padding: 10px 14px; }
 .ts-kl { font-size: 14px; color: #8b98ad; }
 .ts-kv { font-size: 22px; font-weight: 800; color: #ffffff; }
 .ts-kv.up { color: #f87171; }
@@ -2299,7 +2291,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 
 /* 탭 줄: 왼쪽 보기 탭(지도 · 추이 · 순위 · 국가쌍) · 오른쪽 그 탭의 조작 묶음 */
 [class*="st-key-tab_row_"] {
-    border-bottom: 1px solid #2a2a48;
+    border-bottom: 1px solid var(--color-main-dark-820);
     padding-bottom: 10px;
     margin: 6px 0 4px;
     min-height: 59px;                          /* 탭마다 조작이 달라도(지도는 슬라이더) 줄 높이를 같게 → 탭을 바꿔도 그래프가 안 움직임 */
@@ -2319,10 +2311,10 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 [class*="st-key-grp_"] {
     width: auto !important;
     flex: 0 0 auto !important;
-    border: 1px solid #2a2a48;
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 10px;
     padding: 3px 4px 3px 10px;
-    background: #10111f;
+    background: var(--color-main-bg-940);
 }
 
 .grp-l {
@@ -2337,8 +2329,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 
 /* 분석 대상국 줄 (국가별일 때만) */
 [class*="st-key-cty_row_"] {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 12px;
     padding: 8px 14px;
     margin-bottom: 4px;
@@ -2348,8 +2340,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
     display: inline-block;
     font-size: 14px;
     color: #aab4c5;
-    background: #10111f;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-940);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 8px;
     padding: 4px 10px;
     margin-left: 6px;
@@ -2448,7 +2440,7 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 }
 
 [class*="st-key-lagbtn-"] button[kind="primary"] p {
-    color: #0b0c16 !important;
+    color: var(--color-main-bg-960) !important;
 }
 
 [class*="st-key-lagbtn-"] button[kind="secondary"] {
@@ -2466,7 +2458,7 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
     align-items: center;
     gap: 24px;
     background: linear-gradient(135deg, #131d33 0%, #0f1729 100%);
-    border: 1px solid #2a2a48;
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 18px;
     padding: 22px 26px;
     margin: 6px 0 18px;
@@ -2504,7 +2496,7 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 
 .cstat {
     background: rgba(148, 163, 184, .07);
-    border: 1px solid #2a2a48;
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 12px;
     padding: 12px 14px;
 }
@@ -2534,7 +2526,7 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
     font-style: normal;
     font-size: 11px;
     font-weight: 700;
-    color: #0b0c16;
+    color: var(--color-main-bg-960);
     background: #f5c542;
     border-radius: 5px;
     padding: 1px 6px;
@@ -2562,8 +2554,8 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 }
 
 .ccard {
-    background: #13142a;
-    border: 1px solid #2a2a48;
+    background: var(--color-main-bg-930);
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 14px;
     padding: 16px 18px;
     height: 100%;
@@ -2602,7 +2594,7 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
     width: 19px;
     height: 19px;
     border-radius: 50%;
-    background: #2a2a48;
+    background: var(--color-main-dark-820);
     color: #8b98ad;
     font-size: 11px;
     font-weight: 700;
@@ -2637,7 +2629,7 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 .cev {
     display: inline-block;
     padding: 3px 10px;
-    border: 1px solid #2a2a48;
+    border: 1px solid var(--color-main-dark-820);
     border-radius: 999px;
     font-size: 13px;
     color: #8b98ad;
@@ -2657,28 +2649,28 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
    화면 장식(메뉴 · 탭 · 소제목 · 요약 · 선택 버튼)의 강조색을 빨강 → 보라로. 바탕은 남보라 계열.
    데이터 뜻이 있는 빨강(리스크 높음 · 증가 ▲ · 강조한 나라 카드 · 갈등 사건)은 그대로 둔다. */
 .stApp, [data-testid="stAppViewContainer"] {
-    background: radial-gradient(ellipse at 88% 0%, rgba(139, 92, 246, .12), transparent 42%),
-                radial-gradient(ellipse at 0% 100%, rgba(99, 102, 241, .07), transparent 40%), #0b0c16 !important;
+    background: radial-gradient(ellipse at 88% 0%, color-mix(in srgb, var(--color-main-480) 12%, transparent), transparent 42%),
+                radial-gradient(ellipse at 0% 100%, color-mix(in srgb, var(--color-main-500) 7%, transparent), transparent 40%), var(--color-main-bg-960) !important;
 }
-[data-testid="stSidebar"] { background: #0f1020 !important; }
+[data-testid="stSidebar"] { background: var(--color-main-bg-940) !important; }
 [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
-    background: rgba(139, 92, 246, .16) !important;
-    border-left-color: #8b5cf6 !important;
+    background: color-mix(in srgb, var(--color-main-480) 16%, transparent) !important;
+    border-left-color: var(--color-main-480) !important;
 }
-.stTabs [aria-selected="true"] { background: #1d1b3c !important; box-shadow: inset 0 -3px 0 #8b5cf6 !important; }
-.summary { border-left-color: #8b5cf6 !important; }
-.sec { border-left-color: #8b5cf6 !important; }
-.sec-no, .pq-k, .mn-no, .rk-def b, .formula .f-h { color: #a78bfa !important; }
-.verdict { border-left-color: #8b5cf6 !important; }
-.ra-card.on { border-color: #8b5cf6 !important; box-shadow: 0 0 0 1px #8b5cf6 inset !important; }
+.stTabs [aria-selected="true"] { background: var(--color-main-870) !important; box-shadow: inset 0 -3px 0 var(--color-main-480) !important; }
+.summary { border-left-color: var(--color-main-480) !important; }
+.sec { border-left-color: var(--color-main-480) !important; }
+.sec-no, .pq-k, .mn-no, .rk-def b, .formula .f-h { color: var(--color-main-350) !important; }
+.verdict { border-left-color: var(--color-main-480) !important; }
+.ra-card.on { border-color: var(--color-main-480) !important; box-shadow: 0 0 0 1px var(--color-main-480) inset !important; }
 [data-testid="stMain"] [data-testid="stExpander"] summary [data-testid="stMarkdownContainer"] p::before {
-    background-color: rgba(139, 92, 246, .14) !important;
+    background-color: color-mix(in srgb, var(--color-main-480) 14%, transparent) !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23a78bfa'%3E%3Cpath d='M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z'/%3E%3C/svg%3E") !important;
 }
 /* 띠 모양 고르기(국가쌍/국가별 · Comtrade/SIPRI): 고른 칸을 보라 그라데이션으로 */
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] {
-    background: linear-gradient(90deg, #7c3aed, #9333ea) !important;
-    box-shadow: 0 4px 14px rgba(124, 58, 237, .35) !important;
+    background: linear-gradient(90deg, var(--color-main-570), var(--color-main-dark-550)) !important;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--color-main-570) 35%, transparent) !important;
 }
 [class*="st-key-tabbar-"] [data-testid="stButtonGroup"] button[aria-checked="true"] p { color: #ffffff !important; }
 
@@ -2691,11 +2683,11 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
     filter: hue-rotate(262deg) saturate(.95);
 }
 [data-testid="stButtonGroup"] button[aria-checked="true"] {
-    border-color: #8b5cf6 !important;
+    border-color: var(--color-main-480) !important;
 }
 [data-testid="stButtonGroup"] button[aria-checked="true"] p,
 [data-testid="stButtonGroup"] button[aria-checked="true"] span {
-    color: #a78bfa !important;
+    color: var(--color-main-350) !important;
 }
 
 /* 실시간 (2026-10-01): 오른쪽 위 LIVE 패널 · 지도 칸 아래 범례 상자 (중동_스토리맵에서 가져옴) */
@@ -2741,7 +2733,7 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 @media (max-width: 1200px) { .st-key-main_panel .lv-lg { grid-template-columns: 1fr; } }
 
 /* 리스크 모니터링 · 리스크 추이 지도 (2026-10-01): 지도 칸 · 오른쪽 칸 (실시간 지도와 같은 바탕) */
-.st-key-riskmap_panel { background: #13142a !important; }   /* 오른쪽 리스크 추이 칸 · 다른 카드와 같은 바탕 */
+.st-key-riskmap_panel { background: var(--color-main-bg-930) !important; }   /* 오른쪽 리스크 추이 칸 · 다른 카드와 같은 바탕 */
 .st-key-riskmap_panel .lv-lg { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 6px 28px; align-items: start; padding-top: 12px; }
 .st-key-riskmap_panel .lv-lg-t { margin-bottom: 8px; }
 .st-key-riskmap_panel .lv-note { margin-top: 4px; }
@@ -2756,7 +2748,7 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 /* (2026-10-02) 지도도 그래프처럼 상자 안에 — 제목 · 지도 구분 (바탕 · 테두리를 지우던 규칙 뺌) */
 
 /* 종합 분석 새 레이아웃 (2026-10-01): 그래프를 담는 연보라 상자 · 카드 */
-.st-key-ov_chartbox { background: #17183a; border: 1px solid #2a2a48; border-radius: 12px; padding: 10px 12px; }
+.st-key-ov_chartbox { background: var(--color-main-870); border: 1px solid var(--color-main-dark-820); border-radius: 12px; padding: 10px 12px; }
 .st-key-ov_chartbox [data-testid="stElementContainer"]:has(> [data-testid="stFullScreenFrame"] > [data-testid="stPlotlyChart"]) { background: transparent !important; border: none !important; box-shadow: none !important; }
 .st-key-ov_card1, .st-key-ov_card2 { padding: 18px 20px !important; border-radius: 14px !important; }
 .st-key-ov_lag_box [data-testid="stButtonGroup"] { justify-content: flex-end; }
@@ -2783,7 +2775,7 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 [class*="st-key-rmcard_"]:not([class*="st-key-rmcard_btn"]) [data-testid="stElementContainer"]:has(button) { position: absolute !important; inset: 0; z-index: 2; margin: 0 !important; }
 [class*="st-key-rmcard_btn"], [class*="st-key-rmcard_btn"] [data-testid="stButton"], [class*="st-key-rmcard_btn"] button { width: 100% !important; height: 100% !important; }
 [class*="st-key-rmcard_btn"] button { opacity: 0 !important; cursor: pointer; }
-[class*="st-key-rmcard_"]:not([class*="st-key-rmcard_btn"]):hover .pill { border-color: #8b5cf6 !important; }
+[class*="st-key-rmcard_"]:not([class*="st-key-rmcard_btn"]):hover .pill { border-color: var(--color-main-480) !important; }
 .st-key-riskmap_cards .pills { margin: 0 !important; }
 /* 리스크 추이 두 칸 머리글 (2026-10-02): 큰 제목 / 그 밑 작은 줄 */
 .rm-h { padding: 2px 0 4px; }

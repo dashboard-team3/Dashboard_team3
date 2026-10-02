@@ -136,7 +136,7 @@ def _label_placement(radius, side):
 # 나라 면을 오늘 사건 수로 주황 한 색의 밝기로 칠하고, 이름 · 숫자를 나라 위에 적는다.
 # 보라 (2026-10-02 팀 요청, 예전 주황 — 밝은 테마 #f4ede7 → #a8481f · 어두운 테마 #262a33 → #f6b98d 스토리맵 주황).
 # 어두운 테마도 같은 색. 칸 안 이름은 칸 색에 따라: 진한 칸(LABEL_DARK 이상)은 흰 글씨, 옅은 칸은 검은 글씨
-SEQ_LIGHT = ["#f5f3ff", "#ddd6fe", "#c4b5fd", "#a78bfa", "#7c3aed", "#4c1d95"]
+SEQ_LIGHT = [theme.C[k] for k in ("main-40", "main-130", "main-230", "main-350", "main-570", "main-740")]
 SEQ_DARK = SEQ_LIGHT
 LABEL_DARK = 0.7
 
@@ -176,7 +176,7 @@ def draw_map():
     fig.add_trace(go.Choropleth(
         locations=poly["iso"], z=poly["count"] ** 0.5, locationmode="ISO-3", showscale=False,
         colorscale=_scale(SEQ_LIGHT if light else SEQ_DARK), zmin=0, zmax=zmax,
-        marker_line_color="#ffffff" if light else "#13142a", marker_line_width=0.9,
+        marker_line_color="#ffffff" if light else theme.C["main-bg-930"], marker_line_width=0.9,
         customdata=poly["hover"], hovertemplate="%{customdata}<extra></extra>"))
     # 2) 이름 + 숫자. 좁은 나라(LABEL_OUT)는 이름을 바깥으로 빼고 가는 선으로 잇는다
     name_col = "#1c1a17" if light else "#ffffff"
@@ -211,8 +211,8 @@ def draw_map():
             marker=dict(size=9, color="#e66767", line=dict(width=0))))
     fig.update_layout(
         geo=dict(projection_type="mercator", fitbounds="locations", visible=True,
-                 showland=True, landcolor="#ffffff" if light else "#13142a",          # 주변 땅 = 지도 상자 바탕색 (리스크 추이와 같게, 2026-10-02)
-                 showcountries=True, countrycolor="#e5e7eb" if light else "#24254a", countrywidth=0.6,
+                 showland=True, landcolor="#ffffff" if light else theme.C["main-bg-930"],          # 주변 땅 = 지도 상자 바탕색 (리스크 추이와 같게, 2026-10-02)
+                 showcountries=True, countrycolor="#e5e7eb" if light else theme.C["main-dark-820"], countrywidth=0.6,
                  showcoastlines=False, showocean=False, showlakes=False, showframe=False,
                  bgcolor="rgba(0,0,0,0)"),
         margin=dict(l=0, r=0, t=0, b=0), showlegend=False, autosize=True,
@@ -227,9 +227,8 @@ def draw_map():
       /* (2026-10-02) 가장자리 흐림(mask)은 뺐다 — 지도는 그래프처럼 상자 안 */
       .st-key-live_map_chart .scattergeo path.point {animation: lvping 1.6s ease-in-out infinite;}
       @keyframes lvping {0%, 100% {opacity: 1;} 50% {opacity: .15;}}
-      .st-key-main_panel:has(.st-key-live_map_chart) {background: #13142a !important;}   /* 리스크 추이 칸 · 다른 카드와 같은 바탕 */
-      html[data-theme="light"] 
-      
+      .st-key-main_panel:has(.st-key-live_map_chart) {background: var(--color-main-bg-930) !important;}   /* 리스크 추이 칸 · 다른 카드와 같은 바탕 */
+      /* (2026-10-02 hnaa0) 밝은 테마 연한 하늘색 바탕은 뺌 — 카드 모양(style_light.css)을 따름 */
     </style>""", unsafe_allow_html=True)
 
     # 마우스를 올리면 오른쪽 위에 확대(+)·축소(−)·처음 위치 버튼만 보인다. 휠 확대는 스크롤과 충돌해서 끈다.

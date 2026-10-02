@@ -5,6 +5,8 @@ import re as _re
 
 import streamlit as st
 
+from core.theme import C
+
 
 def _plain(text):
     """말풍선용: HTML 태그 · 마크다운 ** 를 걷어 낸 글자."""
@@ -34,7 +36,7 @@ C_RISK, C_COOP, C_ARMS, C_MUTE, C_TEXT = "#f87171", "#60a5fa", "#f5c542", "#4755
 # «상태»(등급 뱃지·범례)는 신호등 색(파랑·초록·노랑·주황·빨강)을 쓰므로,
 # «범주»(나라 구분)는 초록·노랑·주황을 피해 상태로 오해되지 않게 한다. 첫 색은 강조용. (2026-09-30)
 # 밝은 테마에서도 읽히는 값이라 theme.adapt 의 색 치환 목록에 넣지 않는다.
-LINE_COLORS = ["#e11d48", "#6366f1", "#06b6d4", "#8b5cf6", "#0ea5e9"]
+LINE_COLORS = ["#e11d48", C["main-500"], "#06b6d4", C["main-480"], "#0ea5e9"]
 CHART_CONFIG = {"displayModeBar": False}   # 지도 빼고는 카메라·줌 아이콘을 숨긴다
 
 

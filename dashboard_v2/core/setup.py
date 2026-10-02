@@ -7,6 +7,7 @@ import time
 
 import streamlit as st
 
+from core import theme
 from core.paths import STYLE_DIR
 
 
@@ -72,7 +73,8 @@ THEME_SCRIPT = """
 
 def setup():
     st.set_page_config(page_title="Conflict Risk & Arms Dashboard", layout="wide")
-    st.markdown(f"<style>{(STYLE_DIR / 'style2.css').read_text(encoding='utf-8')}</style>",
+    # 맨 앞에 보라 계열 색 변수 --color-main-… (core/theme.py). 따로 st.markdown 을 쓰면 빈 칸 하나만큼 화면이 아래로 밀려서 같이 넣는다
+    st.markdown(f"<style>{theme.COLOR_CSS} {(STYLE_DIR / 'style2.css').read_text(encoding='utf-8')}</style>",
                 unsafe_allow_html=True)   # styles/style2.css = 기본(어두운) 화면 스타일 전체
     light = _is_light()
     st.session_state["_light"] = light      # 모든 그래프가 이 테마를 따르게 (core/theme.py)

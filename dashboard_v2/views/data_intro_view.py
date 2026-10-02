@@ -1,4 +1,4 @@
-"""⑤ 데이터 소개 페이지 (원본 app2.py 의 8.). page() = 가공 방법 · 수집 대상 · 자료출처 · 해석 안내."""
+"""⑤ 데이터 소개 페이지 (원본 app2.py 의 8.). page() = 해석 안내 · 가공 방법 · 수집 대상 · 자료출처."""
 import streamlit as st
 
 from core.ui import page_sub, term
@@ -30,13 +30,18 @@ GUIDE = [     # (제목, 설명)
 def page():
     st.title("데이터 소개")
     page_sub("대시보드의 숫자가 어디서 와서(" + term("GDELT") + " · " + term("SIPRI") + " · " + term("UN Comtrade") + ") 어떻게 계산되었는지 정리했습니다.")
-    """데이터 소개 페이지: 한 페이지로 스크롤. 가공 방법 → 수집 대상 → 자료출처 → 해석에 대한 안내."""
-    # ── 가공 방법 (맨 위) ──
+    """데이터 소개 페이지: 한 페이지로 스크롤. 해석에 대한 안내 → 가공 방법 → 수집 대상 → 자료출처."""
+    # ── 해석에 대한 안내 (맨 위, 2026-10-02 팀 요청으로 가공 방법 위로) ──
+    st.markdown('<div class="di-h">해석에 대한 안내</div>', unsafe_allow_html=True)
+    items = "".join(f'<li><b>{t}</b><br>{d}</li>' for t, d in GUIDE)
+    st.markdown(f'<ul class="di-guide">{items}</ul>', unsafe_allow_html=True)
+
+    # ── 가공 방법 ──
     st.markdown('<div class="di-h">가공 방법</div>', unsafe_allow_html=True)
     st.markdown(
         '<div class="di-sub">국가쌍 리스크</div>'
         f'<div class="di-formula">{RISK_FORMULA}</div>'
-        '<ul class="di-list di-center">'
+        '<ul class="di-list">'
         '<li>A→B와 B→A를 따로 계산 (Actor 순서 기준, 실제 공격 방향 아님)</li>'
         '<li>하루 단위로 계산한 뒤 달력 일수로 월평균 (사건 없는 날 = 0)</li>'
         '<li>GDELT 서버에 원본이 없는 날(2025.06.14–07.01 등)은 표시에서 회색 처리</li>'
@@ -60,8 +65,3 @@ def page():
         f'<div class="di-desc">자료 설명 · {desc}</div><a class="di-url" href="{url}" target="_blank">{url}</a></div>'
         for org, name, desc, url in SOURCES)
     st.markdown(f'<div class="di-cards">{cards}</div>', unsafe_allow_html=True)
-
-    # ── 해석에 대한 안내 ──
-    st.markdown('<div class="di-h">해석에 대한 안내</div>', unsafe_allow_html=True)
-    items = "".join(f'<li><b>{t}</b><br>{d}</li>' for t, d in GUIDE)
-    st.markdown(f'<ul class="di-guide">{items}</ul>', unsafe_allow_html=True)

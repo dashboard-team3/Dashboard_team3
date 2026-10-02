@@ -116,15 +116,15 @@ def _risk_map(sel, small=False):
     fig.add_trace(go.Choropleth(
         locations=iso, z=z, locationmode="ISO-3", showscale=False, zmin=0, zmax=1,
         colorscale=_scale(SEQ_LIGHT if light else SEQ_DARK),
-        marker_line_color="#ffffff" if light else "#13142a", marker_line_width=0.9,
+        marker_line_color="#ffffff" if light else theme.C["main-bg-930"], marker_line_width=0.9,
         customdata=iso,                                                   # 클릭하면 이 값(ISO3)이 돌아온다
         hovertext=hover, hovertemplate="%{hovertext}<extra></extra>"))
     # 고른 나라: 국가쌍이면 기준 나라라 색 대신 무채색 면 + 굵은 테두리, 국가별이면 굵은 테두리만
-    base = ("#c7cbe0" if light else "#3a3b5c") if pair else "rgba(0,0,0,0)"
+    base = (theme.C["main-light-180"] if light else theme.C["main-dark-740"]) if pair else "rgba(0,0,0,0)"
     fig.add_trace(go.Choropleth(
         locations=[sel], z=[0], locationmode="ISO-3", showscale=False,
         colorscale=[[0, base], [1, base]],
-        marker_line_color="#4f46e5" if light else "#ffffff", marker_line_width=3,
+        marker_line_color=theme.C["main-light-650"] if light else "#ffffff", marker_line_width=3,
         customdata=[sel], hovertext=[f"<b>{names[sel]}</b>" + (" (기준 나라)" if pair else "")],
         hovertemplate="%{hovertext}<extra></extra>"))
     # 국가쌍: 고른 나라 → 리스크가 큰 상대국 3곳으로 화살표 (점선 · 끝에 화살촉, 굵기 = 리스크). 이름 · 숫자보다 먼저 그려 글자 아래에 깔리게
@@ -176,8 +176,8 @@ def _risk_map(sel, small=False):
                              else ("#1c1a17" if light else "#ffffff") for kr, _, c in rows])))
     fig.update_layout(
         geo=dict(projection_type="mercator", fitbounds="locations", visible=True,
-                 showland=True, landcolor="#ffffff" if light else "#13142a",          # 주변 땅 = 지도 상자 바탕색 (그래프 상자처럼 한 색, 2026-10-02)
-                 showcountries=True, countrycolor="#e5e7eb" if light else "#24254a", countrywidth=0.6,   # 주변 나라는 옅은 경계선만
+                 showland=True, landcolor="#ffffff" if light else theme.C["main-bg-930"],          # 주변 땅 = 지도 상자 바탕색 (그래프 상자처럼 한 색, 2026-10-02)
+                 showcountries=True, countrycolor="#e5e7eb" if light else theme.C["main-dark-820"], countrywidth=0.6,   # 주변 나라는 옅은 경계선만
                  showcoastlines=False, showocean=False, showlakes=False, showframe=False, bgcolor="rgba(0,0,0,0)"),
         margin=dict(l=0, r=0, t=0, b=0), showlegend=False, height=236 if small else 720, paper_bgcolor="rgba(0,0,0,0)",
         dragmode=False, clickmode="event+select",
@@ -298,9 +298,9 @@ def _chart(code, big=False):
                                      marker=dict(color=pcol[q], size=12 if q == focus else 8,
                                                  line=dict(width=1.5, color="#ffffff")),
                                      hovertemplate=f"{d['line'](q)} {p1:%Y-%m} 한 달 값 %{{y:.3f}}<extra></extra>"))
-    fig.add_vline(x=p1, line=dict(color="#a78bfa", width=1, dash="dot"))
+    fig.add_vline(x=p1, line=dict(color=theme.C["main-350"], width=1, dash="dot"))
     fig.add_annotation(x=p1, y=1.0, yref="paper", text=f"기준 달 {p1:%Y-%m}", showarrow=False, xanchor="right",
-                       yanchor="top", font=dict(size=11, color="#a78bfa"))
+                       yanchor="top", font=dict(size=11, color=theme.C["main-350"]))
     risk_view._gap_bands(fig, relations.gap_months(relations.load_risk()), p0, p1)
     fig.update_layout(**DARK_LAYOUT, height=615 if big else 280, hovermode="x unified" if big else False,   # 작은 그래프는 마우스를 올려도 설명 상자 없음 (상자가 그래프를 다 가려서, 2026-10-02)
                      

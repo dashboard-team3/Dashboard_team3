@@ -116,7 +116,7 @@ CSS = f"""
 OV_CSS = """
          border-radius:0 12px 12px 0; padding:.9rem 1.2rem; margin:.2rem 0 1.2rem 0;}
             display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
-  .ov-key {background:#13142a; border:1px solid #2a2a48; border-left:5px solid #60a5fa; border-radius:0 14px 14px 0;
+  .ov-key {background:var(--color-main-bg-930); border:1px solid var(--color-main-dark-820); border-left:5px solid #60a5fa; border-radius:0 14px 14px 0;
            padding:1.2rem 1.5rem; margin:.4rem 0 1.4rem 0;}
   .ov-kick {display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem;}
   .ov-badge {font-size:12px; font-weight:700; color:#93c5fd; background:rgba(96,165,250,.15); border-radius:5px; padding:.1rem .45rem;}
@@ -129,22 +129,22 @@ OV_CSS = """
   .ov-cb-h span:last-child {font-family:"JetBrains Mono", monospace; font-weight:500;}
   .ov-head {display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:.8rem;}
   .ov-t {font-size:19px; font-weight:800; color:#e5eaf3;}
-  .ov-no {color:#a78bfa; font-family:"JetBrains Mono", monospace; margin-right:.2rem;}
+  .ov-no {color:var(--color-main-350); font-family:"JetBrains Mono", monospace; margin-right:.2rem;}
   .ov-s {font-size:14px; color:#8b98ad; margin-top:.25rem; line-height:1.6;}
   .ov-leg {display:flex; gap:.9rem; font-size:13px; color:#cbd5e1; white-space:nowrap;}
   .ov-leg.l {margin-top:.5rem;}
   .ov-leg i {display:inline-block; width:10px; height:10px; margin-right:.35rem; vertical-align:-1px;}
   .ov-leg i.sq.red, .ov-leg i.dot.red {background:#f87171;} .ov-leg i.sq.blue, .ov-leg i.dot.blue {background:#60a5fa;}
   .ov-leg i.dot {border-radius:50%;}
-  .ov-note {border:1px solid #2a2a48; border-radius:12px; padding:1rem 1.1rem; height:100%;}
+  .ov-note {border:1px solid var(--color-main-dark-820); border-radius:12px; padding:1rem 1.1rem; height:100%;}
   .ov-note-t {font-size:17px; font-weight:800; color:#e5eaf3; margin-bottom:.6rem;}
   .ov-note-b {font-size:15px; color:#aab4c5; line-height:1.75; word-break:keep-all;}
-  .ov-info {margin-top:1.4rem; background:#1d1b3c; border-radius:8px; padding:.7rem .85rem; font-size:13px; color:#aab4c5; line-height:1.65;}
-  .ov-info-t {font-size:13px; font-weight:700; color:#a78bfa; margin-bottom:.3rem;}
+  .ov-info {margin-top:1.4rem; background:var(--color-main-870); border-radius:8px; padding:.7rem .85rem; font-size:13px; color:#aab4c5; line-height:1.65;}
+  .ov-info-t {font-size:13px; font-weight:700; color:var(--color-main-350); margin-bottom:.3rem;}
   .ov-info b {color:#e5eaf3;}
   .ov-chip {display:inline-block; margin-top:.5rem; font-family:"JetBrains Mono", monospace; font-size:12px; color:#8b98ad;
-            border:1px solid #2a2a48; border-radius:6px; padding:.2rem .55rem; float:right;}
-  .ov-tbl {margin-top:.9rem; border-top:1px solid #2a2a48;}
+            border:1px solid var(--color-main-dark-820); border-radius:6px; padding:.2rem .55rem; float:right;}
+  .ov-tbl {margin-top:.9rem; border-top:1px solid var(--color-main-dark-820);}
   .ov-row {display:grid; grid-template-columns:minmax(150px, 1.2fr) 1.6fr 2px 1.6fr; align-items:center; gap:0 .8rem; padding:.42rem 0;}
   .ov-row.ov-h {font-family:"JetBrains Mono", monospace; font-size:12px; color:#8b98ad; padding:.6rem 0 .3rem;}
   .ov-row.ov-h .ov-neg {text-align:right;} .ov-row.ov-h .ov-mid {background:none; text-align:center; overflow:visible; font-weight:700;}
@@ -153,7 +153,7 @@ OV_CSS = """
   .ov-dot.pos {background:#f87171;} .ov-dot.neg {background:#60a5fa;} .ov-dot.strong {opacity:1;}
   .ov-neg, .ov-pos {display:flex; align-items:center; gap:.5rem; height:24px;}
   .ov-neg {flex-direction:row-reverse;}
-  .ov-mid {width:2px; height:20px; background:#3b3b5c;}
+  .ov-mid {width:2px; height:20px; background:var(--color-main-dark-740);}
   .ov-bar {display:block; height:22px; opacity:.45; flex:0 0 auto;}
   .ov-bar.pos {background:#f87171;} .ov-bar.neg {background:#60a5fa;} .ov-bar.strong {opacity:1;}
   .ov-v {font-family:"JetBrains Mono", monospace; font-size:13px; white-space:nowrap;}
@@ -465,9 +465,9 @@ def page_1_corr():
                                      text=[f"{v:+.3f}" for v in vals], textposition="outside",
                                      cliponaxis=False, textfont=dict(size=12, color=col),
                                      hovertemplate=name + " · %{x} · r = %{y:+.3f}<extra></extra>"))
-            fig.add_vrect(x0=lag - 0.5, x1=lag + 0.5, fillcolor="#8b5cf6", opacity=0.10, line_width=0, layer="below")
+            fig.add_vrect(x0=lag - 0.5, x1=lag + 0.5, fillcolor=theme.C["main-480"], opacity=0.10, line_width=0, layer="below")
             fig.add_annotation(x=lag, y=1.0, yref="paper", text=f"선택한 시점 ({ks[lag]})", showarrow=False,
-                               font=dict(size=12, color="#a78bfa"), yanchor="top")
+                               font=dict(size=12, color=theme.C["main-350"]), yanchor="top")
             fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", barmode="group",
                               bargap=0.35, height=330, showlegend=False,
                               font=dict(color=INK, size=13, family="Malgun Gothic, sans-serif"),

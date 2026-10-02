@@ -28,7 +28,7 @@ MENU_CARDS = [
 CSS = """<style>
 /* ── 화면 전체 배경 (밝은 테마여도 첫 화면은 밤하늘) */
 .st-key-landing_bg {position: fixed !important; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-  background: radial-gradient(ellipse at 50% 18%, rgba(139,124,246,.22), transparent 55%),
+  background: radial-gradient(ellipse at 50% 18%, color-mix(in srgb, var(--color-main-dark-410) 22%, transparent), transparent 55%),
               radial-gradient(ellipse at 85% 75%, rgba(96,165,250,.10), transparent 50%), #0b1220 !important;}
 .st-key-landing_bg::before, .st-key-landing_bg::after {content: ""; position: absolute; inset: 0;
   background-image: STARS_A; animation: twinkle 5s ease-in-out infinite;}
@@ -43,17 +43,17 @@ CSS = """<style>
   width: 100vw !important; height: 130vh !important; flex: 0 0 auto !important;}   /* 창보다 크게 → 위아래가 살짝 잘림 */
 @keyframes mapIn {to {opacity: 1;}}
 .st-key-landing_map [data-testid="stElementContainer"]:has([data-testid="stPlotlyChart"]) {background: transparent !important; border: 0 !important; padding: 0 !important;}
-.st-key-landing_map svg {filter: drop-shadow(0 0 3px rgba(167,139,250,.9));}
+.st-key-landing_map svg {filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-main-350) 90%, transparent));}
 .st-key-landing_map path.point {animation: glow 2.8s ease-in-out infinite;}
 @keyframes glow {0%, 100% {stroke: rgba(254,243,199,0); stroke-width: 0;} 50% {stroke: rgba(254,243,199,.35); stroke-width: 14px;}}
 /* ── 앞쪽 내용: 제목 · 카드 */
 .st-key-landing {position: relative; z-index: 2; min-height: calc(100vh - 40px); padding-top: 14vh;}
-.ld-k {text-align: center; font-size: 14px; letter-spacing: .35em; color: #a5b4fc !important; opacity: 0;
+.ld-k {text-align: center; font-size: 14px; letter-spacing: .35em; color: var(--color-main-dark-250) !important; opacity: 0;
   animation: fadeUp .9s ease .1s forwards;}
 .ld-t {text-align: center; font-family: "A2Z", "Nanum Gothic", sans-serif !important; font-size: 64px; font-weight: 800; line-height: 1.15;
-  color: #f5f3ff !important; margin: 14px 0 10px; text-shadow: 0 0 40px rgba(167,139,250,.45); opacity: 0;
+  color: var(--color-main-40) !important; margin: 14px 0 10px; text-shadow: 0 0 40px color-mix(in srgb, var(--color-main-350) 45%, transparent); opacity: 0;
   animation: fadeUp 1s ease .35s forwards;}
-.ld-s {text-align: center; font-size: 22px; color: #c4b5fd !important; opacity: 0; animation: fadeUp 1s ease .7s forwards;}
+.ld-s {text-align: center; font-size: 22px; color: var(--color-main-230) !important; opacity: 0; animation: fadeUp 1s ease .7s forwards;}
 /* 제목 뒤 지도를 살짝 어둡게: 제목 둘레에 가장자리가 흐린 어두운 타원 */
 .ld-head {position: relative; isolation: isolate;}
 .ld-head::before {content: ""; position: absolute; left: 50%; top: 50%; width: min(1150px, 92vw); height: 300px;
@@ -151,22 +151,22 @@ html[data-theme="light"] [data-testid="stMain"] .st-key-landing_map [data-testid
 
 # 밝은 테마 홈 (2026-10-02): 밤하늘 대신 밝은 인디고 톤. 지도 선 · 점 색은 _line_map(light=True) 가 바꾼다
 LIGHT = """
-html[data-theme="light"] .stApp, html[data-theme="light"] [data-testid="stAppViewContainer"], html[data-theme="light"] [data-testid="stMain"] {background: #f6f7fb !important;}
+html[data-theme="light"] .stApp, html[data-theme="light"] [data-testid="stAppViewContainer"], html[data-theme="light"] [data-testid="stMain"] {background: var(--color-main-bg-30) !important;}
 html[data-theme="light"] header[data-testid="stHeader"] {background: transparent !important; border: 0 !important;}
 html[data-theme="light"] [data-testid="stMain"] .st-key-landing_map [data-testid="stElementContainer"]:has(> [data-testid="stFullScreenFrame"] > [data-testid="stPlotlyChart"]) {background: transparent !important; border: 0 !important;}
-.st-key-landing_bg {background: radial-gradient(ellipse at 50% 16%, rgba(129,140,248,.28), transparent 55%),
-                                radial-gradient(ellipse at 85% 80%, rgba(167,139,250,.20), transparent 50%),
+.st-key-landing_bg {background: radial-gradient(ellipse at 50% 16%, color-mix(in srgb, var(--color-main-light-380) 28%, transparent), transparent 55%),
+                                radial-gradient(ellipse at 85% 80%, color-mix(in srgb, var(--color-main-350) 20%, transparent), transparent 50%),
                                 radial-gradient(ellipse at 10% 85%, rgba(96,165,250,.14), transparent 45%),
-                                linear-gradient(180deg, #fbfbff 0%, #eef0fb 100%) !important;}
-.st-key-landing_map svg {filter: drop-shadow(0 0 3px rgba(99,102,241,.35));}
+                                linear-gradient(180deg, #fbfbff 0%, var(--color-main-40) 100%) !important;}
+.st-key-landing_map svg {filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-main-500) 35%, transparent));}
 .st-key-landing_map path.point {animation: glowL 2.8s ease-in-out infinite;}
-@keyframes glowL {0%, 100% {stroke: rgba(99,102,241,0); stroke-width: 0;} 50% {stroke: rgba(99,102,241,.25); stroke-width: 14px;}}
-.ld-k {color: #6366f1 !important;}
-.ld-t {color: #1e1b4b !important; text-shadow: 0 2px 24px rgba(255,255,255,.9);}
-.ld-s {color: #4338ca !important;}
+@keyframes glowL {0%, 100% {stroke: color-mix(in srgb, var(--color-main-500) 0%, transparent); stroke-width: 0;} 50% {stroke: color-mix(in srgb, var(--color-main-500) 25%, transparent); stroke-width: 14px;}}
+.ld-k {color: var(--color-main-500) !important;}
+.ld-t {color: var(--color-main-870) !important; text-shadow: 0 2px 24px rgba(255,255,255,.9);}
+.ld-s {color: var(--color-main-light-650) !important;}
 .ld-head::before {background: radial-gradient(ellipse at center, rgba(248,249,255,.9) 0%, rgba(248,249,255,.7) 45%, rgba(248,249,255,0) 72%);}
-.ld-card {background: rgba(255,255,255,.72); box-shadow: 0 10px 28px rgba(79,70,229,.14), 0 2px 6px rgba(30,27,75,.08);}
-.ld-n {color: #1e1b4b !important;}
+.ld-card {background: rgba(255,255,255,.72); box-shadow: 0 10px 28px color-mix(in srgb, var(--color-main-light-650) 14%, transparent), 0 2px 6px color-mix(in srgb, var(--color-main-870) 8%, transparent);}
+.ld-n {color: var(--color-main-870) !important;}
 .ld-d {color: #374151 !important;}
 [class*="st-key-ldcard_"]:hover .ld-card {background: rgba(255,255,255,.92);}
 """
@@ -218,11 +218,11 @@ def _line_map(light=False):
     codes = list(A_POS)
     fig = go.Figure(go.Choropleth(
         locations=codes, z=[1] * len(codes), locationmode="ISO-3", showscale=False, hoverinfo="skip",
-        colorscale=[[0, "rgba(99,102,241,.10)" if light else "rgba(139,124,246,.10)"], [1, "rgba(99,102,241,.10)" if light else "rgba(139,124,246,.10)"]],
-        marker_line_color="rgba(79,70,229,.75)" if light else "rgba(221,214,254,.95)", marker_line_width=1.6))
+        colorscale=[[0, theme.color_rgba("main-500", .10) if light else theme.color_rgba("main-dark-410", .10)], [1, theme.color_rgba("main-500", .10) if light else theme.color_rgba("main-dark-410", .10)]],
+        marker_line_color=theme.color_rgba("main-light-650", .75) if light else theme.color_rgba("main-130", .95), marker_line_width=1.6))
     fig.add_trace(go.Scattergeo(
         lat=[A_POS[c][0] for c in codes], lon=[A_POS[c][1] for c in codes], mode="markers", hoverinfo="skip",
-        marker=dict(size=9, color="#4f46e5" if light else "#fef3c7", line=dict(width=0)), showlegend=False))
+        marker=dict(size=9, color=theme.C["main-light-650"] if light else "#fef3c7", line=dict(width=0)), showlegend=False))
     fig.update_layout(autosize=True, margin=dict(l=0, r=0, t=0, b=0), paper_bgcolor="rgba(0,0,0,0)", dragmode=False,
                       geo=dict(projection_type="mercator", fitbounds="locations", visible=False, bgcolor="rgba(0,0,0,0)"))
     return fig
