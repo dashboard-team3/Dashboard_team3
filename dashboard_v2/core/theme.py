@@ -33,6 +33,7 @@ DARK_TO_LIGHT = {
     "#16233c": "#ddd6fe",   # 격자
     "#bcbcbc": "#3d3d3d",   # 사례 칸의 작은 부제 글자
     "#9ca3af": "#000000",   # 무기 종류 «엔진» 막대 (Okabe-Ito 검정, sources/arms.py)
+    "#f5c542": "#E69F00",   # 무기 거래 금색(C_ARMS · GOLD): 밝은 바탕에서 안 보여 Okabe-Ito 주황으로 (2026-10-02 팀 요청)
 }
 
 
