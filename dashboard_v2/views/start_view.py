@@ -196,9 +196,10 @@ def reopen_sidebar():
 
 def _go(name):
     """카드를 누르면 그 메뉴로 간다 (그 페이지부터는 왼쪽 메뉴가 보인다).
-    실시간 모니터링 · 리스크 추이 카드는 «리스크 모니터링» 페이지의 그 버튼으로 연다 (2026-10-01)."""
-    if name in ("실시간 모니터링", "리스크 추이"):
-        st.session_state["mon_view"] = name
+    리스크 모니터링 · 리스크 추이 카드는 «리스크 모니터링» 페이지의 그 버튼으로 연다 (2026-10-01).
+    «리스크 모니터링» 카드(예전 이름 «실시간 모니터링», 2026-10-02 hnaa0 이름 변경)는 늘 «실시간 모니터링» 버튼으로."""
+    if name in ("리스크 모니터링", "실시간 모니터링", "리스크 추이"):
+        st.session_state["mon_view"] = "리스크 추이" if name == "리스크 추이" else "실시간 모니터링"
         name = "리스크 모니터링"
     st.session_state["menu_page"] = name
     st.session_state["page_keep"] = name
