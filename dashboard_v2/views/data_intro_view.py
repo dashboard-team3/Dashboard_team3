@@ -1,4 +1,4 @@
-"""⑤ 데이터 소개 페이지 (원본 app2.py 의 8.). page() = 해석 안내 · 가공 방법 · 수집 대상 · 자료출처."""
+"""⑤ 데이터 소개 페이지 (원본 app2.py 의 8.). page() = 자료출처 · 수집 대상 · 가공 방법 · 해석 안내."""
 import streamlit as st
 
 from core.ui import page_sub, term
@@ -30,11 +30,24 @@ GUIDE = [     # (제목, 설명)
 def page():
     st.title("데이터 소개")
     page_sub("대시보드의 숫자가 어디서 와서(" + term("GDELT") + " · " + term("SIPRI") + " · " + term("UN Comtrade") + ") 어떻게 계산되었는지 정리했습니다.")
-    """데이터 소개 페이지: 한 페이지로 스크롤. 해석에 대한 안내 → 가공 방법 → 수집 대상 → 자료출처."""
-    # ── 해석에 대한 안내 (맨 위, 2026-10-02 팀 요청으로 가공 방법 위로) ──
-    st.markdown('<div class="di-h">해석에 대한 안내</div>', unsafe_allow_html=True)
-    items = "".join(f'<li><b>{t}</b><br>{d}</li>' for t, d in GUIDE)
-    st.markdown(f'<ul class="di-guide">{items}</ul>', unsafe_allow_html=True)
+    """데이터 소개 페이지: 한 페이지로 스크롤. 자료출처 → 수집 대상 → 가공 방법 → 해석에 대한 안내."""
+    # ── 자료출처 (맨 위, 2026-10-02 팀 요청으로 순서를 뒤집음) ──
+    st.markdown('<div class="di-h">자료출처</div>', unsafe_allow_html=True)
+    cards = "".join(
+        f'<div class="di-card"><div class="di-org">{org}</div><div class="di-name">{name}</div>'
+        f'<div class="di-desc">자료 설명 · {desc}</div><a class="di-url" href="{url}" target="_blank">{url}</a></div>'
+        for org, name, desc, url in SOURCES)
+    st.markdown(f'<div class="di-cards">{cards}</div>', unsafe_allow_html=True)
+
+    # ── 수집 대상 ──
+    st.markdown('<div class="di-h">수집 대상</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="di-block"><p><b>중동 16개국</b> (SIPRI Middle East 분류 기준)</p>'
+        f'<p>{" · ".join(ME16)}</p>'
+        '<p class="di-sub2">기간</p><ul class="di-list">'
+        '<li>리스크 · 무기 계약: <b>1980년 ~ 현재</b> (이란–이라크 전쟁 발발 연도부터)</li>'
+        '<li>Comtrade 교역액: 2002년 ~ 현재 (표시는 2010년부터)</li>'
+        '<li>실시간 모니터링: 오늘(UTC)</li></ul></div>', unsafe_allow_html=True)
 
     # ── 가공 방법 ──
     st.markdown('<div class="di-h">가공 방법</div>', unsafe_allow_html=True)
@@ -48,20 +61,7 @@ def page():
         '<li>출처: Aizenman, Desbordes &amp; Saadaoui (2026), <i>Bilateral Conflict Risk and Trade</i>, NBER WP 35077</li>'
         '</ul>', unsafe_allow_html=True)
 
-    # ── 수집 대상 ──
-    st.markdown('<div class="di-h">수집 대상</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="di-block"><p><b>중동 16개국</b> (SIPRI Middle East 분류 기준)</p>'
-        f'<p>{" · ".join(ME16)}</p>'
-        '<p class="di-sub2">기간</p><ul class="di-list">'
-        '<li>리스크 · 무기 계약: <b>1980년 ~ 현재</b> (이란–이라크 전쟁 발발 연도부터)</li>'
-        '<li>Comtrade 교역액: 2002년 ~ 현재 (표시는 2010년부터)</li>'
-        '<li>실시간 모니터링: 오늘(UTC)</li></ul></div>', unsafe_allow_html=True)
-
-    # ── 자료출처 ──
-    st.markdown('<div class="di-h">자료출처</div>', unsafe_allow_html=True)
-    cards = "".join(
-        f'<div class="di-card"><div class="di-org">{org}</div><div class="di-name">{name}</div>'
-        f'<div class="di-desc">자료 설명 · {desc}</div><a class="di-url" href="{url}" target="_blank">{url}</a></div>'
-        for org, name, desc, url in SOURCES)
-    st.markdown(f'<div class="di-cards">{cards}</div>', unsafe_allow_html=True)
+    # ── 해석에 대한 안내 (맨 아래) ──
+    st.markdown('<div class="di-h">해석에 대한 안내</div>', unsafe_allow_html=True)
+    items = "".join(f'<li><b>{t}</b><br>{d}</li>' for t, d in GUIDE)
+    st.markdown(f'<ul class="di-guide">{items}</ul>', unsafe_allow_html=True)

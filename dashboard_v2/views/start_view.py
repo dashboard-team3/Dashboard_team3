@@ -16,13 +16,13 @@ from sources import arms
 
 A_POS = arms.TARGET_POS
 
-# (메뉴 이름, 설명) — 설명은 원래 홈 카드 문장 그대로
+# (메뉴 이름, 설명) — 설명은 개조체 (2026-10-02 팀 요청)
 MENU_CARDS = [
-    ("리스크 모니터링", "GDELT 2.0 데이터를 기반으로 중동 16개국 사이에서 일어난 갈등 사건을 15분마다 업데이트하여 보여 줍니다."),
-    ("리스크 추이", "1980년부터 국가쌍 · 국가별 월별 리스크를 보여 줍니다."),
-    ("무기 거래 추이", "무기 계약(SIPRI) · 교역 기록(UN Comtrade)을 바탕으로 중동 16개국의 무기 거래 흐름을 보여 줍니다."),
-    ("리스크와 무기 거래", "리스크와 무기 거래의 연도별로 비교하여 두 지표를 비교할 수 있습니다."),
-    ("종합 분석", "나라를 고르지 않고 중동 16개국 전체에서 리스크가 급증한 해 앞뒤로 무기 주문 변화를 사례로 봅니다."),
+    ("리스크 모니터링", "GDELT 2.0 기반 중동 16개국 갈등 사건 · 15분마다 갱신"),
+    ("리스크 추이", "1980년부터 국가쌍 · 국가별 월별 리스크 추이"),
+    ("무기 거래 추이", "SIPRI 무기 계약 · UN Comtrade 교역 기록 기반 중동 16개국 무기 거래 흐름"),
+    ("리스크와 무기 거래", "나라별 리스크와 무기 거래 연도별 비교"),
+    ("종합 분석", "중동 16개국 전체 리스크 급증 해 전후 무기 주문 변화 사례 분석"),
 ]
 
 CSS = """<style>
@@ -48,12 +48,13 @@ CSS = """<style>
 @keyframes glow {0%, 100% {stroke: rgba(254,243,199,0); stroke-width: 0;} 50% {stroke: rgba(254,243,199,.35); stroke-width: 14px;}}
 /* ── 앞쪽 내용: 제목 · 카드 */
 .st-key-landing {position: relative; z-index: 2; min-height: calc(100vh - 40px); padding-top: 14vh;}
-.ld-k {text-align: center; font-size: 14px; letter-spacing: .35em; color: var(--color-main-dark-250) !important; opacity: 0;
+.ld-k {text-align: center; font-size: 17px; font-weight: 600; letter-spacing: .32em; color: var(--color-main-dark-250) !important; opacity: 0;
   animation: fadeUp .9s ease .1s forwards;}
-.ld-t {text-align: center; font-family: "A2Z", "Nanum Gothic", sans-serif !important; font-size: 64px; font-weight: 800; line-height: 1.15;
+.ld-t {text-align: center; font-family: "A2Z", "Nanum Gothic", sans-serif !important; font-size: 50px; font-weight: 800; line-height: 1.15;
   color: var(--color-main-40) !important; margin: 14px 0 10px; text-shadow: 0 0 40px color-mix(in srgb, var(--color-main-350) 45%, transparent); opacity: 0;
   animation: fadeUp 1s ease .35s forwards;}
-.ld-s {text-align: center; font-size: 22px; color: var(--color-main-230) !important; opacity: 0; animation: fadeUp 1s ease .7s forwards;}
+.ld-s {text-align: center; font-size: 30px; font-weight: 700; color: var(--color-main-130) !important; text-shadow: 0 2px 12px rgba(0,0,0,.55);
+  opacity: 0; animation: fadeUp 1s ease .7s forwards;}   /* 소제목 키움 · 더 밝게 (2026-10-02) */
 /* 제목 뒤 지도를 살짝 어둡게: 제목 둘레에 가장자리가 흐린 어두운 타원 */
 .ld-head {position: relative; isolation: isolate;}
 .ld-head::before {content: ""; position: absolute; left: 50%; top: 50%; width: min(1150px, 92vw); height: 300px;
@@ -65,9 +66,10 @@ CSS = """<style>
 .st-key-landing [data-testid="stHorizontalBlock"]:has([class*="st-key-ldcard_"]) {margin-top: 12vh; align-items: stretch !important;}
 [class*="st-key-ldcard_"] {position: relative; height: 100%; opacity: 0; animation: cardUp .9s cubic-bezier(.2,.8,.2,1) forwards;}
 .ld-card {height: 240px; box-sizing: border-box; background: rgba(0,0,0,.25); border: none; box-shadow: 0 10px 28px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.35);
-  border-radius: 16px; padding: 22px 20px; backdrop-filter: blur(6px); transition: transform .2s ease, background .2s ease;}
-.ld-n {text-align: center; font-size: 22px; font-weight: 800; color: #ffffff !important; margin-bottom: 12px; word-break: keep-all;}
-.ld-d {font-size: 15px; line-height: 1.6; color: #ffffff !important; word-break: keep-all;}
+  border-radius: 16px; padding: 22px 20px; backdrop-filter: blur(6px); transition: transform .2s ease, background .2s ease;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;}   /* 내용 가운데 (2026-10-02) */
+.ld-n {text-align: center; font-size: 22px; font-weight: 800; color: #ffffff !important; margin-bottom: 12px; word-break: keep-all; text-shadow: 0 1px 4px rgba(0,0,0,.6);}
+.ld-d {font-size: 15px; line-height: 1.6; font-weight: 500; color: #ffffff !important; word-break: keep-all; text-shadow: 0 1px 3px rgba(0,0,0,.6);}
 [class*="st-key-ldcard_"]:hover .ld-card {transform: translateY(-6px); background: rgba(0,0,0,.4);}
 [class*="st-key-ldcard_"] [data-testid="stElementContainer"]:has(button) {position: absolute !important; inset: 0; z-index: 3; margin: 0 !important;
   width: 100% !important; height: 100% !important;}
@@ -79,7 +81,7 @@ CSS = """<style>
 [class*="st-key-ldcard_"] [data-testid="stMarkdownContainer"] {margin-bottom: 0 !important;}
 @media (max-width: 1400px) {
   .ld-t {
-    font-size: 52px;
+    font-size: 42px;
   } 
   .ld-n {
     font-size: 19px;
@@ -126,10 +128,10 @@ CSS = """<style>
   }
 
   .ld-t {
-    font-size: 46px;
+    font-size: 34px;
   }
   .ld-s {
-    font-size: 18px;
+    font-size: 22px;
   }
   .ld-card {
     height: 180px;
@@ -163,11 +165,11 @@ html[data-theme="light"] [data-testid="stMain"] .st-key-landing_map [data-testid
 @keyframes glowL {0%, 100% {stroke: color-mix(in srgb, var(--color-main-500) 0%, transparent); stroke-width: 0;} 50% {stroke: color-mix(in srgb, var(--color-main-500) 25%, transparent); stroke-width: 14px;}}
 .ld-k {color: var(--color-main-500) !important;}
 .ld-t {color: var(--color-main-870) !important; text-shadow: 0 2px 24px rgba(255,255,255,.9);}
-.ld-s {color: var(--color-main-light-650) !important;}
+.ld-s {color: var(--color-main-light-650) !important; text-shadow: none;}
 .ld-head::before {background: radial-gradient(ellipse at center, rgba(248,249,255,.9) 0%, rgba(248,249,255,.7) 45%, rgba(248,249,255,0) 72%);}
 .ld-card {background: rgba(255,255,255,.72); box-shadow: 0 10px 28px color-mix(in srgb, var(--color-main-light-650) 14%, transparent), 0 2px 6px color-mix(in srgb, var(--color-main-870) 8%, transparent);}
-.ld-n {color: var(--color-main-870) !important;}
-.ld-d {color: #374151 !important;}
+.ld-n {color: var(--color-main-870) !important; text-shadow: none;}
+.ld-d {color: #374151 !important; text-shadow: none;}
 [class*="st-key-ldcard_"]:hover .ld-card {background: rgba(255,255,255,.92);}
 """
 
