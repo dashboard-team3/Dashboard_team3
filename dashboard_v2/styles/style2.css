@@ -2867,7 +2867,18 @@ button[data-variant="pills"][aria-pressed="true"] {
 .rm-cards-t { font-size: 20px; font-weight: 800; color: #e5eaf3; margin-top: 22px; margin-bottom: 2px; letter-spacing: -0.2px; }
 
 
-/* 셀렉트박스 · 멀티셀렉트 포커스 */
+/* 셀렉트박스 */
+[data-testid="stSelectbox"] [data-baseweb="select"] > div,
+[data-testid="stSelectbox"] .react-aria-ComboBox > div[role="group"],
+[data-testid="stMultiSelect"] .react-aria-ComboBox > div[role="group"] {
+    box-shadow: 0 2px 8px
+        color-mix(in srgb, var(--color-main-dark-410) 15%, transparent)
+        !important;
+    transition: box-shadow .2s ease, border-color .2s ease;
+    border: 1px solid var(--color-main-dark-740);
+}
+
+/* 셀렉트박스 포커스 시 */
 [data-testid="stSelectbox"] [data-baseweb="select"] > div:focus-within,
 [data-testid="stSelectbox"] [role="combobox"]:focus-within,
 [data-testid="stMultiSelect"]
