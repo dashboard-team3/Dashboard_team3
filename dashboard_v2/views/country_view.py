@@ -110,7 +110,7 @@ def page():
     page_sub("선택 국가의 " + term("리스크") + "·주요 상대국·무기 거래·" + term("급증") + " 이력 통합 비교")
 
     code = st.selectbox("국가", list(names), format_func=names.get, key="card_country",
-                        label_visibility="collapsed")
+                        label_visibility="collapsed", width=260)      # 화면 끝까지 길던 상자 줄임 (2026-10-02)
     d = profile(code)
     g = relations.grade(d["risk"])
     col = relations.GRADE_COLORS[g] if g is not None else "#475569"
@@ -136,8 +136,9 @@ def page():
                 sub=f"{d['ly']}년 주문 {d['n_ly']}건")
         + '</div></div>', unsafe_allow_html=True)
 
-    # ── 세 칸: 상대국 · 품목 · 공급국
-    c1, c2, c3 = st.columns(3, gap="medium")
+    # ── 세 칸: 상대국 · 품목 · 공급국 — 접이식(아코디언)으로 (2026-10-02 팀 피드백)
+    acc = st.container(key="cty_acc").expander("요약 카드 · 리스크가 높은 상대국 · 많이 산 무기 · 주 공급국", expanded=False)
+    c1, c2, c3 = acc.columns(3, gap="medium")
     with c1:
         st.markdown(_list_card(
             "상위 리스크 상대국 <small>최근 12개월</small>",
@@ -191,9 +192,9 @@ def page():
                                              f"막대 = 주문 TIV({years[0]}~)" + (" · 점선 = 급증한 해" if show_ev else "")),
                                  font=dict(size=17, color=C_TEXT), x=0),
                       legend=dict(orientation="h", y=1.02, yanchor="bottom", x=0, font=dict(size=14)))
-    fig.update_xaxes(gridcolor="#1f2b44", tickformat="%Y")
+    fig.update_xaxes(gridcolor="#1f2b44", tickformat="%Y", title_text="연도", title_font=dict(size=13))
     fig.update_yaxes(title_text="무기 수입 (TIV)", gridcolor="#1f2b44", secondary_y=False, tickfont=dict(size=14))
-    fig.update_yaxes(title_text="리스크", range=[0, 1], showgrid=False, secondary_y=True, tickfont=dict(size=14))
+    fig.update_yaxes(title_text="리스크 (0~1)", range=[0, 1], showgrid=False, secondary_y=True, tickfont=dict(size=14))
     st.plotly_chart(theme.adapt(fig), width="stretch", config=CHART_CONFIG)
 
     # ── 시차 상관 («리스크와 무기 거래» 쪽과 같은 함수. 막대 묶음은 위에 합쳤으므로 annual=False)

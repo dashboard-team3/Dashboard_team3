@@ -2812,7 +2812,7 @@ button[data-variant="pills"][aria-pressed="true"] {
 /* 종합 분석 새 레이아웃 (2026-10-01): 그래프를 담는 연보라 상자 · 카드 */
 .st-key-ov_chartbox { background: var(--color-main-870); border: 1px solid var(--color-main-dark-820); border-radius: 12px; padding: 10px 12px; }
 .st-key-ov_chartbox [data-testid="stElementContainer"]:has(> [data-testid="stFullScreenFrame"] > [data-testid="stPlotlyChart"]) { background: transparent !important; border: none !important; box-shadow: none !important; }
-.st-key-ov_card1, .st-key-ov_card2 { padding: 18px 20px !important; border-radius: 14px !important; }
+.st-key-ov_card1, .st-key-ov_card2, [class*="st-key-ov_sec_"] { padding: 18px 20px !important; border-radius: 14px !important; }   /* ov_sec_ = 종합 분석 다른 쪽 카드 (2026-10-02 통일) */
 .st-key-ov_lag_box [data-testid="stButtonGroup"] { justify-content: flex-end; }
 .st-key-ov_lag_box { align-items: flex-end; }
 /* 리스크 추이 두 칸 (지도 · 그래프) 높이 맞춤: 단(column)을 세로 flex 로 만들어 칸 상자가 단 높이를 다 채우게,
@@ -2891,3 +2891,12 @@ button[data-variant="pills"][aria-pressed="true"] {
 /* 리스크 상위 5개국 카드 사이 간격 (2026-10-02): 글 상자의 기본 아래 여백 -16px 가 카드 사이 간격을 덮어 카드끼리 붙어 보였다 */
 .st-key-riskmap_cards [data-testid="stMarkdownContainer"] { margin-bottom: 0 !important; }
 .st-key-riskmap_cards { gap: 10px !important; }
+
+/* (2026-10-02 팀 피드백, 다크 테마만) 페이지 제목(st.title) 덜 두껍게 · 홈 카드 제목 크게 */
+html:not([data-theme="light"]) [data-testid="stMain"] h1, html:not([data-theme="light"]) [data-testid="stMain"] h1 span { font-weight: 500 !important; }
+html:not([data-theme="light"]) .ld-n { font-size: 26px !important; white-space: nowrap; letter-spacing: -0.02em; margin: 0 -14px 18px !important; }   /* 제목 26px · 설명과 사이 18px (2026-10-02). 제목 칸만 좌우로 14px 넓혀 «리스크와 무기 거래» 가 한 줄에 들어가게 (설명 폭은 그대로) */
+@media (max-width: 1400px) { html:not([data-theme="light"]) .ld-n { font-size: 23px !important; } }
+/* 리스크와 무기 거래 요약 카드 접이식: 필터 깔때기 아이콘은 빼고 열고 닫는 화살표만 */
+.st-key-cty_acc [data-testid="stExpander"] summary [data-testid="stMarkdownContainer"] p::before { display: none !important; }
+/* 홈 카드: 제목 · 설명을 카드마다 같은 높이에서 시작 (위쪽 줄맞춤, 가로는 가운데 그대로 · 2026-10-02) */
+html:not([data-theme="light"]) .ld-card { justify-content: flex-start !important; padding-top: 36px !important; }

@@ -97,7 +97,11 @@ def draw_map(df, M, overlay, top_n, height=560):
         hovertemplate="%{text}<extra></extra>"))
     # 수입국별은 중동 16개국만 칠하므로 중동으로 확대한다. 흐름(호) 보기는 공급국이 전 세계라 세계지도 그대로.
     geo = {**GEO, **GEO_ME} if overlay == "수입국별" else GEO
+    # 제목 (2026-10-02 팀 피드백): 다른 그래프처럼 위에 제목 · 작은 줄. 글자 크기 · 자리는 추이 그래프 제목과 같다 (theme.adapt)
+    name = "국가 간 교역액 흐름" if M["unit"] == "백만 달러" else "국가 간 무기 이전 흐름"
+    how = f"호 굵기 = {M['value_label']}" if overlay != "수입국별" else f"색 = 수입국별 {M['value_label']}"
     _layout(fig, margin=dict(l=0, r=0, t=0, b=0), height=height, geo=geo, dragmode="pan",
+            title=dict(text=ctitle(name, f"단위 {U} · {_per(df)} · {how}"), x=0),
             uirevision=f"arms-map-{overlay}")            # 보기마다 따로: 바꾸면 그 보기의 처음 범위로 열린다
     st.plotly_chart(theme.adapt(fig), width="stretch", key="arms_map_chart",
                     config={"displaylogo": False, "scrollZoom": False, "responsive": True,
@@ -142,10 +146,10 @@ def draw_trend(df, M, how, by, show_count=True):
                                  hovertemplate=f"합계 %{{y:,.1f}} {U} · 관측 %{{customdata}}개월<extra></extra>"))
     fmt = {"월별": "%Y-%m", "분기별": "%Y-%m", "연간": "%Y"}[how]
     _layout(fig, barmode="stack", height=460, hovermode="x unified", bargap=0.15,
-            title=dict(text=ctitle(f"{how} {M['value_label']} 추이", f"단위 {U} · 구성 항목 = {by}"), x=0),
+            title=dict(text=ctitle(f"{how} {M['value_label']} 추이", f"단위 {U} · {_per(df)} · 구성 항목 = {by}"), x=0),
             legend=dict(orientation="h", y=-0.2, yanchor="top", x=0, font=dict(size=14)))
     _axes(fig)
-    fig.update_xaxes(tickformat=fmt, hoverformat=fmt)
+    fig.update_xaxes(tickformat=fmt, hoverformat=fmt, title_text="연도" if how == "연간" else "연월", title_font=dict(size=13))
     fig.update_yaxes(title_text=f"{M['value_label']} ({U}, {how})")
     st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
 
@@ -159,15 +163,25 @@ def draw_trend(df, M, how, by, show_count=True):
         draw_count(df)
 
 
+def _per(df):
+    """그래프 부제에 붙이는 기간 (필터로 고른 범위의 첫 해–끝 해). 2026-10-02 팀 피드백: 모든 그래프에 기간 표기."""
+    if df is None or df.empty or "year" not in df:
+        return ""
+    y0, y1 = int(df["year"].min()), int(df["year"].max())
+    return f"{y0}–{y1}" if y0 != y1 else f"{y0}"
+
+
 def draw_count(df, height=240, short=False):
     """SIPRI 연도별 계약 건수. short=True 면 제목 한 줄 (좁은 오른쪽 단에 쌓을 때)."""
     n = df.groupby("year")["obs"].nunique()
     fig2 = go.Figure(go.Scatter(x=n.index, y=n.values, mode="lines+markers", line=dict(color=GOLD, width=2),
                                 marker=dict(size=5), hovertemplate="%{x}년 · 계약 %{y}건<extra></extra>"))
-    title = "연도별 계약 건수" if short else ctitle("연도별 계약 건수", "SIPRI 주문 연도 기준 · 필터 조건")
+    title = "연도별 계약 건수" if short else ctitle("연도별 계약 건수", f"단위 건 · {_per(df)} · SIPRI 주문 연도 기준 · 필터 조건")
     _layout(fig2, height=height, title=dict(text=title, font=dict(size=16, color="#e5eaf3"), x=0),
             **({"margin": dict(l=10, r=10, t=44, b=10)} if short else {}))
     _axes(fig2)
+    fig2.update_yaxes(title_text="계약 (건)", title_font=dict(size=13))
+    fig2.update_xaxes(title_text="" if short else "연도", title_font=dict(size=13))
     st.plotly_chart(theme.adapt(fig2), width="stretch", config={"displaylogo": False})
 
 
@@ -181,7 +195,8 @@ def hbar(series, title, color, U, height=420):
     _layout(fig, margin=dict(l=10, r=70, t=40, b=10), height=height,
             title=dict(text=title, font=dict(size=16, color="#e5eaf3"), x=0))
     _axes(fig)
-    fig.update_xaxes(range=[0, float(s.max()) * 1.18 if len(s) else 1])   # 가장 긴 막대 끝 숫자가 잘리지 않게 여유
+    fig.update_xaxes(range=[0, float(s.max()) * 1.18 if len(s) else 1],   # 가장 긴 막대 끝 숫자가 잘리지 않게 여유
+                     title_text=U, title_font=dict(size=13))                                      # 단위 (2026-10-02)
     st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
 
 
@@ -195,9 +210,9 @@ def target_cat_heatmap(df, M, highlight=None, title=None, height=None):
     labels = [f"▶ {n}" if n == highlight else n for n in h.index]
     fig = go.Figure(go.Heatmap(z=h.values, x=h.columns, y=labels, colorscale=[[0, "#111a2e"], [1, GOLD]],
                                hovertemplate=f"%{{y}} · %{{x}}<br>%{{z:,.1f}} {M['unit']}<extra></extra>",
-                               colorbar=dict(thickness=10, tickfont=dict(color="#cbd5e1"))))
+                               colorbar=dict(title=dict(text=M["unit"], font=dict(size=12, color="#cbd5e1")), thickness=10, tickfont=dict(color="#cbd5e1"))))
     _layout(fig, height=height or max(320, 40 + 26 * len(h)),
-            title=dict(text=title or ctitle(f"수입국 × {M['cat_label']}", "색 농도 = 거래 규모 · 필터 조건"), font=dict(size=16, color="#e5eaf3"), x=0))
+            title=dict(text=title or ctitle(f"수입국 × {M['cat_label']}", f"단위 {M['unit']} · {_per(df)} · 색 농도 = 거래 규모 · 필터 조건"), font=dict(size=16, color="#e5eaf3"), x=0))
     fig.update_yaxes(autorange="reversed")
     st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
 
@@ -207,14 +222,14 @@ def draw_rank(df, M):
     c1, c2 = st.columns(2)
 
     with c1:
-        hbar(df.groupby("exporter")["value"].sum(), ctitle(f"{M['exporter_label']} TOP 12", f"단위 {U} · 필터 조건의 합계"), GOLD, U)
+        hbar(df.groupby("exporter")["value"].sum(), ctitle(f"{M['exporter_label']} TOP 12", f"단위 {U} · {_per(df)} 합계 · 필터 조건"), GOLD, U)
     with c2:
-        hbar(df.groupby("target_name")["value"].sum(), ctitle("수입국 상위 12개국", f"단위 {U} · 필터 조건의 합계"), "#f87171", U)
+        hbar(df.groupby("target_name")["value"].sum(), ctitle("수입국 상위 12개국", f"단위 {U} · {_per(df)} 합계 · 필터 조건"), "#f87171", U)
     c3, c4 = st.columns(2)
     # 품목별 막대와 옆 히트맵의 아래 끝을 맞춘다: 히트맵은 수입국 수만큼 길어지므로 둘 다 그 높이로 (2026-10-01)
     hh = max(420, 40 + 26 * df["target_name"].nunique())
     with c3:
-        hbar(df.groupby("cat")["value"].sum(), ctitle(f"{M['cat_label']}별", f"단위 {U} · 필터 조건의 합계"), "#60a5fa", U, height=hh)
+        hbar(df.groupby("cat")["value"].sum(), ctitle(f"{M['cat_label']}별", f"단위 {U} · {_per(df)} 합계 · 필터 조건"), "#60a5fa", U, height=hh)
     with c4:
         target_cat_heatmap(df, M, height=hh)
     if "weapon" in df.columns:                          # SIPRI: 무기 모델 표
@@ -295,11 +310,11 @@ def draw_country_compare(df, M, country, how, height=360, legend=True, short=Fal
     fmt = {"월별": "%Y-%m", "분기별": "%Y-%m", "연간": "%Y"}[how]
     _layout(fig, height=height, hovermode="x unified", showlegend=legend,
             title=dict(text=f"수입국별 비교 · {name} 강조" if short else
-                       ctitle("수입국별 비교", f"{how} · {name} 강조 · 회색 = 다른 수입국"), font=dict(size=16, color="#e5eaf3"), x=0),
+                       ctitle("수입국별 비교", f"단위 {M['unit']} · {how} · {_per(df)} · {name} 강조 · 회색 = 다른 수입국"), font=dict(size=16, color="#e5eaf3"), x=0),
             **({"margin": dict(l=10, r=10, t=44, b=10)} if short else {}),
             legend=dict(orientation="h", y=-0.25, yanchor="top", x=0, font=dict(size=13)))
     _axes(fig)
-    fig.update_xaxes(tickformat=fmt, hoverformat=fmt)
+    fig.update_xaxes(tickformat=fmt, hoverformat=fmt, title_text="연도" if how == "연간" else "연월", title_font=dict(size=13))
     fig.update_yaxes(title_text=f"{M['value_label']} ({M['unit']})")
     st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
 
@@ -316,10 +331,10 @@ def draw_rank_country(df, M, country):
         return
     c1, c2 = st.columns(2)
     with c1:
-        hbar(one.groupby("exporter")["value"].sum(), ctitle(f"{name} {M['exporter_label']} TOP 12", f"단위 {U}"), GOLD, U)
+        hbar(one.groupby("exporter")["value"].sum(), ctitle(f"{name} {M['exporter_label']} TOP 12", f"단위 {U} · {_per(one)} 합계"), GOLD, U)
     with c2:
-        hbar(one.groupby("cat")["value"].sum(), ctitle(f"{name} {M['cat_label']}별", f"단위 {U}"), "#60a5fa", U)
-    target_cat_heatmap(df, M, highlight=name, title=ctitle(f"수입국 × {M['cat_label']}", f"{name}(▶)를 상단에 표시하여 국가 간 비교"))
+        hbar(one.groupby("cat")["value"].sum(), ctitle(f"{name} {M['cat_label']}별", f"단위 {U} · {_per(one)} 합계"), "#60a5fa", U)
+    target_cat_heatmap(df, M, highlight=name, title=ctitle(f"수입국 × {M['cat_label']}", f"단위 {M['unit']} · {_per(df)} · {name}(▶)를 상단에 표시하여 국가 간 비교"))
     share = df.groupby("target_name")["value"].sum().sort_values(ascending=False)
     rank = list(share.index).index(name) + 1
     st.caption(f"{name}{jo(name, '은는')} · 선택 기간 전체 대비 비중 {total / share.sum():.1%} ({rank}위 / {len(share)}개국)")
@@ -330,18 +345,21 @@ def draw_rank_country(df, M, country):
 def draw_pairs(df, M):
     U = M["unit"]
     fl = arms.flows(df)
-    st.markdown(f"**{M['exporter_label']} → 수입국 흐름 {len(fl)}개** ({M['value_label']} 내림차순)")
-    cols = {"exporter": M["exporter_label"], "target_name": "수입국", "value": f"{M['value_label']} ({U})",
-            "obs": M["obs_label"], "top_cat": f"주요 {M['cat_label']}"}
-    st.dataframe(fl.rename(columns=cols)[list(cols.values())].round(1), hide_index=True, width="stretch", height=420)
+    left, right = st.columns(2, gap="medium")           # [표 | 히트맵] 2열 (2026-10-02 팀 피드백)
+    with left:
+        st.markdown(f"**{M['exporter_label']} → 수입국 흐름 {len(fl)}개** ({M['value_label']} 내림차순 · 단위 {U})")
+        cols = {"exporter": M["exporter_label"], "target_name": "수입국", "value": f"{M['value_label']} ({U})",
+                "obs": M["obs_label"], "top_cat": f"주요 {M['cat_label']}"}
+        st.dataframe(fl.rename(columns=cols)[list(cols.values())].round(1), hide_index=True, width="stretch", height=420)
     top_exp = df.groupby("exporter")["value"].sum().sort_values(ascending=False).index[:10]
     h = df[df["exporter"].isin(top_exp)].pivot_table(index="target_name", columns="exporter", values="value",
                                                      aggfunc="sum", fill_value=0).reindex(columns=top_exp)
     fig = go.Figure(go.Heatmap(z=h.values, x=h.columns, y=h.index, colorscale=[[0, "#111a2e"], [1, GOLD]],
                                hovertemplate=f"%{{x}} → %{{y}}<br>%{{z:,.1f}} {U}<extra></extra>",
-                               colorbar=dict(thickness=10, tickfont=dict(color="#cbd5e1"))))
-    _layout(fig, height=460, title=dict(text=ctitle(f"수입국 × 상위 10개 {M['exporter_label']}", f"단위 {U} · 색 농도 = 거래 규모"), font=dict(size=16, color="#e5eaf3"), x=0))
-    st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
+                               colorbar=dict(title=dict(text=U, font=dict(size=12, color="#cbd5e1")), thickness=10, tickfont=dict(color="#cbd5e1"))))
+    _layout(fig, height=460, title=dict(text=ctitle(f"수입국 × 상위 10개 {M['exporter_label']}", f"단위 {U} · {_per(df)} 합계 · 색 농도 = 거래 규모"), font=dict(size=16, color="#e5eaf3"), x=0))
+    with right:
+        st.plotly_chart(theme.adapt(fig), width="stretch", config={"displaylogo": False})
 
 
 # ---------------------------------------------------------------- 페이지
@@ -466,6 +484,7 @@ def page(compact=True, show_title=True):
     f = {}
     months = pd.date_range(df["date"].min(), df["date"].max(), freq="MS") if source == "Comtrade" else None   # 월별 자료
 
+    tab_slot = st.container()                           # 보기 탭 줄 자리 — 필터보다 위에 두려고 먼저 잡아 둔다 (2026-10-02 팀 피드백)
     _filters(page_filters("무기 거래 추이"), f, M, k, y0, y1, cats_all, targets_all, exp_opts, exp_name, months)
     years, cats, targets, exporters = f["years"], f["cats"], f["targets"], f["exporters"]
     per_txt = f"{f['period'][0]}–{f['period'][1]}" if months is not None else f"{years[0]}–{years[1]}"
@@ -492,7 +511,7 @@ def page(compact=True, show_title=True):
 
     # ── 보기 탭 + 그 탭의 조작을 한 줄에.
     #    Streamlit 기본 탭(st.tabs) 줄에는 버튼을 넣을 수 없어서, 탭을 버튼 묶음(segmented_control)으로 만들었다.
-    with st.container(horizontal=True, vertical_alignment="center", gap="small", key=f"tab_row_{k}"):
+    with tab_slot, st.container(horizontal=True, vertical_alignment="center", gap="small", key=f"tab_row_{k}"):
         tab = st.segmented_control("보기", ["지도", "추이", "순위", "국가쌍"], default="지도", key=f"arms_tab_{k}",
                                    label_visibility="collapsed") or "지도"
         st.space("stretch")

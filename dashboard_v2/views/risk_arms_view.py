@@ -97,7 +97,7 @@ def country_sections(country, years, no=1, annual=True):
                       legend=dict(orientation="h", y=1.02, yanchor="bottom", x=0, font=dict(size=14)))
     fig.update_xaxes(gridcolor="#1f2b44", dtick=step, title_text="연도", tickfont=dict(size=14))
     fig.update_yaxes(title_text="무기 수입 (TIV)", gridcolor="#1f2b44", secondary_y=False, tickfont=dict(size=14))
-    fig.update_yaxes(title_text="리스크", range=[0, max(0.3, g["risk"].max() * 1.15)], showgrid=False, secondary_y=True)
+    fig.update_yaxes(title_text="리스크 (0~1)", range=[0, max(0.3, g["risk"].max() * 1.15)], showgrid=False, secondary_y=True)
     st.plotly_chart(theme.adapt(fig), width="stretch", config=CHART_CONFIG)
     info("**연간 리스크** = 해당 국가의 월별 종합 리스크를 달력 일수로 가중 평균한 값 · "
           "12개월 자료가 확보된 연도만 산출\n\n"
@@ -121,7 +121,7 @@ def _lag_section(country, years, m, g, no, extras=True):
     section_head(f"{no:02d}", "리스크·무기 수입의 시차별 상관관계",
                  "연간 리스크와 <b>k년 후</b> 무기 수입(log)의 피어슨 상관계수 · 왼쪽: 선택 국가의 연도별 값 · 오른쪽: 국가 내 표준화 후 16개국 "
                  "전체 집계값·국가별 상관계수 중앙값 · 상관계수만으로 인과관계 또는 통계적 유의성 판단 불가")
-    lag = st.slider("무기 수입 비교 시차 (년)", 0, 3, 1, key="ra_lag")
+    lag = st.slider("무기 수입 비교 시차 (년)", 0, 3, 1, key="ra_lag", width=420)   # 화면 끝까지 길던 막대 줄임 (2026-10-02)
 
     # 고른 나라: 연 리스크(t) vs log 수입(t+k)
     gg = g.copy()
@@ -157,11 +157,11 @@ def _lag_section(country, years, m, g, no, extras=True):
                                        line=dict(color=C_ARMS, width=2, dash="dot"), hoverinfo="skip"))
         fig_s.update_layout(**DARK_LAYOUT, height=400, showlegend=False,
                             title=dict(text=ctitle(f"리스크와 {'같은 해' if lag == 0 else f'{lag}년 뒤'} 무기 수입",
-                                               f"{names[country]} · 점 = 한 해 · 점선 = 추세 · "
+                                               f"{names[country]} · {years[0]}–{years[1]} · 가로 = 연 리스크(0~1) · 세로 = log(1+TIV) · 점 = 한 해 · 점선 = 추세 · "
                                                + (f"r = {r_one:+.2f}" if pd.notna(r_one) else "비교 가능 연도 5개 미만")),
                                        font=dict(size=17, color=C_TEXT), x=0),
                             margin=dict(l=10, r=10, t=70, b=10))
-        fig_s.update_xaxes(title_text="연 리스크 (t)", gridcolor="#1f2b44", tickfont=dict(size=14))
+        fig_s.update_xaxes(title_text="연 리스크 (t, 0~1)", gridcolor="#1f2b44", tickfont=dict(size=14))
         fig_s.update_yaxes(title_text=f"log(1 + 무기 수입 TIV) (t+{lag})", gridcolor="#1f2b44", tickfont=dict(size=14))
         st.plotly_chart(theme.adapt(fig_s), width="stretch", config=CHART_CONFIG)
     with right:

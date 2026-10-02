@@ -159,6 +159,12 @@ OV_CSS = """
   .ov-v {font-family:"JetBrains Mono", monospace; font-size:13px; white-space:nowrap;}
   .ov-v.pos {color:#fca5a5;} .ov-v.neg {color:#93c5fd;}
   @media (max-width:900px) { .ov-head {flex-direction:column;} }
+  /* (2026-10-02) 네 쪽 디자인 통일: 흐름 칸 · 사례 칸 = ov-note 처럼 테두리만, 칸 안 작은 상자 · 글 상자 = ov-info 처럼 */
+  .fc {background:transparent; border:1px solid var(--color-main-dark-820); border-radius:12px;}
+  .fc.dark {background:var(--color-main-870); border-color:var(--color-main-dark-820);}
+  .fbox {background:var(--color-main-870);}
+  .case-x {background:transparent; border-color:var(--color-main-dark-820); border-radius:12px;}
+  .note {background:var(--color-main-870); border-color:transparent;}
 """
 
 
@@ -195,11 +201,20 @@ def note(text, tone=""):
 
 
 def key(kicker, big, sub, color=RED):
-    """그 쪽의 결론을 맨 위에 크게. 아래 그림은 이 문장의 근거다."""
-    st.markdown(f'<div class="key" style="border-left:6px solid {color}">'
-                f'<div class="n" style="color:{color}">{kicker}</div>'
-                f'<div class="t">{big}</div><div class="s">{sub}</div></div>',
+    """그 쪽의 결론을 맨 위에 크게. 아래 그림은 이 문장의 근거다.
+    (2026-10-02) «중동 전체 결과» 의 핵심 분석 상자(ov-key)와 같은 모양으로 — 네 쪽 디자인 통일."""
+    st.markdown(f'<div class="ov-key"><div class="ov-kick"><span class="ov-badge">{kicker}</span></div>'
+                f'<div class="ov-big">{big}</div><div class="ov-body">{sub}</div></div>',
                 unsafe_allow_html=True)
+
+
+def sec_card(no, title, sub):
+    """(2026-10-02) 묶음 하나 = 테두리 카드 + «번호 제목 / 작은 줄» 머리글 («중동 전체 결과» 의 01 카드와 같은 모양).
+    with sec_card(...): 안에 그 묶음 내용을 그린다."""
+    box = st.container(border=True, key=f"ov_sec_{no}")
+    box.markdown(f'<div class="ov-head"><div><div class="ov-t"><span class="ov-no">{no}</span> {title}</div>'
+                 f'<div class="ov-s">{sub}</div></div></div>', unsafe_allow_html=True)
+    return box
 
 
 def _ann(x, y, text, size, color):
@@ -379,7 +394,8 @@ def grid(rows, cols=5, bar_color=None, sub=None, height_per_row=290, mark_year=F
             "xaxis" + ax: xa,
             "yaxis" + ax: dict(domain=ydom, anchor="x" + ax, gridcolor=GRID,
                                zeroline=False, tickfont=dict(size=10),
-                               rangemode="tozero", nticks=3)})
+                               rangemode="tozero", nticks=3,
+                               title=dict(text="TIV", font=dict(size=11, color=MUTE), standoff=4))})   # 단위 (2026-10-02)
 
         label = sub(r) if callable(sub) else f"{r['diff']:+.2f} (표준편차 단위)"
         ann += [_ann(tx, ty, f"<b>{r['ko']} · {r['year']}</b>", 14, INK),
@@ -473,7 +489,7 @@ def page_1_corr():
                               font=dict(color=INK, size=13, family="Malgun Gothic, sans-serif"),
                               margin=dict(l=6, r=6, t=28, b=6))
             fig.update_xaxes(title=None, showgrid=False, tickfont=dict(size=13))
-            fig.update_yaxes(title=None, range=[-0.25, 0.25], dtick=0.2, tickformat="+.2f", gridcolor=GRID,
+            fig.update_yaxes(title=dict(text="상관계수 r", font=dict(size=12)), range=[-0.25, 0.25], dtick=0.2, tickformat="+.2f", gridcolor=GRID,
                              tickfont=dict(size=11), zeroline=True, zerolinecolor=MUTE, zerolinewidth=1)
             fig.add_hline(y=0, line=dict(color=MUTE, width=1, dash="dot"))
             st.plotly_chart(theme.adapt(fig), width="stretch", config=CFG)
@@ -520,9 +536,9 @@ def page_2_up():
             "리스크 급증 이후 무기 주문 증가 양상",
             f"주문 증가 사례의 급증 기준 연도 전후 3년 비교 · 정점 도달 시기·이후 추세의 사례별 차이 확인", RED)
 
-        sec("02", "주문 규모 증가 사례의 국가별 비교",
-            "급증 기준 연도 전후 3년의 주문 TIV·정점 시기 비교", RED)
-        with st.expander("분석 대상과 급증 시점의 선정 기준"):
+        card = sec_card("02", "주문 규모 증가 사례의 국가별 비교",
+                        "급증 기준 연도 전후 3년의 주문 TIV·정점 시기 비교")
+        with card, st.expander("분석 대상과 급증 시점의 선정 기준"):
             d1, d2 = st.columns(2, vertical_alignment="top")
             with d1:
                 note(f"<b>급증</b>: 직전 12개월 평균 대비 상승폭이 표준편차의 {A.K:.0f}배 초과·"
@@ -536,26 +552,26 @@ def page_2_up():
         # (2026-10-01) 위 단추 = 타임라인 거르개. 누른 유형«만» 남는다 (안 누르면 전부).
         #   D형(어디에도 맞지 않는 것)은 읽을 것이 없어 두 곳 모두에서 뺀다.
         cnt = {k: sum(1 for r in UP if r["shape"] == k) for k in A.SHAPES}
-        tl_pick = shape_filter(cnt, "up_shape_tl")
-        keep = {"A", "B", "C"} if tl_pick is None else {tl_pick}
-        ups = sorted([r for r in UP if r["shape"] in keep], key=lambda r: (r["year"], r["ko"]))
+        with card:
+            tl_pick = shape_filter(cnt, "up_shape_tl")
+            keep = {"A", "B", "C"} if tl_pick is None else {tl_pick}
+            ups = sorted([r for r in UP if r["shape"] in keep], key=lambda r: (r["year"], r["ko"]))
 
-        # 거르개를 바꾸면 고른 점의 번호가 가리키는 사례가 달라지므로, 상자 이름에 넣어 선택을 비운다
-        picked = timeline(ups, key="up_timeline_" + "".join(sorted(keep)))
-        if picked is None or picked >= len(ups):
-            picked = max(range(len(ups)), key=lambda i: ups[i]["diff"])   # 처음에는 증가폭이 가장 큰 사례
-        case_card(ups[picked])
-        st.write("")
+            # 거르개를 바꾸면 고른 점의 번호가 가리키는 사례가 달라지므로, 상자 이름에 넣어 선택을 비운다
+            picked = timeline(ups, key="up_timeline_" + "".join(sorted(keep)))
+            if picked is None or picked >= len(ups):
+                picked = max(range(len(ups)), key=lambda i: ups[i]["diff"])   # 처음에는 증가폭이 가장 큰 사례
+            case_card(ups[picked])
 
         # 사례를 한꺼번에 늘어놓은 격자는 접어 둔다 — 단추를 눌러야 그 유형만 펼쳐진다
-        sec("03", "유형별 사례 비교", "급증 이후 주문 규모의 변화 양상에 따른 유형별 비교", RED)
-        g_pick = shape_filter(cnt, "up_shape_grid", small=True, none_is_all=False)
-        if g_pick is None:
-            note("<b>A형·B형·C형</b> 선택 시 해당 유형의 전체 사례 표시")
-        else:
-            grid(sorted([r for r in UP if r["shape"] == g_pick], key=lambda r: -r["diff"]),
-                 bar_color=A.SHAPE_COLOR[g_pick], mark_year=True, height_per_row=330,
-                 sub=lambda r: f"{lab[r['shape']]}")
+        with sec_card("03", "유형별 사례 비교", "급증 이후 주문 규모의 변화 양상에 따른 유형별 비교"):
+            g_pick = shape_filter(cnt, "up_shape_grid", small=True, none_is_all=False)
+            if g_pick is None:
+                note("<b>A형·B형·C형</b> 선택 시 해당 유형의 전체 사례 표시")
+            else:
+                grid(sorted([r for r in UP if r["shape"] == g_pick], key=lambda r: -r["diff"]),
+                     bar_color=A.SHAPE_COLOR[g_pick], mark_year=True, height_per_row=330,
+                     sub=lambda r: f"{lab[r['shape']]}")
         # 맨 아래 정리 글 두 개는 뺐다 — «모양 · 건수 · 뜻» 표와 함께 단추·결론 쪽과 겹쳤다 (2026-10-01)
 
 
@@ -566,31 +582,30 @@ def page_3_down():
             "리스크 급증 이후 무기 주문 감소 양상",
             "주문 감소·미발생 사례 확인 · 제재·내전 등 거래 여건을 고려한 해석 필요", BLUE)
 
-        sec("03", "주문 규모 감소 사례의 국가별 비교",
-            "급증 기준 연도 전후 3년의 주문 TIV·감소 시기 비교", BLUE)
+        card = sec_card("03", "주문 규모 감소 사례의 국가별 비교",
+                        "급증 기준 연도 전후 3년의 주문 TIV·감소 시기 비교")
 
         # (2026-10-01) 증가 쪽과 같은 틀 — 타임라인에서 점을 고르면 그 사례 카드가 나온다.
         #   여기서는 «제재 · 내전으로 거래가 끊긴» 8건만 다룬다. 그 밖의 감소는 사정이 제각각이라 뺐다.
         zero = sum(1 for r in EMB if sum(r["tiv"][-3:]) == 0)
         downs = sorted(EMB, key=lambda r: (r["year"], r["ko"]))
-        picked = timeline(downs, key="down_timeline", color_of=lambda r: GOLD, text_of=lambda r: "")
-        if picked is None or picked >= len(downs):
-            picked = min(range(len(downs)), key=lambda i: downs[i]["diff"])   # 가장 많이 줄어든 사례
-        r = downs[picked]
-        case_card(r, bar_color=GOLD,
-                  sub_text=lambda x: f"제재·내전: {x['embargo']} · 표준화 규모 변화 {x['diff']:+.2f} (표준편차 단위)")
-        st.write("")
+        with card:
+            picked = timeline(downs, key="down_timeline", color_of=lambda r: GOLD, text_of=lambda r: "")
+            if picked is None or picked >= len(downs):
+                picked = min(range(len(downs)), key=lambda i: downs[i]["diff"])   # 가장 많이 줄어든 사례
+            r = downs[picked]
+            case_card(r, bar_color=GOLD,
+                      sub_text=lambda x: f"제재·내전: {x['embargo']} · 표준화 규모 변화 {x['diff']:+.2f} (표준편차 단위)")
 
-        sec("04", "제재·내전 관련 감소 사례 비교",
-            "제재·내전 관련 사례의 주문 감소 양상 비교", BLUE)
-        if st.button(f"제재 · 내전 {len(EMB)}건 펼치기", key="down_grid_btn",
-                     type="primary" if st.session_state.get("down_grid") else "secondary",
-                     help="제재·내전 관련 사례의 급증 기준 연도 전후 3년 비교"):
-            st.session_state["down_grid"] = not st.session_state.get("down_grid")
-            st.rerun()
-        if st.session_state.get("down_grid"):
-            grid(EMB, cols=4, bar_color=BLUE, mark_year=True,
-                 sub=lambda r: f"{r['embargo']}", height_per_row=330)
+        with sec_card("04", "제재·내전 관련 감소 사례 비교", "제재·내전 관련 사례의 주문 감소 양상 비교"):
+            if st.button(f"제재 · 내전 {len(EMB)}건 펼치기", key="down_grid_btn",
+                         type="primary" if st.session_state.get("down_grid") else "secondary",
+                         help="제재·내전 관련 사례의 급증 기준 연도 전후 3년 비교"):
+                st.session_state["down_grid"] = not st.session_state.get("down_grid")
+                st.rerun()
+            if st.session_state.get("down_grid"):
+                grid(EMB, cols=4, bar_color=BLUE, mark_year=True,
+                     sub=lambda r: f"{r['embargo']}", height_per_row=330)
         note(f"주문 감소 {len(DOWN)}건 중 <b>제재·내전 관련 {len(EMB)}건</b> 분석 · "
              f"이후 3년간 주문 TIV가 0인 사례 {zero}건 · "
              "거래 제약을 고려하여 해석 · 주문 감소만으로 수요 감소 판단 불가", "blue")
@@ -604,7 +619,7 @@ def page_4_conclusion():
             "전체 상관계수는 0에 근접</br>국가별 사례에서 주문 증가·감소 양상 확인 · 급증 시점·거래 여건을 고려한 해석 필요", GOLD)
 
         # 3단 흐름 — 왜 0으로 보였나 → 안에서 무슨 일이 있었나 → 그래서 무엇인가
-        st.markdown(
+        sec_card("05", "결론 흐름", "전체 집계 → 국가별 사례 → 종합 해석").markdown(
             '<div class="flow">'
 
             '<div class="fc">'
@@ -641,10 +656,8 @@ def page_4_conclusion():
             '</div>', unsafe_allow_html=True)
 
         # ── 이 분석을 어디에 쓰나 — 실시간 모니터링으로 잇는 부분 ──────────
-        sec("🔎", "대시보드 활용 방안",
-            "리스크 변화 모니터링·급증 전후 국가별 무기 주문 비교", BLUE)
-
-        st.markdown(
+        sec_card("06", "대시보드 활용 방안",
+                 "리스크 변화 모니터링·급증 전후 국가별 무기 주문 비교").markdown(
             '<div class="flow">'
 
             '<div class="fc">'

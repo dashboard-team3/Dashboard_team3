@@ -117,7 +117,8 @@ def _time_axes(fig, p0, p1):
     step = 1 if years <= 12 else 2 if years <= 25 else 5
     fig.update_xaxes(gridcolor="#1f2b44", tickformat="%Y", dtick=f"M{12 * step}", ticklabelmode="period",
                      hoverformat="%Y-%m", minor=dict(dtick="M12", ticklen=3, showgrid=False), tickfont=dict(size=14))
-    fig.update_yaxes(gridcolor="#1f2b44", zerolinecolor="#1f2b44", range=[0, 1], tickfont=dict(size=14))
+    fig.update_yaxes(gridcolor="#1f2b44", zerolinecolor="#1f2b44", range=[0, 1], tickfont=dict(size=14),
+                     title_text="리스크 (0~1)", title_font=dict(size=13))                         # 단위 (2026-10-02)
 
 
 def _gap_bands(fig, gaps, p0, p1):

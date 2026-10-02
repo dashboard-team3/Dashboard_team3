@@ -212,7 +212,7 @@ def draw_map():
     fig.update_layout(
         geo=dict(projection_type="mercator", fitbounds="locations", visible=True,
                  showland=True, landcolor="#ffffff" if light else theme.C["main-bg-930"],          # 주변 땅 = 지도 상자 바탕색 (리스크 추이와 같게, 2026-10-02)
-                 showcountries=True, countrycolor="#e5e7eb" if light else theme.C["main-dark-820"], countrywidth=0.6,
+                 showcountries=light, countrycolor="#e5e7eb" if light else theme.C["main-dark-820"], countrywidth=0.6,   # 다크: 중동 밖 경계선 없음 (2026-10-02)
                  showcoastlines=False, showocean=False, showlakes=False, showframe=False,
                  bgcolor="rgba(0,0,0,0)"),
         margin=dict(l=0, r=0, t=0, b=0), showlegend=False, autosize=True,
@@ -340,73 +340,76 @@ def live_legend():
 
 
 def draw_network(choice):
-    """오늘(UTC) 국가쌍 관계를 타원 네트워크로 그린다. choice는 '전체' 또는 사건 유형."""
+    """오늘(UTC) 국가쌍 관계를 한 줄 아크 그림으로 그린다 (2026-10-02, 타원 네트워크 대신). choice는 '전체' 또는 사건 유형.
+    나라를 지리 순서(이집트 → 걸프 → 이란 → 레반트)로 가로 한 줄에 놓고, 관계는 위로 솟는 반원으로 잇는다.
+    반원 굵기 · 진하기 = 건수, 색 = 그 쌍에서 가장 많은 사건 유형. 선끼리 덜 엉켜서 많이 얽힌 나라가 한눈에 보인다."""
+    import math
     df = realtime.load_day(realtime.today_utc())
     pairs = realtime.pair_stats(df, None if choice == "전체" else choice)
-    pos = realtime.network_positions()
+    pos = realtime.network_positions()                # 순서만 쓴다 (타원 둘레 순서 = 지리 방향)
 
     if pairs.empty:
         st.info(f"오늘(UTC) '{choice}' 유형에 해당하는 국가쌍 없음")
         return
 
-    fig = go.Figure()
+    light = theme.is_light()
     top = pairs["count"].max()
+    involved = pd.concat([
+        pairs[["a", "count"]].rename(columns={"a": "n"}),
+        pairs[["b", "count"]].rename(columns={"b": "n"}),
+    ]).groupby("n")["count"].sum()
+    order = sorted(pos, key=lambda n: math.atan2(pos[n][1], pos[n][0] / 2.0))
+    X = {n: i for i, n in enumerate(order)}
+    ink = "#1c1a17" if light else "#e5eaf3"                # 오늘 사건이 있는 나라 이름 · 점
+    dim = "#9ca3af" if light else "#4b5563"                # 오늘 사건 없는 나라
+    fig = go.Figure()
 
-    # 1) 국가쌍마다 선 하나. 굵기는 건수, 색은 그 쌍에서 가장 많은 유형
-    for r in pairs.itertuples():
-        (x0, y0), (x1, y1) = pos[r.a], pos[r.b]
-        fig.add_trace(go.Scatter(
-            x=[x0, x1], y=[y0, y1], mode="lines",
-            line=dict(color=realtime.CATEGORIES[r.top_category]["color"],
-                      width=1.5 + 8 * (r.count / top)),
-            opacity=0.85, hoverinfo="skip",
-        ))
-    # 선 가운데 보이지 않는 점을 두어 마우스를 올리면 상세가 뜨게 한다
+    # 1) 국가쌍마다 반원 하나 (굵은 선이 위에 오게 건수 순으로). 높이는 두 나라 사이 거리에 비례
+    mids = []
+    for r in pairs.sort_values("count").itertuples():
+        x0, x1 = sorted((X[r.a], X[r.b]))
+        c, rad = (x0 + x1) / 2, (x1 - x0) / 2
+        ts = [math.pi * i / 40 for i in range(41)]
+        xs = [c - rad * math.cos(t) for t in ts]
+        ys = [rad * 0.55 * math.sin(t) for t in ts]
+        w = r.count / top
+        fig.add_trace(go.Scatter(x=xs, y=ys, mode="lines", hoverinfo="skip",
+                                 line=dict(color=realtime.CATEGORIES[r.top_category]["color"], width=1 + 6 * w),
+                                 opacity=0.3 + 0.65 * w))
+        mids.append((xs[20], ys[20], r))
+    # 반원 꼭대기에 보이지 않는 점을 두어 마우스를 올리면 상세가 뜨게 한다
     fig.add_trace(go.Scatter(
-        x=[(pos[r.a][0] + pos[r.b][0]) / 2 for r in pairs.itertuples()],
-        y=[(pos[r.a][1] + pos[r.b][1]) / 2 for r in pairs.itertuples()],
+        x=[m[0] for m in mids], y=[m[1] for m in mids],
         mode="markers", marker=dict(size=18, color="rgba(0,0,0,0)"),
         customdata=[
             f"<b>{r.a} – {r.b}</b> 오늘 {r.count}건<br>"
             f"{r.a} → {r.b}: {r.a_to_b}건<br>{r.b} → {r.a}: {r.b_to_a}건<br>"
             + " · ".join(f"{c} {n}" for c, n in r.by_category.items() if n)
-            for r in pairs.itertuples()],
+            for _, _, r in mids],
         hovertemplate="%{customdata}<extra></extra>",
     ))
 
-    # 2) 나라 점: 오늘 연결된 나라는 진하게(크기 = 관여 건수), 나머지는 흐리게
-    involved = pd.concat([
-        pairs[["a", "count"]].rename(columns={"a": "n"}),
-        pairs[["b", "count"]].rename(columns={"b": "n"}),
-    ]).groupby("n")["count"].sum()
-    names = list(pos)
-
-    def _outward(n):
-        """이름을 타원 바깥쪽에 붙인다: 위·아래 부분은 위·아래로, 옆·대각선 부분은 왼쪽·오른쪽으로.
-        위·아래로만 붙이면 아래쪽 나라(사우디·오만·UAE·카타르) 이름끼리 부딪힌다."""
-        x, y = pos[n][0] / 2.0, pos[n][1]                 # 2:1 타원을 원으로 되돌린 좌표
-        if abs(y) >= 0.75:
-            return "top center" if y > 0 else "bottom center"
-        return "middle right" if x > 0 else "middle left"
+    # 2) 나라 점: 오늘 연결된 나라는 진하게(크기 = 관여 건수), 나머지는 작고 흐리게
     fig.add_trace(go.Scatter(
-        x=[pos[n][0] for n in names], y=[pos[n][1] for n in names],
-        mode="markers+text", cliponaxis=False,            # 가장자리 이름이 그래프 칸 밖으로 조금 나가도 자르지 않는다
-        text=[realtime.SHORT_NAME.get(n, n) for n in names],
-        textposition=[_outward(n) for n in names],
-        textfont=dict(color=["#e5eaf3" if n in involved else "#5b6578" for n in names], size=16),
-        marker=dict(
-            size=[16 + 6 * involved[n] ** 0.5 if n in involved else 9 for n in names],
-            color=["#e5eaf3" if n in involved else "#2b3444" for n in names],
-            line=dict(color="#0b1220", width=2)),
-        customdata=[f"<b>{n}</b> 오늘 {int(involved.get(n, 0))}건" for n in names],
+        x=[X[n] for n in order], y=[0] * len(order), mode="markers",
+        marker=dict(size=[9 + 3 * involved[n] ** 0.5 if n in involved else 6 for n in order],
+                    color=[(theme.C["main-light-650"] if light else ink) if n in involved
+                           else (theme.C["main-130"] if light else theme.C["main-dark-820"]) for n in order],
+                    line=dict(width=0), opacity=1),     # 크기가 목록이면 Plotly 기본 투명도가 0.7 이라 1 로
+        customdata=[f"<b>{n}</b> 오늘 {int(involved.get(n, 0))}건" for n in order],
         hovertemplate="%{customdata}<extra></extra>",
     ))
+    # 3) 나라 이름: 점 아래 비스듬히 (16개국이 한 줄이라 가로로 쓰면 겹친다)
+    for n in order:
+        name = realtime.SHORT_NAME.get(n, n)
+        fig.add_annotation(x=X[n], y=-0.35, text=f"<b>{name}</b>" if n in involved else name, showarrow=False,
+                           textangle=-40, xanchor="right", yanchor="top",
+                           font=dict(size=13, color=ink if n in involved else dim))
 
     fig.update_layout(
         showlegend=False, autosize=True, margin=dict(l=10, r=10, t=10, b=10),
-        # 비율을 묶지 않아서 타원이 패널 크기에 맞게 늘어나 빈 공간 없이 채운다
-        xaxis=dict(visible=False, range=[-2.8, 2.8]),     # 양옆 이름(이집트·이란) 자리
-        yaxis=dict(visible=False, range=[-1.45, 1.45]),   # 위아래 이름(레바논·UAE 등) 자리
+        xaxis=dict(visible=False, range=[-1.2, len(order) - 0.3]),
+        yaxis=dict(visible=False, range=[-2.3, 4.4]),     # 아래 = 비스듬한 이름 자리, 위 = 가장 큰 반원 높이
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         hoverlabel=dict(bgcolor="#1e293b", bordercolor="#334155", font=dict(color="#e5eaf3", size=15)))
     st.plotly_chart(theme.adapt(fig), key="live_network_chart", width="stretch", height="stretch",
@@ -417,7 +420,7 @@ def draw_network(choice):
         for cat, c in realtime.CATEGORIES.items())
     st.markdown(
         f'<div class="map-legend">{legend}'
-        f'<em>오늘 연결 {len(pairs)}쌍 · 선 굵기 = 사건 수 · 선 색 = 그 쌍에서 가장 많은 사건 유형 · '
+        f'<em>오늘 연결 {len(pairs)}쌍 · 반원 굵기 = 사건 수 · 색 = 그 쌍에서 가장 많은 사건 유형 · '
         f'흐린 점 = 오늘 사건 없음</em></div>',
         unsafe_allow_html=True)
 

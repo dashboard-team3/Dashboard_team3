@@ -130,7 +130,7 @@ def _risk_map(sel, small=False):
     # 국가쌍: 고른 나라 → 리스크가 큰 상대국 3곳으로 화살표 (점선 · 끝에 화살촉, 굵기 = 리스크). 이름 · 숫자보다 먼저 그려 글자 아래에 깔리게
     if pair and val:
         top = sorted((c for c in val if c != sel), key=lambda c: -val[c])[:ARROWS]
-        col = "#ffffff"          # 흰 화살표 (밝은 테마도 — 보라 칸 위에서 잘 보이게, 2026-10-02). 그림자는 CSS
+        col = "#ffffff" if light else "#E69F00"   # 다크: 주황 (보라 지도 색과 안 겹치게, 2026-10-02 팀 피드백) · 밝은 테마는 흰색 그대로
         for c in top:
             a, b = _pos(names[sel]), _pos(names[c])
             # 끝을 비율이 아니라 «거리»로 남긴다: 이름이 가운데 있는 나라는 이름 앞 1.4°, 이름을 바깥으로 뺀 좁은 나라는 0.3° 앞까지
@@ -177,7 +177,7 @@ def _risk_map(sel, small=False):
     fig.update_layout(
         geo=dict(projection_type="mercator", fitbounds="locations", visible=True,
                  showland=True, landcolor="#ffffff" if light else theme.C["main-bg-930"],          # 주변 땅 = 지도 상자 바탕색 (그래프 상자처럼 한 색, 2026-10-02)
-                 showcountries=True, countrycolor="#e5e7eb" if light else theme.C["main-dark-820"], countrywidth=0.6,   # 주변 나라는 옅은 경계선만
+                 showcountries=light, countrycolor="#e5e7eb" if light else theme.C["main-dark-820"], countrywidth=0.6,   # 다크: 중동 밖 나라 경계선 없음 (2026-10-02)
                  showcoastlines=False, showocean=False, showlakes=False, showframe=False, bgcolor="rgba(0,0,0,0)"),
         margin=dict(l=0, r=0, t=0, b=0), showlegend=False, height=236 if small else 720, paper_bgcolor="rgba(0,0,0,0)",
         dragmode=False, clickmode="event+select",
@@ -324,7 +324,7 @@ def _side_panel(code, big):
         hd1.markdown(_head_html("지도", "국가 선택 시 그래프 갱신", "국가 선택 시 해당 국가 기준으로 그래프 갱신"),
                      unsafe_allow_html=True)
     else:
-        hd1.markdown(_head_html("리스크 추이", f"{d['head']} · 최근 {YEARS}년", d["tip"]), unsafe_allow_html=True)
+        hd1.markdown(_head_html("리스크 추이", f"{d['head']} · 최근 {YEARS}년 · 리스크 0~1 · 기준 달 {base_month():%Y-%m}", d["tip"]), unsafe_allow_html=True)
     if hd2.button("지도 크게 보기 ⤢" if big else "크게 보기 ⤢", key="riskmap_swap", width="stretch",
                   help="지도·그래프 표시 위치 전환 · 확장 그래프: 1980년 이후 추이"):
         st.session_state["riskmap_big"] = not big
