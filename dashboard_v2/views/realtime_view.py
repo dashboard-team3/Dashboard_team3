@@ -228,8 +228,8 @@ def draw_map():
       .st-key-live_map_chart .scattergeo path.point {animation: lvping 1.6s ease-in-out infinite;}
       @keyframes lvping {0%, 100% {opacity: 1;} 50% {opacity: .15;}}
       .st-key-main_panel:has(.st-key-live_map_chart) {background: #13142a !important;}   /* 리스크 추이 칸 · 다른 카드와 같은 바탕 */
-      html[data-theme="light"] .st-key-main_panel:has(.st-key-live_map_chart) {background:
-        #eef3fb !important; border-color: #cfdcf3 !important;}   /* 연한 하늘색 */
+      html[data-theme="light"] 
+      
     </style>""", unsafe_allow_html=True)
 
     # 마우스를 올리면 오른쪽 위에 확대(+)·축소(−)·처음 위치 버튼만 보인다. 휠 확대는 스크롤과 충돌해서 끈다.

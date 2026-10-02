@@ -863,10 +863,10 @@ button[kind="primary"] p, button[kind="primary"] {
 [data-testid="stButtonGroup"] button[aria-checked="true"] { border-color: #4f46e5 !important; }
 
 /* 실시간 (2026-10-01): 지도 · 최근 사건 칸 바탕을 연한 하늘색으로 */
-.st-key-main_panel, .st-key-feed_panel, .st-key-feed_panel .feed-item, .st-key-main_panel .map-legend {
+/* .st-key-main_panel, .st-key-feed_panel, .st-key-feed_panel .feed-item, .st-key-main_panel .map-legend {
     background: #eef3fb !important;
-    border-color: #cfdcf3 !important;
-}
+    border-color: #ddd6fe !important;
+} */
 
 /* 실시간 LIVE 패널 · 범례 상자 (밝은 테마) */
 .lv, .lv-lg, .lv-pair { color: #1c1a17 !important; }
