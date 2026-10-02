@@ -169,10 +169,11 @@ def _risk_map(sel, small=False):
         textposition=[("middle left" if kr in LEFT_SIDE else "middle right") if kr in LABEL_OUT else "middle center"
                       for kr, _, _ in rows],
         textfont=dict(size=11 if small else 13, family="JetBrains Mono, Pretendard, sans-serif",
-                      # 밝은 테마: 진한 보라 칸 안의 이름만 흰 글씨 (바깥으로 뺀 이름 · 기준 나라는 그대로)
-                      color=["#ffffff" if not light or (kr not in LABEL_OUT and c in val and not (pair and c == sel)
-                                                        and (val[c] - 0.15) / 0.55 >= LABEL_DARK) else "#1c1a17"
-                             for kr, _, c in rows])))
+                      # 칸 안 이름: 진한 보라 칸은 흰 글씨 · 옅은 칸은 검은 글씨 (두 테마 같음).
+                      # 바깥으로 뺀 이름 · 기준 나라(무채색 칸) · 값 없는 나라는 테마 글자색
+                      color=[("#ffffff" if (val[c] - 0.15) / 0.55 >= LABEL_DARK else "#1c1a17")
+                             if kr not in LABEL_OUT and c in val and not (pair and c == sel)
+                             else ("#1c1a17" if light else "#ffffff") for kr, _, c in rows])))
     fig.update_layout(
         geo=dict(projection_type="mercator", fitbounds="locations", visible=True,
                  showland=True, landcolor="#ffffff" if light else "#13142a",          # 주변 땅 = 지도 상자 바탕색 (그래프 상자처럼 한 색, 2026-10-02)

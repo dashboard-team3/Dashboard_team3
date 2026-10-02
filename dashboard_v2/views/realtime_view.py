@@ -134,9 +134,10 @@ def _label_placement(radius, side):
 
 # (2026-10-01) 중동_스토리맵의 지도 모양 · LIVE 패널 · 범례 상자를 가져왔다.
 # 나라 면을 오늘 사건 수로 주황 한 색의 밝기로 칠하고, 이름 · 숫자를 나라 위에 적는다.
-SEQ_DARK = ["#262a33", "#4a3a33", "#7d4f36", "#b8673b", "#e98a55", "#f6b98d"]    # 스토리맵과 같은 주황
-# 밝은 테마는 보라 (2026-10-02 팀 요청, 예전 주황 #f4ede7 → #a8481f). 진한 칸(LABEL_DARK 이상) 위 이름은 흰 글씨
+# 보라 (2026-10-02 팀 요청, 예전 주황 — 밝은 테마 #f4ede7 → #a8481f · 어두운 테마 #262a33 → #f6b98d 스토리맵 주황).
+# 어두운 테마도 같은 색. 칸 안 이름은 칸 색에 따라: 진한 칸(LABEL_DARK 이상)은 흰 글씨, 옅은 칸은 검은 글씨
 SEQ_LIGHT = ["#f5f3ff", "#ddd6fe", "#c4b5fd", "#a78bfa", "#7c3aed", "#4c1d95"]
+SEQ_DARK = SEQ_LIGHT
 LABEL_DARK = 0.7
 
 
@@ -181,8 +182,10 @@ def draw_map():
     name_col = "#1c1a17" if light else "#ffffff"
     frac = {c: (n ** 0.5) / zmax for c, n in zip(stats["country"], stats["count"])}     # 색 막대에서의 자리 (0~1)
 
-    def col(c):   # 밝은 테마: 진한 보라 칸 안의 이름만 흰 글씨 (바깥으로 뺀 이름은 흰 땅 위라 그대로)
-        return "#ffffff" if light and c not in LABEL_OUT and frac.get(c, 0) >= LABEL_DARK else name_col
+    def col(c):   # 칸 안 이름: 진한 보라 칸은 흰 글씨 · 옅은 칸은 검은 글씨. 바깥으로 뺀 이름은 땅 위라 테마 글자색
+        if c in LABEL_OUT:
+            return name_col
+        return "#ffffff" if frac.get(c, 0) >= LABEL_DARK else "#1c1a17"
     pos = {r.country: (LABEL_OUT[r.country][2:] if r.country in LABEL_OUT else (r.lat, r.lon)) for r in stats.itertuples()}
     llat, llon = [], []
     for name, (a_lat, a_lon, t_lat, t_lon) in LABEL_OUT.items():
