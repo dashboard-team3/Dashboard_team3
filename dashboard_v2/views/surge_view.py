@@ -25,7 +25,7 @@ import streamlit as st
 
 from sources import surge as A      # 원본: import analysis as A
 from core import theme           # 그래프 글꼴 · 밝은 테마 색 (theme.adapt)
-from core.ui import ctitle, tabbar
+from core.ui import ctitle, tabbar, INFO_SVG
 
 LIM = 0.3          # 흔히 «약한 상관» 의 경계로 쓰는 값. 통계적 유의성 기준이 아니다 (2026-10-01)
 INK, RED, BLUE, GOLD, MUTE, GRID = "#e5eaf3", "#f87171", "#60a5fa", "#f5c542", "#8b98ad", "#16233c"
@@ -483,7 +483,7 @@ def page_1_corr():
                 '<div class="ov-note-b">중동 전체를 합쳐 계산하면 나라마다 반대로 움직인 추세가 서로 지워져, '
                 '변화가 0에 가깝게 보입니다. 외교 관계 · 제재 여부 · 국방 예산처럼 나라마다 다른 사정이 크므로 '
                 '나라 단위로 나눠 봐야 합니다.</div>'
-                '<div class="ov-info"><div class="ov-info-t">ⓘ 해석할 때 고려할 점</div>'
+                '<div class="ov-info"><div class="ov-info-t">' + INFO_SVG + ' 해석할 때 고려할 점</div>'
                 '<b>국가별 차이</b> 전체 값으로 개별 국가를 판단할 수 없음<br>'
                 '<b>시점 차이</b> SIPRI 는 주문 연도 기준이라 실제 인도는 몇 해 뒤 (보통 1~3년)<br>'
                 '<b>다른 요인</b> 국방 예산 · 정책 · 제재 · 공급 여건도 주문에 영향</div></div>',

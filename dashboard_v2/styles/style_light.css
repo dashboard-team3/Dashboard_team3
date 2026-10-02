@@ -915,4 +915,4 @@ button[kind="primary"] p, button[kind="primary"] {
 .st-key-risk_map path.js-line[style*="dasharray"], .st-key-risk_map .scattergeo path.point { filter: drop-shadow(0 0 2px rgba(255,255,255,.9)) !important; }
 .rm-t { color: #111827 !important; }
 .rm-s { color: #6b7280 !important; }
-
+.rm-cards-t { color: #111827 !important; }

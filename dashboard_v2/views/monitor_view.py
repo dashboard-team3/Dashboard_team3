@@ -331,6 +331,8 @@ def _side_panel(code, big):
     ma = {q: risk_view._in_period(relations.smooth(mat[q], risk_view.HOW), p0, p1).iloc[-1] for q in items}
     dist = relations.load_dists()[d["dist"]]
     common = dict(layer=d["layer"], month=f"{last_m:%Y-%m}", period=risk_view._pstr(p0, p1))
+    # 카드 묶음 제목 (2026-10-02 팀 요청): «리스크 상위 5개국» — 위 그래프(지도)와 떨어져 보이게 위 여백
+    st.markdown('<div class="rm-cards-t">리스크 상위 5개국</div>', unsafe_allow_html=True)
     # 제목 줄은 스크롤 상자 밖에 둬서 카드만 움직이게 (2026-10-01)
     risk_view.grade_pills([], dist, d["title"], title_sub=f"{last_m:%Y-%m} 기준 (다 모인 마지막 달) · 평균 = 최근 {YEARS}년",
                           title_tip=f"큰 숫자 = 그 달 한 달의 리스크 · 평균 = 최근 {YEARS}년 월별 평균 · "

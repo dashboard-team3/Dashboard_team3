@@ -18,9 +18,13 @@ def tip(label, text, cls="", style=""):
     return f'<span class="tip {cls}" data-tip="{_html.escape(_plain(text), quote=True)}"{st_attr}>{label}</span>'
 
 
+# 정보 아이콘 (Bootstrap info-circle, 2026-10-02 팀 요청으로 ⓘ 글자 대신). 색은 .tipi 의 글자색을 따른다
+INFO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg>'
+
+
 def info_icon(text, cls=""):
-    """ⓘ 하나: 마우스를 올리면 설명. 긴 설명 글을 화면에서 빼고 여기 넣는다."""
-    return tip("ⓘ", text, "tipi " + cls)
+    """정보 아이콘 하나: 마우스를 올리면 설명. 긴 설명 글을 화면에서 빼고 여기 넣는다."""
+    return tip(INFO_SVG, text, "tipi " + cls)
 
 
 # 색 규칙: 뜻 하나에 색 하나 (그래프마다 같은 뜻은 같은 색)
@@ -115,19 +119,26 @@ def tabbar(label, options, key, default=None, **kw):
         return st.segmented_control(label, options, default=first, key=key,
                                     label_visibility="collapsed", **kw) or first
 
-def page_backdrop(blur=10, dim=0.38):
-    """(2026-10-02) 홈 화면 배경(중동 지도 · 별)을 어둡게 · 흐리게 해서 다른 페이지 뒤에 깐다.
-    그림은 assets/home_bg.jpg (홈 배경을 카드 · 제목 없이 찍은 것). 밝은 테마에는 깔지 않는다."""
+def page_backdrop(blur=10, dim=0.38, light_opacity=0.45):
+    """(2026-10-02) 홈 화면 배경(중동 지도)을 흐리게 해서 다른 페이지 뒤에 깐다.
+    어두운 테마 = assets/home_bg.jpg 를 어둡게 (밝기 dim), 밝은 테마 = assets/home_bg_light.jpg 를 옅게 (불투명도 light_opacity).
+    그림은 홈 배경을 카드 · 제목 없이 찍은 것."""
     import base64
     from pathlib import Path
-    f = Path(__file__).resolve().parent.parent / "assets" / "home_bg.jpg"
-    if not f.exists():
+    a = Path(__file__).resolve().parent.parent / "assets"
+    css = []
+    if (a / "home_bg.jpg").exists():
+        d = base64.b64encode((a / "home_bg.jpg").read_bytes()).decode()
+        css.append(f"""html:not([data-theme="light"]) .stApp::before {{content: ""; position: fixed; inset: -40px; z-index: 0; pointer-events: none;
+            background: url(data:image/jpeg;base64,{d}) center / cover no-repeat; filter: blur({blur}px) brightness({dim}) saturate(.9);}}""")
+    if (a / "home_bg_light.jpg").exists():
+        d = base64.b64encode((a / "home_bg_light.jpg").read_bytes()).decode()
+        css.append(f"""html[data-theme="light"] .stApp::before {{content: ""; position: fixed; inset: -40px; z-index: 0; pointer-events: none;
+            background: url(data:image/jpeg;base64,{d}) center / cover no-repeat; filter: blur({blur}px); opacity: {light_opacity};}}""")
+    if not css:
         return
-    data = base64.b64encode(f.read_bytes()).decode()
-    st.markdown(f"""<style>
-      html:not([data-theme="light"]) .stApp::before {{content: ""; position: fixed; inset: -40px; z-index: 0; pointer-events: none;
-        background: url(data:image/jpeg;base64,{data}) center / cover no-repeat;
-        filter: blur({blur}px) brightness({dim}) saturate(.9);}}
-      html:not([data-theme="light"]) [data-testid="stAppViewContainer"] {{position: relative; z-index: 1; background: transparent !important;}}
-      html:not([data-theme="light"]) [data-testid="stMain"], html:not([data-theme="light"]) [data-testid="stHeader"] {{background: transparent !important;}}
-    </style>""", unsafe_allow_html=True)
+    # 밝은 테마 CSS 가 본문 · 위 띠를 흰색으로 칠해서(html[data-theme] 로 더 강함) 같은 세기로 투명하게 덮는다
+    css.append("""html body [data-testid="stAppViewContainer"], html[data-theme] body [data-testid="stAppViewContainer"] {position: relative; z-index: 1; background: transparent !important;}
+      html body [data-testid="stMain"], html[data-theme] body [data-testid="stMain"],
+      html body header[data-testid="stHeader"], html[data-theme] body header[data-testid="stHeader"] {background: transparent !important;}""")
+    st.markdown("<style>" + " ".join(css) + "</style>", unsafe_allow_html=True)

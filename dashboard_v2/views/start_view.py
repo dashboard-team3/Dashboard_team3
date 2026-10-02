@@ -11,6 +11,7 @@ import random
 import plotly.graph_objects as go
 import streamlit as st
 
+from core import theme
 from sources import arms
 
 A_POS = arms.TARGET_POS
@@ -148,6 +149,29 @@ html[data-theme="light"] [data-testid="stMain"] .st-key-landing_map [data-testid
 [data-testid="stMainBlockContainer"] {max-width: 1400px !important; padding-top: 0 !important;}
 """
 
+# 밝은 테마 홈 (2026-10-02): 밤하늘 대신 밝은 인디고 톤. 지도 선 · 점 색은 _line_map(light=True) 가 바꾼다
+LIGHT = """
+html[data-theme="light"] .stApp, html[data-theme="light"] [data-testid="stAppViewContainer"], html[data-theme="light"] [data-testid="stMain"] {background: #f6f7fb !important;}
+html[data-theme="light"] header[data-testid="stHeader"] {background: transparent !important; border: 0 !important;}
+html[data-theme="light"] [data-testid="stMain"] .st-key-landing_map [data-testid="stElementContainer"]:has(> [data-testid="stFullScreenFrame"] > [data-testid="stPlotlyChart"]) {background: transparent !important; border: 0 !important;}
+.st-key-landing_bg {background: radial-gradient(ellipse at 50% 16%, rgba(129,140,248,.28), transparent 55%),
+                                radial-gradient(ellipse at 85% 80%, rgba(167,139,250,.20), transparent 50%),
+                                radial-gradient(ellipse at 10% 85%, rgba(96,165,250,.14), transparent 45%),
+                                linear-gradient(180deg, #fbfbff 0%, #eef0fb 100%) !important;}
+.st-key-landing_map svg {filter: drop-shadow(0 0 3px rgba(99,102,241,.35));}
+.st-key-landing_map path.point {animation: glowL 2.8s ease-in-out infinite;}
+@keyframes glowL {0%, 100% {stroke: rgba(99,102,241,0); stroke-width: 0;} 50% {stroke: rgba(99,102,241,.25); stroke-width: 14px;}}
+.ld-k {color: #6366f1 !important;}
+.ld-t {color: #1e1b4b !important; text-shadow: 0 2px 24px rgba(255,255,255,.9);}
+.ld-s {color: #4338ca !important;}
+.ld-head::before {background: radial-gradient(ellipse at center, rgba(248,249,255,.9) 0%, rgba(248,249,255,.7) 45%, rgba(248,249,255,0) 72%);}
+.ld-card {background: rgba(255,255,255,.72); box-shadow: 0 10px 28px rgba(79,70,229,.14), 0 2px 6px rgba(30,27,75,.08);}
+.ld-n {color: #1e1b4b !important;}
+.ld-d {color: #374151 !important;}
+[class*="st-key-ldcard_"]:hover .ld-card {background: rgba(255,255,255,.92);}
+"""
+
+
 # 왼쪽 메뉴 접기 / 펴기: Streamlit 의 접기(«) · 펴기(») 버튼을 대신 눌러 준다 (메뉴가 다 그려질 때까지 0.1초마다 최대 4초 확인)
 _TOGGLE = """<script>(() => {{ let n = 0; const t = setInterval(() => {{ n++;
   const sb = document.querySelector('section[data-testid="stSidebar"]');
@@ -181,37 +205,41 @@ def _go(name):
     st.session_state["open_sidebar"] = True            # 그 페이지에서 접어 둔 왼쪽 메뉴를 다시 편다
 
 
-def _stars(n, seed):
-    """배경 별: 작은 흰 점 n개 (같은 seed 면 늘 같은 자리)."""
+def _stars(n, seed, rgb="255,255,255"):
+    """배경 별: 작은 점 n개 (같은 seed 면 늘 같은 자리). 밝은 테마는 인디고 점 (rgb)."""
     rnd = random.Random(seed)
     return ", ".join(f"radial-gradient(1.{rnd.randint(0, 9)}px 1.{rnd.randint(0, 9)}px at {rnd.uniform(0, 100):.1f}% "
-                     f"{rnd.uniform(0, 100):.1f}%, rgba(255,255,255,{rnd.uniform(.35, .9):.2f}), transparent)" for _ in range(n))
+                     f"{rnd.uniform(0, 100):.1f}%, rgba({rgb},{rnd.uniform(.35, .9):.2f}), transparent)" for _ in range(n))
 
 
-def _line_map():
+def _line_map(light=False):
     """밝은 선으로 그린 중동 16개국 경계만 (다른 나라 · 바다 · 해안선은 그리지 않음) + 16개국 불빛.
     fitbounds='locations' 로 16개국이 그림을 꽉 채우게 한다."""
     codes = list(A_POS)
     fig = go.Figure(go.Choropleth(
         locations=codes, z=[1] * len(codes), locationmode="ISO-3", showscale=False, hoverinfo="skip",
-        colorscale=[[0, "rgba(139,124,246,.10)"], [1, "rgba(139,124,246,.10)"]],
-        marker_line_color="rgba(221,214,254,.95)", marker_line_width=1.6))
+        colorscale=[[0, "rgba(99,102,241,.10)" if light else "rgba(139,124,246,.10)"], [1, "rgba(99,102,241,.10)" if light else "rgba(139,124,246,.10)"]],
+        marker_line_color="rgba(79,70,229,.75)" if light else "rgba(221,214,254,.95)", marker_line_width=1.6))
     fig.add_trace(go.Scattergeo(
         lat=[A_POS[c][0] for c in codes], lon=[A_POS[c][1] for c in codes], mode="markers", hoverinfo="skip",
-        marker=dict(size=9, color="#fef3c7", line=dict(width=0)), showlegend=False))
+        marker=dict(size=9, color="#4f46e5" if light else "#fef3c7", line=dict(width=0)), showlegend=False))
     fig.update_layout(autosize=True, margin=dict(l=0, r=0, t=0, b=0), paper_bgcolor="rgba(0,0,0,0)", dragmode=False,
                       geo=dict(projection_type="mercator", fitbounds="locations", visible=False, bgcolor="rgba(0,0,0,0)"))
     return fig
 
 
 def page():
-    hide = HIDE_SIDEBAR
+    light = theme.is_light()
+    # 밝은 테마: 밤하늘로 덮던 규칙 대신 밝은 홈 (2026-10-02). 위 여백 · 폭 규칙은 그대로 쓴다
+    hide = (HIDE_SIDEBAR.split("/* 밝은 테마여도")[0] + LIGHT
+            + '[data-testid="stMainBlockContainer"] {max-width: 1400px !important; padding-top: 0 !important;}') if light else HIDE_SIDEBAR
+    star = "79,70,229" if light else "255,255,255"
     _toggle_sidebar(COLLAPSE)                              # 홈은 언제 와도 왼쪽 메뉴를 접은 채로
-    st.markdown(CSS.replace("STARS_A", _stars(50, 1)).replace("STARS_B", _stars(50, 2)).replace("HIDE", hide),
+    st.markdown(CSS.replace("STARS_A", _stars(50, 1, star)).replace("STARS_B", _stars(50, 2, star)).replace("HIDE", hide),
                 unsafe_allow_html=True)
     with st.container(key="landing_bg"):                     # 화면 전체 배경 (뒤에 고정)
         with st.container(key="landing_map"):
-            st.plotly_chart(_line_map(), width="stretch", height="stretch",      # 화면(브라우저 창) 크기에 맞춰 늘어난다
+            st.plotly_chart(_line_map(light), width="stretch", height="stretch",      # 화면(브라우저 창) 크기에 맞춰 늘어난다
                             config={"displayModeBar": False, "staticPlot": True, "responsive": True})
     with st.container(key="landing"):                        # 앞쪽 내용
         st.markdown('<div class="ld-head"><div class="ld-k">DATA · 1980–2026 · MIDDLE EAST 16</div>'

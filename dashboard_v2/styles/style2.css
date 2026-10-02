@@ -2803,3 +2803,11 @@ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 .st-key-riskmap_cards { flex-shrink: 0 !important; }
 .st-key-riskmap_side [data-testid="stLayoutWrapper"]:has(> .st-key-riskmap_cards), .st-key-riskmap_side [data-testid="stElementContainer"]:has(.st-key-riskmap_cards) { flex-shrink: 0 !important; }
 .st-key-riskmap_side:not(:has(.st-key-risk_map)) .st-key-riskmap_cards, .st-key-riskmap_cards [data-testid="stLayoutWrapper"], .st-key-riskmap_cards [class*="st-key-rmcard_"] { flex: 0 0 auto !important; }   /* 기본 화면: 카드 5장 높이를 다 쓰게 */
+/* (2026-10-02 팀 요청) 칸 제목 26px · 제목과 정보 아이콘을 세로 가운데로 맞춤 (리스크 추이 · 실시간 모니터링) */
+.rm-t { font-size: 26px !important; display: flex; align-items: center; gap: 6px; }
+.rm-t .tipi { margin-left: 0; }
+/* 정보 아이콘(svg): 글자 ⓘ 와 같은 자리 · 같은 색 */
+.tipi svg { width: 15px; height: 15px; display: block; }
+.ov-info-t svg { width: 13px; height: 13px; vertical-align: -2px; }
+/* 리스크 추이 카드 묶음 제목 «리스크 상위 5개국» */
+.rm-cards-t { font-size: 20px; font-weight: 800; color: #e5eaf3; margin-top: 22px; margin-bottom: 2px; letter-spacing: -0.2px; }
