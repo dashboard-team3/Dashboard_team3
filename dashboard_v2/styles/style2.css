@@ -839,17 +839,16 @@ div[data-baseweb="select"] > div,
   display: flex;
   gap: 16px;
   align-items: center;
-  border-left: 5px solid #f87171;
-  background: var(--color-main-bg-930);
+  background: color-mix(in srgb, var(--color-main-740) 20%, transparent);
   padding: 12px 18px;
-  border-radius: 0 12px 12px 0;
+  border-radius: 12px;
   margin: 6px 0 16px;
+  border: 1px solid var(--color-main-dark-820);
 }
 
 .sec-no {
   font-size: 28px;
   font-weight: 800;
-  color: #f87171;
   line-height: 1;
   min-width: 40px;
   text-align: center;
@@ -3056,9 +3055,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 .summary {
   border-left-color: var(--color-main-480) !important;
 }
-.sec {
-  border-left-color: var(--color-main-480) !important;
-}
+
 .sec-no,
 .pq-k,
 .mn-no,
