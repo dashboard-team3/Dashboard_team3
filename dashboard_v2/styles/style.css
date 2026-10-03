@@ -2524,7 +2524,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 /* 고른 칸 바탕: 보기 · 표시 + 범위 · 집계 · 쌓기 기준 (2026-10-02 빠진 세 묶음 추가) */
-[role="radiogroup"]:is(
+[role="radiogroup"]:not(.st-key-tabbar-mon_view *):is(
     [aria-label="보기"],
     [aria-label="표시"],
     [aria-label="범위"],
