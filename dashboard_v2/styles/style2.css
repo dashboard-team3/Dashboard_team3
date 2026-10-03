@@ -2787,6 +2787,9 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 .cs-s em {
+  display: inline-block; /* 문구를 하나의 덩어리로 처리 */
+  white-space: nowrap; /* 문구 내부 줄바꿈 방지 */
+
   font-style: normal;
   font-size: 11px;
   font-weight: 700;
@@ -2795,6 +2798,22 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
   border-radius: 5px;
   padding: 1px 6px;
   margin-left: 5px;
+}
+
+/* 설명과 배지를 세로로 배치 */
+.cs-s:has(> span) {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 배지는 아래쪽 오른쪽 정렬 */
+.cs-s > em {
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: auto;
+  margin-left: 0;
+  white-space: nowrap;
 }
 
 .cs-v {
@@ -2827,6 +2846,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
   border-radius: 14px;
   padding: 16px 18px;
   height: 100%;
+  box-sizing: border-box;
 }
 
 /* 카드 내부 목록의 들여쓰기 제거 */
@@ -3641,6 +3661,12 @@ html:not([data-theme="light"]) .ld-n {
   p::before {
   display: none !important;
 }
+
+/* 국가 요약 카드: Markdown 아래 음수 여백 제거 */
+.st-key-cty_acc [data-testid="stMarkdownContainer"] {
+  margin-bottom: 0 !important;
+}
+
 /* 홈 카드: 제목 · 설명을 카드마다 같은 높이에서 시작 (위쪽 줄맞춤, 가로는 가운데 그대로 · 2026-10-02) */
 html:not([data-theme="light"]) .ld-card {
   justify-content: flex-start !important;

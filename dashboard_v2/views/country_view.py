@@ -128,10 +128,16 @@ def page():
         f'<div class="ch-r">'
         + _stat("종합 리스크 <small>최근 12개월</small>", f"{d['risk']:.3f}",
                 f'<i style="background:{col}"></i>{txt}')
-        + _stat("행위 주체 리스크 <small>최근 12개월</small>", f"{d['out']:.3f}",
-                f"해당 국가가 행위 주체인 사건 {up_out}")
-        + _stat("행위 대상 리스크 <small>최근 12개월</small>", f"{d['inr']:.3f}",
-                f"해당 국가가 행위 대상인 사건 {up_in}")
+        + _stat(
+            "행위 주체 리스크 <small>최근 12개월</small>",
+            f"{d['out']:.3f}",
+            f"<span>해당 국가가 행위 주체인 사건</span>{up_out}",
+        )
+        + _stat(
+            "행위 대상 리스크 <small>최근 12개월</small>",
+            f"{d['inr']:.3f}",
+            f"<span>해당 국가가 행위 대상인 사건</span>{up_in}",
+        )
         + _stat(f"무기 수입 <small>최근 1년</small>", f"{d['tiv_ly']:,.0f}", unit="TIV",
                 sub=f"{d['ly']}년 주문 {d['n_ly']}건")
         + '</div></div>', unsafe_allow_html=True)
