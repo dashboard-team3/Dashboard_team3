@@ -121,7 +121,7 @@ OV_CSS = """
         color-mix(in srgb, var(--color-main-dark-820) 45%, transparent) 100%); border:1px solid var(--color-main-dark-740); border-radius:14px;
         padding:1.2rem 1.5rem; margin:.4rem 0 1.4rem 0;}
   .ov-kick {display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem;}
-  .ov-badge {font-size:12px; font-weight:700; color:#93c5fd; background:rgba(96,165,250,.15); border-radius:5px; padding:.1rem .45rem;}
+  .ov-badge {font-size:12px; font-weight:700; color: var(--color-main-350); background: color-mix(in srgb, var(--color-main-dark-550) 15%, transparent); border:1px solid var(--color-main-570); border-radius:5px; padding:.1rem .45rem;}
   .ov-mono {font-family:"JetBrains Mono", monospace; font-size:12px; color:#8b98ad;}
   .ov-big {font-size:24px; font-weight:800; color:#ffffff; line-height:1.45; word-break:keep-all;}
   .ov-body {font-size:16px; color:#aab4c5; line-height:1.75; margin-top:.6rem; word-break:keep-all;}
