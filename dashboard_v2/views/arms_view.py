@@ -416,32 +416,141 @@ def _filters(box, f, M, k, y0, y1, cats_all, targets_all, exp_opts, exp_name, mo
             st.markdown('<div class="flt-h">필터 변경 사항 즉시 반영</div>', unsafe_allow_html=True)
             st.space("stretch")
             st.button("필터 초기화", key=f"arms_reset_{k}", on_click=_reset, args=(skey, [kp, ky, kc, kt, ke]), type="tertiary")
-        c1, c2 = st.columns([1.6, 1], gap="large")
+        c1, c2 = st.columns([1, 1], gap="large")
+
         with c1:
             if opts is not None:
-                store["period"] = tuple(st.select_slider("기간 (월)", options=opts, value=store["period"], key=kp))
-                f["period"] = store["period"]
-                f["years"] = (int(f["period"][0][:4]), int(f["period"][1][:4]))
-                quick = {"최근 5년": (opts[-60], opts[-1]), "최근 10년": (opts[-120], opts[-1]), "전체 기간": (opts[0], opts[-1])}
+                quick = {
+                    "최근 5년": (opts[-60], opts[-1]),
+                    "최근 10년": (opts[-120], opts[-1]),
+                    "전체 기간": (opts[0], opts[-1]),
+                }
                 field, wkey = "period", kp
+                period_label = "기간 (월)"
             else:
-                store["years"] = tuple(st.slider("기간", y0, y1, value=store["years"], key=ky))
-                f["years"] = store["years"]
-                quick = {"최근 5년": (y1 - 4, y1), "최근 10년": (y1 - 9, y1), "전체 기간": (y0, y1)}
+                quick = {
+                    "최근 5년": (y1 - 4, y1),
+                    "최근 10년": (y1 - 9, y1),
+                    "전체 기간": (y0, y1),
+                }
                 field, wkey = "years", ky
-            with st.container(horizontal=True, gap="xsmall", key=f"flt_quick_{k}"):
-                for lbl, val in quick.items():
-                    st.button(lbl, key=f"arms_q_{lbl}_{k}", on_click=_put, args=(store, field, val, wkey),
-                              type="primary" if tuple(store[field]) == tuple(val) else "secondary")
+                period_label = "기간"
+
+            # 기간 라벨과 빠른 선택 버튼 묶음
+            with st.container(
+                horizontal=True,
+                vertical_alignment="center",
+                gap="small",
+                key=f"flt_period_head_{k}",
+            ):
+                st.markdown(period_label)
+
+                with st.container(
+                    horizontal=True,
+                    gap="xsmall",
+                    width="content",
+                    key=f"flt_quick_{k}",
+                ):
+                    for lbl, val in quick.items():
+                        st.button(
+                            lbl,
+                            key=f"arms_q_{lbl}_{k}",
+                            on_click=_put,
+                            args=(store, field, val, wkey),
+                            type=(
+                                "primary"
+                                if tuple(store[field]) == tuple(val)
+                                else "secondary"
+                            ),
+                        )
+
+            # 기본 라벨은 숨기고 슬라이더만 표시
+            if opts is not None:
+                store["period"] = tuple(
+                    st.select_slider(
+                        period_label,
+                        options=opts,
+                        value=store["period"],
+                        key=kp,
+                        label_visibility="collapsed",
+                    )
+                )
+                f["period"] = store["period"]
+                f["years"] = (
+                    int(f["period"][0][:4]),
+                    int(f["period"][1][:4]),
+                )
+            else:
+                store["years"] = tuple(
+                    st.slider(
+                        period_label,
+                        y0,
+                        y1,
+                        value=store["years"],
+                        key=ky,
+                        label_visibility="collapsed",
+                    )
+                )
+                f["years"] = store["years"]
+
         with c2:
-            store["exporters"] = st.multiselect(f"{M['exporter_label']} 선택 (미선택 시 전체)", exp_opts, default=store["exporters"],
-                                                format_func=exp_name.get, key=ke, placeholder=f"전체 {len(exp_opts)}개국")
-        store["cats"] = st.pills(f"{M['cat_label']} ({len(cats_all)}개 분야)", cats_all, selection_mode="multi",
-                                 default=store["cats"], key=kc) or cats_all
-        t1, t2 = st.columns([6, 1], vertical_alignment="bottom")
-        store["targets"] = t1.multiselect(f"수입국 (중동 {len(targets_all)}개국 · 미선택 시 전체)", targets_all, default=store["targets"],
-                                          format_func=COUNTRIES.get, key=kt, placeholder="전체") or targets_all
-        t2.button("전체 선택", key=f"arms_tall_{k}", on_click=_put, args=(store, "targets", targets_all, kt), width="stretch")
+            st.markdown(f"{M['exporter_label']} 선택 (미선택 시 전체)")
+
+            store["exporters"] = st.multiselect(
+                f"{M['exporter_label']} 선택 (미선택 시 전체)",
+                exp_opts,
+                default=store["exporters"],
+                format_func=exp_name.get,
+                key=ke,
+                placeholder=f"전체 {len(exp_opts)}개국",
+                label_visibility="collapsed",
+            )
+
+         # 두 번째 줄: 품목 | 수입국 + 전체 선택
+        c3, c4 = st.columns([1, 1], gap="large")
+
+        with c3:
+            st.markdown(f"{M['cat_label']} ({len(cats_all)}개 분야)")
+
+            store["cats"] = st.pills(
+                f"{M['cat_label']} ({len(cats_all)}개 분야)",
+                cats_all,
+                selection_mode="multi",
+                default=store["cats"],
+                key=kc,
+                label_visibility="collapsed",
+            ) or cats_all
+
+        with c4:
+        # 수입국 라벨과 전체 선택 버튼
+            with st.container(
+                horizontal=True,
+                vertical_alignment="center",
+                gap="small",
+            ):
+                st.markdown(
+                    f"수입국 (중동 {len(targets_all)}개국)"
+                )
+                st.space("stretch")
+                st.button(
+                    "전체 선택",
+                    key=f"arms_tall_{k}",
+                    on_click=_put,
+                    args=(store, "targets", targets_all, kt),
+                    width="content",
+                )
+
+            # 라벨은 위에서 표시하므로 기본 라벨 숨김
+            store["targets"] = st.multiselect(
+                f"수입국 (중동 {len(targets_all)}개국 · 미선택 시 전체)",
+                targets_all,
+                default=store["targets"],
+                format_func=COUNTRIES.get,
+                key=kt,
+                placeholder="전체",
+                label_visibility="collapsed",
+            ) or targets_all
+    
     f["exporters"], f["cats"], f["targets"] = store["exporters"], store["cats"], store["targets"]
 
 

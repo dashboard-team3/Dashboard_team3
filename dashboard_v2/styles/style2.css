@@ -3646,3 +3646,42 @@ html:not([data-theme="light"]) .ld-card {
   justify-content: flex-start !important;
   padding-top: 36px !important;
 }
+
+/* ----------------------무기 거래 추이---------------------- */
+/* 품목 버튼 줄바꿈 */
+[class*="st-key-arms_cats_"] [role="toolbar"] {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  overflow: visible !important;
+  gap: 6px !important;
+}
+
+[class*="st-key-arms_cats_"] button[data-variant="pills"] {
+  flex: 0 0 auto !important;
+  max-width: 100% !important;
+}
+
+/* 수입국 전체 선택 버튼 */
+[class*="st-key-arms_tall_"] button {
+  min-height: 0 !important;
+  padding: 2px 12px !important;
+}
+
+[class*="st-key-arms_tall_"] button p {
+  font-size: 14px !important;
+}
+
+/* 기간(월) 라벨이 남은 공간 차지 */
+[class*="st-key-flt_period_head_"]
+  > [data-testid="stElementContainer"]:has([data-testid="stMarkdown"]) {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: max-content !important;
+}
+
+/* 기간 버튼 묶음은 오른쪽 정렬 */
+[class*="st-key-flt_period_head_"] > [class*="st-key-flt_quick_"] {
+  flex: 0 0 auto !important;
+  width: max-content !important;
+  margin-left: auto !important;
+}
