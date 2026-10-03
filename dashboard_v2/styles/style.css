@@ -2611,7 +2611,8 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 /* 무기 거래 추이: 제목 오른쪽 자료 고르기(Comtrade · SIPRI) — 좁은 칸이라 띠를 칸 폭에 맞추고 글자가 안 잘리게 */
-.st-key-tabbar-arms_source [data-testid="stButtonGroup"] > div {
+.st-key-tabbar-arms_source [data-testid="stButtonGroup"] > div,
+.st-key-tabbar-mon_view [data-testid="stButtonGroup"] > div {
   width: 100% !important;
   margin: 0 !important;
 }
