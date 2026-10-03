@@ -16,7 +16,7 @@ import streamlit as st
 from plotly.subplots import make_subplots
 
 from core import theme
-from core.ui import C_ARMS, C_RISK, C_TEXT, CHART_CONFIG, DARK_LAYOUT, ctitle, info_icon, page_sub, term, section_head
+from core.ui import C_ARMS, C_COOP, C_RISK, C_TEXT, CHART_CONFIG, DARK_LAYOUT, ctitle, info_icon, page_sub, term, section_head
 from sources import relations, surge as A
 from views import risk_arms_view
 
@@ -180,7 +180,7 @@ def page():
     sm = relations.smooth(d["series"], HOW)
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(go.Bar(x=[pd.Timestamp(int(y), 7, 1) for y in g["year"]], y=g["tiv"],
-                         name="무기 수입 (주문 TIV)", marker_color=C_ARMS, opacity=0.75,
+                         name="무기 수입 (주문 TIV)", marker_color=C_COOP, opacity=0.75,
                          width=1000 * 60 * 60 * 24 * 300,          # 막대 폭 ≈ 300일 (연 단위라 한 해에 하나)
                          hovertemplate="%{x|%Y}년 · 수입 %{y:,.0f} TIV<extra></extra>"), secondary_y=False)
     fig.add_trace(go.Scatter(x=sm.index, y=sm.values, mode="lines", name="종합 리스크 (12개월 이동평균)",
@@ -190,14 +190,14 @@ def page():
         for y, shape, diff in d["events"]:
             fig.add_vline(x=pd.Timestamp(y, 7, 1), line=dict(color="#f5c542", width=1.2, dash="dot"))
             fig.add_annotation(x=pd.Timestamp(y, 7, 1), y=1.0, yref="paper", yanchor="bottom",
-                               text=f"{y}", showarrow=False, font=dict(size=12, color="#f5c542"))
+                               text=f"{y}", showarrow=False, font=dict(size=8, color="#f5c542"))
     fig.update_layout(**DARK_LAYOUT, height=420, hovermode="x unified", bargap=0.1,
                       margin=dict(l=10, r=10, t=96, b=10),
                       title=dict(text=ctitle(f"{names[code]} 리스크와 무기 수입",
                                              f"1980-01–{d['last']:%Y-%m} · 선 = 12개월 이동평균 · "
                                              f"막대 = 주문 TIV({years[0]}~)" + (" · 점선 = 급증한 해" if show_ev else "")),
                                  font=dict(size=17, color=C_TEXT), x=0),
-                      legend=dict(orientation="h", y=1.02, yanchor="bottom", x=0, font=dict(size=14)))
+                      legend=dict(orientation="h", y=1.06, yanchor="bottom", x=0, font=dict(size=14)))
     fig.update_xaxes(gridcolor="#1f2b44", tickformat="%Y", title_text="연도", title_font=dict(size=13))
     fig.update_yaxes(title_text="무기 수입 (TIV)", gridcolor="#1f2b44", secondary_y=False, tickfont=dict(size=14))
     fig.update_yaxes(title_text="리스크 (0~1)", range=[0, 1], showgrid=False, secondary_y=True, tickfont=dict(size=14))
