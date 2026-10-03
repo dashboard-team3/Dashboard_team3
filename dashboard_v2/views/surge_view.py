@@ -87,6 +87,7 @@ CSS = f"""
     .flow {{flex-direction:column;}} .farr {{display:none;}}
   }}
 
+
   /* 선택한 사례 한 건의 «그 해 무슨 일이 있었나» 칸 (2026-10-01) */
   .case-x {{background:{CARD}; border:1px solid {LINE}; border-radius:14px;
             padding:1.1rem 1.3rem; height:100%;}}
@@ -270,13 +271,13 @@ def timeline(rows, key="up_timeline", color_of=None, text_of=None):
     fig = go.Figure(go.Scatter(
         x=[r["year"] for r in rows], y=[r["ko"] for r in rows],
         mode="markers+text", text=[txt(r) for r in rows], textposition="middle center",
-        textfont=dict(size=11, color="#ffffff", family="Malgun Gothic, sans-serif"),
-        marker=dict(size=[15 + 11 * (abs(r["diff"]) - 1.0) for r in rows],
-                    color=[col(r) for r in rows], line=dict(width=1.2, color=BG)),
+        textfont=dict(size=14, color="#ffffff", family="Malgun Gothic, sans-serif"),
+        marker=dict(size=[24 + 13 * (abs(r["diff"]) - 1.0) for r in rows],
+                    color=[col(r) for r in rows], line=dict(width=1.6, color=BG)),
         customdata=[[r["ko"], r["year"], A.SHAPES[r["shape"]][0], r["diff"]] for r in rows],
         hovertemplate="<b>%{customdata[0]} · %{customdata[1]}년</b><br>%{customdata[2]}"
                       "<br>표준화 주문 규모 변화 %{customdata[3]:+.2f} (표준편차 단위)<extra></extra>", showlegend=False))
-    fig.update_layout(paper_bgcolor=BG, plot_bgcolor=BG, height=60 + 34 * len(order),
+    fig.update_layout(paper_bgcolor=BG, plot_bgcolor=BG, height=70 + 44 * len(order),
                       font=dict(color=INK, size=13, family="Malgun Gothic, sans-serif"),
                       margin=dict(l=10, r=20, t=16, b=10), clickmode="event+select",
                       xaxis=dict(gridcolor=GRID, zeroline=False, dtick=5, tickformat="d",
@@ -668,9 +669,10 @@ def page_4_conclusion():
             '<div class="fc">'
             '<div class="fn">2. 국가별 사례</div>'
             f'<div class="fbox up"><div class="tag" style="color:{RED}">'
-            f'증가 사례 ({len(UP)}건 중 {a_cnt + b_cnt}건)</div>'
+            f'증가 사례 ({len(ABC)}건 중 {a_cnt + b_cnt}건)</div>'
             '<div class="h">급증 이후 2년 이내 주문 정점</div>'
-            f'<div class="d">증가 {len(UP)}건 중 {a_cnt + b_cnt}건(78%)에서 급증 후 2년 이내 주문 정점 확인</div></div>'
+            f'<div class="d">증가 {len(ABC)}건 중 {a_cnt + b_cnt}건'
+            f'({(a_cnt + b_cnt) / len(ABC) * 100:.0f}%)에서 급증 후 2년 이내 주문 정점 확인</div></div>'
             f'<div class="fbox dn"><div class="tag" style="color:{BLUE}">'
             f'감소 사례 중 제재 · 내전 {len(EMB)}건</div>'
             '<div class="h">제재·내전과 거래 제약 고려</div>'
@@ -733,16 +735,17 @@ PAGES = {
 
 def page():
     """세부 분석 결과 탭 전체. app2.py 의 세부 분석 결과 탭에서 부른다."""
-    global M, C, UP, DOWN, EMB, NET, STREAK, a_cnt, b_cnt
+    global M, C, UP, DOWN, EMB, ABC, NET, STREAK, a_cnt, b_cnt
     M = A.panel()
     C = A.cases(M)
     UP = C[C["diff"] > 1].to_dict("records")
     DOWN = C[C["diff"] < -1].to_dict("records")
     EMB = [r for r in DOWN if r["embargo"]]
+    ABC = [r for r in UP if r["shape"] in ("A", "B", "C")]   # 타임라인·결론이 세는 증가 사례 (D형 제외)
     NET = A.control(M)[2]          # 출발점을 맞춘 뒤 남는 순효과 — 결론의 «넘지 못한 선» 에서 쓴다
     STREAK = A.streak_rate(M)
-    a_cnt = sum(1 for r in UP if r["shape"] == "A")
-    b_cnt = sum(1 for r in UP if r["shape"] == "B")
+    a_cnt = sum(1 for r in ABC if r["shape"] == "A")
+    b_cnt = sum(1 for r in ABC if r["shape"] == "B")
 
     with st.container(key="surge_app"):    # CSS · 밝은 테마 규칙이 이 상자(.st-key-surge_app)만 골라 칠한다
         st.markdown(f"<style>{_scoped_css(CSS + OV_CSS)}</style>", unsafe_allow_html=True)

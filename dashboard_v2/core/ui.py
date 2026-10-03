@@ -65,6 +65,32 @@ RISK_FORMULA = (
     '연 리스크 = 해당 연도의 일별 리스크 평균</div>')
 
 
+# 급증 판정 기준 (데이터 소개의 리스크 아래). 세 조건을 모두 만족한 달만 급증으로 본다
+SURGE_FORMULA = (
+    '<div class="di-cond">'
+    '<div class="c-row"><span class="c-no">①</span>'
+    '<span class="c-f">risk(t) &gt; 평소(t) + 2σ(t)</span>'
+    '<span class="c-why">평상시 변동 범위 초과</span></div>'
+    '<div class="c-row"><span class="c-no">②</span>'
+    '<span class="c-f">risk(t) − 평소(t) ≥ 0.1</span>'
+    '<span class="c-why">최소 상승폭</span></div>'
+    '<div class="c-row"><span class="c-no">③</span>'
+    '<span class="c-f">risk(t) ≥ 0.3</span>'
+    '<span class="c-why">최소 수준 · 갈등 보도가 희박한 관계 제외</span></div>'
+    '<div class="c-def">평소(t) = mean( risk(t−12) … risk(t−1) )'
+    '&nbsp;&nbsp;·&nbsp;&nbsp;σ(t) = max( std( risk(t−12) … risk(t−1) ), 0.05 )</div>'
+    '</div>')
+
+# 시차 상관 (피어슨). 갈등이 오른 해와 0~3년 뒤 무기 주문의 동반 변화
+PEARSON_FORMULA = (
+    '<div class="formula"><span class="f-lhs">r =</span><span class="frac">'
+    '<span class="num">Σ(x − m<sub>x</sub>)(y − m<sub>y</sub>)</span>'
+    '<span class="den">√[ Σ(x − m<sub>x</sub>)² × Σ(y − m<sub>y</sub>)² ]</span>'
+    '</span></div>'
+    '<div class="c-def">x = 연 리스크(t)&nbsp;&nbsp;·&nbsp;&nbsp;y = log(1 + 주문 TIV)(t+k), k = 0~3년'
+    '&nbsp;&nbsp;·&nbsp;&nbsp;m<sub>x</sub> · m<sub>y</sub> = 각각의 평균</div>')
+
+
 def info(text, formula=False):
     """긴 계산 설명은 ⓘ 팝오버 안에 넣어 화면을 비운다. formula=True 면 맨 위에 리스크 계산식."""
     with st.popover("ⓘ 계산 기준", use_container_width=False):
