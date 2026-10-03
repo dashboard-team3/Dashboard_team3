@@ -2518,7 +2518,9 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
     [aria-label="표시"],
     [aria-label="범위"],
     [aria-label="집계"],
-    [aria-label="쌓기 기준"]
+    [aria-label="쌓기 기준"],
+    [aria-label="구성 항목"],
+    [aria-label="시차"]
   )
   button[data-variant="segmented_control"][aria-checked="true"] {
   background: color-mix(
