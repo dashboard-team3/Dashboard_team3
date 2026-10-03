@@ -418,8 +418,10 @@ LAG_KEY = "corr_lag_seg"         # 시차 고르기 (아래 국가별 카드에 
 LAG_DEFAULT = 1                   # 기본 = 1년 뒤 (SIPRI 는 주문 연도 → 1년 뒤가 계약이 잡히는 시점)
 
 
+# def _lag_opts(ks):
+#     return [k + (" ★" if i == LAG_DEFAULT else "") for i, k in enumerate(ks)]
 def _lag_opts(ks):
-    return [k + (" ★" if i == LAG_DEFAULT else "") for i, k in enumerate(ks)]
+    return list(ks)
 
 
 def _diverging(per, lim):
@@ -519,7 +521,7 @@ def page_1_corr():
             with st.container(key="ov_lag_box"):          # 작은 알약 단추 (띠 모양 tabbar 는 칸이 좁아 글자가 잘림)
                 st.segmented_control("시차", opts, default=opts[LAG_DEFAULT], key=LAG_KEY,
                                      label_visibility="collapsed", width="stretch",
-                                     help="연간 리스크·무기 주문의 비교 시차 선택 · ★ = 기본값(1년 후)")
+                                     help="연간 리스크·무기 주문의 비교 시차 선택")
             st.markdown(f'<div class="ov-chip" title="상관계수 크기 비교를 위한 참고 기준 · 통계적 유의성 기준과는 구별">'
                         f'상관계수 참고선 ±{LIM:.2f}</div>', unsafe_allow_html=True)
         st.markdown(_diverging(per1, LIM), unsafe_allow_html=True)
