@@ -25,7 +25,7 @@ import streamlit as st
 
 from sources import surge as A      # 원본: import analysis as A
 from core import theme           # 그래프 글꼴 · 밝은 테마 색 (theme.adapt)
-from core.ui import ctitle, tabbar, INFO_SVG
+from core.ui import ctitle, tabbar, INFO_SVG, info_icon
 
 LIM = 0.3          # 흔히 «약한 상관» 의 경계로 쓰는 값. 통계적 유의성 기준이 아니다 (2026-10-01)
 INK, RED, BLUE, GOLD, MUTE, GRID = "#e5eaf3", "#f87171", "#60a5fa", "#f5c542", "#8b98ad", "#16233c"
@@ -116,8 +116,10 @@ CSS = f"""
 OV_CSS = """
          border-radius:0 12px 12px 0; padding:.9rem 1.2rem; margin:.2rem 0 1.2rem 0;}
             display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
-  .ov-key {background:var(--color-main-bg-930); border:1px solid var(--color-main-dark-820); border-left:5px solid #60a5fa; border-radius:0 14px 14px 0;
-           padding:1.2rem 1.5rem; margin:.4rem 0 1.4rem 0;}
+  .ov-key {background: linear-gradient(135deg,
+        color-mix(in srgb, var(--color-main-dark-410) 15%, transparent) 0%,
+        color-mix(in srgb, var(--color-main-dark-820) 45%, transparent) 100%); border:1px solid var(--color-main-dark-740); border-radius:14px;
+        padding:1.2rem 1.5rem; margin:.4rem 0 1.4rem 0;}
   .ov-kick {display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem;}
   .ov-badge {font-size:12px; font-weight:700; color:#93c5fd; background:rgba(96,165,250,.15); border-radius:5px; padding:.1rem .45rem;}
   .ov-mono {font-family:"JetBrains Mono", monospace; font-size:12px; color:#8b98ad;}
@@ -139,7 +141,7 @@ OV_CSS = """
   .ov-note {border:1px solid var(--color-main-dark-820); border-radius:12px; padding:1rem 1.1rem; height:100%;}
   .ov-note-t {font-size:17px; font-weight:800; color:#e5eaf3; margin-bottom:.6rem;}
   .ov-note-b {font-size:15px; color:#aab4c5; line-height:1.75; word-break:keep-all;}
-  .ov-info {margin-top:1.4rem; background:var(--color-main-870); border-radius:8px; padding:.7rem .85rem; font-size:13px; color:#aab4c5; line-height:1.65;}
+  .ov-info {margin-top:1.4rem; background: color-mix(in srgb, var(--color-main-870) 30%, transparent); border:1px solid var(--color-main-dark-740); border-radius:8px; padding:.7rem .85rem; font-size:13px; color:#aab4c5; line-height:1.65;}
   .ov-info-t {font-size:13px; font-weight:700; color:var(--color-main-350); margin-bottom:.3rem;}
   .ov-info b {color:#e5eaf3;}
   .ov-chip {display:inline-block; margin-top:.5rem; font-family:"JetBrains Mono", monospace; font-size:12px; color:#8b98ad;
@@ -483,9 +485,35 @@ def page_1_corr():
                                      text=[f"{v:+.3f}" for v in vals], textposition="outside",
                                      cliponaxis=False, textfont=dict(size=12, color=col),
                                      hovertemplate=name + " · %{x} · r = %{y:+.3f}<extra></extra>"))
-            fig.add_vrect(x0=lag - 0.5, x1=lag + 0.5, fillcolor=theme.C["main-480"], opacity=0.10, line_width=0, layer="below")
-            fig.add_annotation(x=lag, y=1.0, yref="paper", text=f"선택한 시점 ({ks[lag]})", showarrow=False,
-                               font=dict(size=12, color=theme.C["main-350"]), yanchor="top")
+            # 선택 시차
+            fig.add_vrect(
+                x0=lag - 0.5,
+                x1=lag + 0.5,
+                fillcolor=theme.color_rgba("main-480", 0.08),
+                opacity=1,
+                line=dict(
+                    color=theme.color_rgba("main-480", 0.45),
+                    width=1.2,
+                ),
+                layer="below",
+            )
+
+            # 선택 시점 텍스트박스
+            fig.add_annotation(
+                x=lag,
+                y=0.97,
+                yref="paper",
+                text=f"<b>선택 시점 ({ks[lag]})</b>",
+                showarrow=False,
+                xanchor="center",
+                yanchor="top",
+                font=dict(
+                    size=10,
+                    color=theme.C["main-40"],
+                ),
+                bgcolor=theme.C["main-light-650"],
+                borderpad=6,
+            )
             fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", barmode="group",
                               bargap=0.35, height=330, showlegend=False,
                               font=dict(color=INK, size=13, family="Malgun Gothic, sans-serif"),
@@ -525,10 +553,18 @@ def page_1_corr():
             st.markdown(f'<div class="ov-chip" title="상관계수 크기 비교를 위한 참고 기준 · 통계적 유의성 기준과는 구별">'
                         f'상관계수 참고선 ±{LIM:.2f}</div>', unsafe_allow_html=True)
         st.markdown(_diverging(per1, LIM), unsafe_allow_html=True)
-        note("<b>참고선 기준 국가별 비교</b><br>"
-             + (f"|r| ≥ {LIM} 국가: <b>{' · '.join(strong)}</b> · " if strong
-                else f"선택 시차에서 |r| ≥ {LIM}인 국가 없음 · ")
-             + f"±{LIM}: 계수 크기 참고 기준 · 통계적 유의성 또는 인과관계 판단 기준과는 구별", "gold")
+        설명 = (
+            f"|r| ≥ {LIM:g} 국가: {' · '.join(strong) if strong else '없음'}"
+            f" · ±{LIM:g}: 계수 크기 참고 기준"
+            " · 통계적 유의성 또는 인과관계 판단 기준과는 구별"
+        )
+
+        st.markdown(
+            f'<div class="src-note" style="margin-top: 16px;">'
+            f'참고선 기준 국가별 비교 {info_icon(설명)}'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
 
 
     # ══ 2. 증가 케이스 ════════════════════════════════════════════════════

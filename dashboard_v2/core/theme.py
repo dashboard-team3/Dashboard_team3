@@ -8,7 +8,7 @@ st.session_state["_light"] = True 를 넣어 주면, 그래프를 화면에 내�
 import plotly.io as pio
 import streamlit as st
 
-# 그래프 글자 글꼴: 화면 기본 글꼴(dashboard/style2.css 의 나눔고딕)과 같게
+# 그래프 글자 글꼴: 화면 기본 글꼴(dashboard/style.css 의 나눔고딕)과 같게
 FONT_FAMILY = '"Nanum Gothic", "NanumGothic", "Malgun Gothic", sans-serif'
 
 # 보라 계열 색 (2026-10-02 정리 v2). 숫자 = 사람 눈 밝기(L*) 기준 어두운 정도 (0 흰색 → 1000 검정), 옅은 색 → 짙은 색.

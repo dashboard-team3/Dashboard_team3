@@ -3411,7 +3411,6 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 
 /* 종합 분석 새 레이아웃 (2026-10-01): 그래프를 담는 연보라 상자 · 카드 */
 .st-key-ov_chartbox {
-  background: var(--color-main-870);
   border: 1px solid var(--color-main-dark-820);
   border-radius: 12px;
   padding: 10px 12px;

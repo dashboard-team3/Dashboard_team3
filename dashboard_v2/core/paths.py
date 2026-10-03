@@ -21,4 +21,4 @@ REALTIME_DIR = next((d for d in [_OWN / "realtime", PJL / "data" / "realtime"] i
                     _OWN / "realtime")                  # 수집기가 쌓는 곳 (없으면 DB 에서 읽음)
 ENV_FILE = next((f for f in [ROOT / ".env", PJL / ".env"] if f.exists()), ROOT / ".env")
                                                         # DB 접속 정보 — 이 폴더 .env 우선, 없으면 원본 pjL/.env
-STYLE_DIR = ROOT / "styles"                             # style2.css · style_light.css
+STYLE_DIR = ROOT / "styles"                             # style.css · style_light.css

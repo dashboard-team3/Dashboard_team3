@@ -26,7 +26,7 @@ def menu():
     """사이드바 맨 위 제목 · 부제 · 메뉴. 고른 메뉴 이름을 돌려준다."""
     with st.sidebar:
         st.title("Conflict Risk & Arms Dashboard")
-        st.caption("중동 지역 갈등 리스크와 무기 거래")   # 아래 구분선은 style2.css (.sb-foot 근처)
+        st.caption("중동 지역 갈등 리스크와 무기 거래")   # 아래 구분선은 style.css (.sb-foot 근처)
 
         # 홈 = 주소에 ?page= 가 없으면 여기로)
         MENU = ['홈', '리스크 모니터링', '무기 거래 추이', '리스크와 무기 거래', '종합 분석', '데이터 소개']   # '메뉴' 글자는 숨김 (collapsed)
@@ -102,7 +102,7 @@ def menu():
 
 
 def sidebar_footer():
-    """사이드바 맨 아래(화면 아래 끝, style2.css 가 붙임): 실시간 마지막 수집 시각 한 줄.
+    """사이드바 맨 아래(화면 아래 끝, style.css 가 붙임): 실시간 마지막 수집 시각 한 줄.
     자료 출처 · 대상은 데이터 소개 페이지에 있으므로 여기서는 뺐다 (2026-09-29)."""
     k = realtime.kpis()
     when = f"{k['slot_kst']} KST" if k.get("slot_kst") else "수집 상태 미확인"

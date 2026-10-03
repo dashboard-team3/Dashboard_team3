@@ -115,7 +115,7 @@ def ctitle(main, sub=""):
 def tabbar(label, options, key, default=None, **kw):
     """페이지 안 «세부 보기» 고르기: 화면 폭을 꽉 채운 띠 모양 (고른 칸만 진하게). (2026-09-30)
     작은 알약 여러 개보다, 지금 어느 쪽을 보고 있는지가 한눈에 들어온다.
-    모양은 style2.css 의 [class*="st-key-tabbar-"] 규칙이 맡는다 (상자 key 로 그 위젯만 고른다)."""
+    모양은 style.css 의 [class*="st-key-tabbar-"] 규칙이 맡는다 (상자 key 로 그 위젯만 고른다)."""
     first = default or list(options)[0]
     with st.container(key=f"tabbar-{key}"):
         return st.segmented_control(label, options, default=first, key=key,

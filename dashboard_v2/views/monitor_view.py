@@ -94,7 +94,7 @@ ARROWS = 3          # 국가쌍 지도에서 고른 나라 → 리스크 큰 상
 def _risk_map(sel, small=False):
     """중동 16개국 지도 (값은 모두 기준 달 한 달 값). 국가별 = 나라마다 종합 리스크로 칠한다.
     국가쌍 = 고른 나라 → 각 상대국의 국가쌍 리스크로 상대국을 칠하고, 리스크가 큰 3곳으로
-    흐르는 화살표를 그린다 (점선이 흘러가는 애니메이션은 style2.css «국가쌍 화살표»).
+    흐르는 화살표를 그린다 (점선이 흘러가는 애니메이션은 style.css «국가쌍 화살표»).
     small=True 는 그래프를 크게 볼 때 오른쪽 좁은 칸에 들어가는 작은 지도."""
     light = theme.is_light()
     names = relations.COUNTRIES
@@ -388,7 +388,7 @@ def risk_map_page():
     """[지도 | 오른쪽 칸]. 왼쪽 머리글의 국가쌍 · 국가별 고르기에 따라 그래프 · 카드가 바뀐다.
     오른쪽 «크게 보기» 를 누르면 왼쪽 넓은 칸에 그래프(1980년부터)만 크게 보이고,
     지도는 오른쪽 칸의 그래프 자리로 작게 옮긴다 (거기서도 나라를 고를 수 있음). 단추 · 카드 자리는 그대로.
-    두 칸은 높이를 맞춘다 (style2.css «리스크 추이 두 칸»)."""
+    두 칸은 높이를 맞춘다 (style.css «리스크 추이 두 칸»)."""
     names = relations.COUNTRIES
     sel = st.session_state.get("riskmap_sel", DEFAULT)
     big = st.session_state.get("riskmap_big", False)

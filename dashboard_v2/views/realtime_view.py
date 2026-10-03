@@ -129,7 +129,7 @@ def _label_placement(radius, side):
     return "top", [0, gap]                     # bottom center (기본)
 
 
-# 패널 높이는 style2.css에서 화면 높이(100vh)에 맞춰 정하고, 차트는 그 안의 남은 높이를 채운다.
+# 패널 높이는 style.css에서 화면 높이(100vh)에 맞춰 정하고, 차트는 그 안의 남은 높이를 채운다.
 
 
 # (2026-10-01) 중동_스토리맵의 지도 모양 · LIVE 패널 · 범례 상자를 가져왔다.
