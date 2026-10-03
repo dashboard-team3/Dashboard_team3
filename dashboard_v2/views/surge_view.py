@@ -460,7 +460,7 @@ def page_1_corr():
 
     # ── 핵심 분석
     st.markdown(
-        '<div class="ov-key"><div class="ov-kick"><span class="ov-badge">핵심 분석 1</span><span class="ov-mono">국가별 차이</span></div>'
+        '<div class="ov-key"><div class="ov-kick"><span class="ov-badge">핵심 분석</span></div>'
         '<div class="ov-big">전체 집계의 상관관계는 미약하나, 국가별 방향 차이 확인</div>'
         f'<div class="ov-body">시차 0~3년의 전체 상관계수: <b class="ov-num">{min(pooled):+.3f} ~ {max(pooled):+.3f}</b> · 0에 근접 · '
         f'{ks[lag]} 기준: <b class="ov-pos-t">양(+)의 상관 {plus}개국</b>과 '
@@ -570,7 +570,7 @@ def page_1_corr():
     # ══ 2. 증가 케이스 ════════════════════════════════════════════════════
 
 def page_2_up():
-        key("분석 2",
+        key("핵심 분석",
             "리스크 급증 이후 무기 주문 증가 양상",
             f"주문 증가 사례의 급증 기준 연도 전후 3년 비교 · 정점 도달 시기·이후 추세의 사례별 차이 확인", RED)
 
@@ -616,7 +616,7 @@ def page_2_up():
     # ══ 3. 감소 케이스 ══════════════════════════════════════════════════════
 
 def page_3_down():
-        key("분석 3",
+        key("핵심 분석",
             "리스크 급증 이후 무기 주문 감소 양상",
             "주문 감소·미발생 사례 확인 · 제재·내전 등 거래 여건을 고려한 해석 필요", BLUE)
 
