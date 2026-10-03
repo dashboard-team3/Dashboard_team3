@@ -625,7 +625,6 @@ def page_3_down():
 
         # (2026-10-01) 증가 쪽과 같은 틀 — 타임라인에서 점을 고르면 그 사례 카드가 나온다.
         #   여기서는 «제재 · 내전으로 거래가 끊긴» 8건만 다룬다. 그 밖의 감소는 사정이 제각각이라 뺐다.
-        zero = sum(1 for r in EMB if sum(r["tiv"][-3:]) == 0)
         downs = sorted(EMB, key=lambda r: (r["year"], r["ko"]))
         with card:
             picked = timeline(downs, key="down_timeline", color_of=lambda r: GOLD, text_of=lambda r: "")
@@ -644,9 +643,6 @@ def page_3_down():
             if st.session_state.get("down_grid"):
                 grid(EMB, cols=4, bar_color=BLUE, mark_year=True,
                      sub=lambda r: f"{r['embargo']}", height_per_row=330)
-        note(f"주문 감소 {len(DOWN)}건 중 <b>제재·내전 관련 {len(EMB)}건</b> 분석 · "
-             f"이후 3년간 주문 TIV가 0인 사례 {zero}건 · "
-             "거래 제약을 고려하여 해석 · 주문 감소만으로 수요 감소 판단 불가", "blue")
     
 
     # ══ 4. 결론 ═══════════════════════════════════════════════════════════
@@ -725,9 +721,6 @@ def page_4_conclusion():
             '</div>'
 
             '</div>', unsafe_allow_html=True)
-
-        note("<b>갈등 리스크·무기 주문 변화의 연계 탐색 지원</b><br>"
-             "제재·정책·공급 여건 등 국가별 배경을 고려하여 해석", "blue")
 
 # ══ 쪽 고르기 ════════════════════════════════════════════════════════
 PAGES = {
