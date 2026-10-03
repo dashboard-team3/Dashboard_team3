@@ -540,7 +540,7 @@ def page_1_corr():
         h1, h2 = st.columns([1.25, 1], vertical_alignment="top")
         with h1:
             st.markdown(
-                '<div class="ov-t">국가별 상관계수</div>'
+                '<div class="ov-t"><span class="ov-no">02</span> 국가별 상관계수</div>'
                 '<div class="ov-s">피어슨 r: <b class="ov-pos-t">양(+): 리스크·주문 규모의 같은 방향 변화</b> · '
                 '<b class="ov-neg-t">음(−): 리스크·주문 규모의 반대 방향 변화</b></div>'
                 f'<div class="ov-leg l"><span><i class="dot red"></i>양(+)의 상관 {plus}개국</span>'
@@ -574,7 +574,7 @@ def page_2_up():
             "리스크 급증 이후 무기 주문 증가 양상",
             f"주문 증가 사례의 급증 기준 연도 전후 3년 비교 · 정점 도달 시기·이후 추세의 사례별 차이 확인", RED)
 
-        card = sec_card("02", "주문 규모 증가 사례의 국가별 비교",
+        card = sec_card("01", "주문 규모 증가 사례의 국가별 비교",
                         "급증 기준 연도 전후 3년의 주문 TIV·정점 시기 비교")
         with card, st.expander("분석 대상과 급증 시점의 선정 기준"):
             d1, d2 = st.columns(2, vertical_alignment="top")
@@ -602,7 +602,7 @@ def page_2_up():
             case_card(ups[picked])
 
         # 사례를 한꺼번에 늘어놓은 격자는 접어 둔다 — 단추를 눌러야 그 유형만 펼쳐진다
-        with sec_card("03", "유형별 사례 비교", "급증 이후 주문 규모의 변화 양상에 따른 유형별 비교"):
+        with sec_card("02", "유형별 사례 비교", "급증 이후 주문 규모의 변화 양상에 따른 유형별 비교"):
             g_pick = shape_filter(cnt, "up_shape_grid", small=True, none_is_all=False)
             if g_pick is None:
                 note("<b>A형·B형·C형</b> 선택 시 해당 유형의 전체 사례 표시")
@@ -620,7 +620,7 @@ def page_3_down():
             "리스크 급증 이후 무기 주문 감소 양상",
             "주문 감소·미발생 사례 확인 · 제재·내전 등 거래 여건을 고려한 해석 필요", BLUE)
 
-        card = sec_card("03", "주문 규모 감소 사례의 국가별 비교",
+        card = sec_card("01", "주문 규모 감소 사례의 국가별 비교",
                         "급증 기준 연도 전후 3년의 주문 TIV·감소 시기 비교")
 
         # (2026-10-01) 증가 쪽과 같은 틀 — 타임라인에서 점을 고르면 그 사례 카드가 나온다.
@@ -635,7 +635,7 @@ def page_3_down():
             case_card(r, bar_color=GOLD,
                       sub_text=lambda x: f"제재·내전: {x['embargo']} · 표준화 규모 변화 {x['diff']:+.2f} (표준편차 단위)")
 
-        with sec_card("04", "제재·내전 관련 감소 사례 비교", "제재·내전 관련 사례의 주문 감소 양상 비교"):
+        with sec_card("02", "제재·내전 관련 감소 사례 비교", "제재·내전 관련 사례의 주문 감소 양상 비교"):
             if st.button(f"제재 · 내전 {len(EMB)}건 펼치기", key="down_grid_btn",
                          type="primary" if st.session_state.get("down_grid") else "secondary",
                          help="제재·내전 관련 사례의 급증 기준 연도 전후 3년 비교"):
@@ -657,7 +657,7 @@ def page_4_conclusion():
             "전체 상관계수는 0에 근접</br>국가별 사례에서 주문 증가·감소 양상 확인 · 급증 시점·거래 여건을 고려한 해석 필요", GOLD)
 
         # 3단 흐름 — 왜 0으로 보였나 → 안에서 무슨 일이 있었나 → 그래서 무엇인가
-        sec_card("05", "결론 흐름", "전체 집계 → 국가별 사례 → 종합 해석").markdown(
+        sec_card("01", "결론 흐름", "전체 집계 → 국가별 사례 → 종합 해석").markdown(
             '<div class="flow">'
 
             '<div class="fc">'
@@ -694,7 +694,7 @@ def page_4_conclusion():
             '</div>', unsafe_allow_html=True)
 
         # ── 이 분석을 어디에 쓰나 — 실시간 모니터링으로 잇는 부분 ──────────
-        sec_card("06", "대시보드 활용 방안",
+        sec_card("02", "대시보드 활용 방안",
                  "리스크 변화 모니터링·급증 전후 국가별 무기 주문 비교").markdown(
             '<div class="flow">'
 
