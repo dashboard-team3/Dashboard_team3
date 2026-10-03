@@ -323,7 +323,7 @@ def live_legend():
     cats = "".join(f'<span><i style="background:{c["color"]}"></i>{cat} {totals[cat]}</span>'
                    for cat, c in realtime.CATEGORIES.items())
     slot = realtime.last_slot()
-    upd = f" · 갱신 {realtime.slot_to_kst(slot)} KST" if slot else ""
+    upd = f"{realtime.slot_to_kst(slot)} KST" if slot else ""
     st.markdown(f"""
 <div class="lv-lg">
   <div class="lv-lg-a">
@@ -334,7 +334,7 @@ def live_legend():
   <div class="lv-lg-b">
     <div class="lv-cats">{cats}</div>
     <div class="lv-note">단일 사건은 행위 주체·대상 국가에 각각 집계 · <span class="lv-dot sm"></span> 최근 1시간 내 사건 발생</div>
-    <div class="lv-note lv-src">출처 GDELT 2.0 → GDELT2_중동_선택EventCode_필터링 (RDS MySQL pjl){upd}</div>
+    <div class="lv-note lv-src">Last updated : {upd}</div>
   </div>
 </div>""", unsafe_allow_html=True)
 

@@ -209,7 +209,6 @@ def _risk_map(sel, small=False):
   <div class="lv-lg-b">
     <div class="lv-note lv-long">0: 갈등 가중 합 0 · 1: 협력 가중 합 0(갈등 사건 존재 시) · GDELT 보도량 가중 · {last:%Y-%m} 월별 값 · 일별 수집 완료 기준 월 · 카드 표시값·그래프 점과 동일</div>
     <div class="lv-note lv-long">{note}</div>
-    <div class="lv-note lv-src lv-long">출처 GDELT → {src}</div>
   </div>
 </div>""", unsafe_allow_html=True)
 
