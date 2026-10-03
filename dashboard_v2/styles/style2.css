@@ -316,7 +316,7 @@
 
 [data-testid="stSidebar"] [data-testid="stCaptionContainer"],
 [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
-  font-size: 19px !important;
+  font-size: 16px !important;
 }
 
 [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
@@ -341,8 +341,20 @@
   box-sizing: border-box;
 }
 
+/* 라디오 그룹의 항목을 전체 너비로 펼치기 */
+[data-testid="stSidebar"] .st-key-menu_page [data-testid="stRadioGroup"] {
+  align-items: stretch !important;
+}
+
+/* 각 메뉴 라벨을 감싸는 div도 전체 너비로 */
+[data-testid="stSidebar"] .st-key-menu_page [data-testid="stRadioGroup"] > div {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
 /* 메뉴 옵션 라벨 */
 [data-testid="stSidebar"] .st-key-menu_page label[data-testid="stRadioOption"] {
+  display: flex !important;
   width: 100% !important;
   box-sizing: border-box;
   border-radius: 0 !important;
@@ -1405,9 +1417,9 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
   font-size: 16px !important;
 }
 
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+/* [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
   font-size: 14px !important;
-}
+} */
 
 .side-filter-t {
   font-size: 14px;
