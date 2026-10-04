@@ -1155,12 +1155,16 @@ div[data-baseweb="select"] > div,
 }
 
 .di-formula {
-  display: table;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   background: var(--color-main-bg-930);
   border: 1px solid var(--color-main-dark-820);
   border-radius: 14px;
   padding: 22px 40px;
   margin: 10px 0 22px;
+  overflow-x: auto;
+  text-align: center;
 }
 
 /* 구역 칸 안에서는 한 단계 더 어둡게 — 칸 안의 칸으로 보이게. 폭은 셋 다 같게 맞춘다 */
@@ -1181,6 +1185,7 @@ div[data-baseweb="select"] > div,
   margin: 0;
   font-size: 19px;
   gap: 18px;
+  justify-content: center;
 }
 
 .di-formula .formula .f-lhs {
@@ -1247,6 +1252,14 @@ div[data-baseweb="select"] > div,
   padding-top: 13px;
   border-top: 1px solid var(--color-main-dark-820);
   line-height: 1.6;
+}
+
+.di-formula .c-def {
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid var(--color-main-dark-820);
+  line-height: 1.6;
+  text-align: left; /* 하단 설명만 왼쪽 정렬 */
 }
 
 @media (max-width: 1100px) {
