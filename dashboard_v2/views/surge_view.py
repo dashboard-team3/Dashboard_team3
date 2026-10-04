@@ -92,6 +92,9 @@ CSS = f"""
   .ft {{font-size:19px; font-weight:700; color:{INK}; text-align:center;}}
   .fs {{font-size:16px; color:{MUTE}; line-height:1.65; margin-top:.5rem;
         word-break:keep-all;}}
+  /* 사례 상자(.fbox)가 없는 카드 — 머리글은 위에 두고, 숫자·제목·설명 덩어리는 세로 가운데 · 글도 가운데 정렬 */
+  .flow > .fc:not(:has(.fbox)) > .fbig {{margin-top:auto;}}
+  .flow > .fc:not(:has(.fbox)) > .fs   {{margin-bottom:auto; text-align:center; padding:0 .4rem;}}
   .farr {{display:flex; align-items:center; justify-content:center; color:{GOLD};
           font-size:28px; font-weight:700; flex:0 0 auto; width:1.4rem; opacity:.75;}}
   .fbox {{background: color-mix(in srgb, var(--color-main-dark-820) 35%, transparent); border: 1px solid var(--color-main-dark-820); border-radius:10px; padding:.75rem .9rem; margin-bottom:.55rem;}}
@@ -886,14 +889,17 @@ def page_4_conclusion():
             "전체 상관계수는 0에 근접</br>국가별 사례에서 주문 증가·감소 양상 확인 · 급증 시점·거래 여건을 고려한 해석 필요", GOLD)
 
         # 3단 흐름 — 왜 0으로 보였나 → 안에서 무슨 일이 있었나 → 그래서 무엇인가
+        _, _per = A.lag_corr(M, LAG_DEFAULT)                     # 1번 카드: 기본 시차(1년 뒤) 기준 +/− 국가 수
+        c_plus, c_minus = int((_per > 0).sum()), int((_per < 0).sum())
         sec_card("01", "결론 흐름", "전체 집계 → 국가별 사례 → 종합 해석").markdown(
             '<div class="flow">'
 
             '<div class="fc">'
             '<div class="fn">1. 전체 집계</div>'
             '<div class="fbig">0</div>'
-            '<div class="ft">뚜렷한 상관관계 미확인</div>'
-            '<div class="fs">시차 0~3년의 전체 상관계수는 0에 근접</div>'
+            '<div class="ft">전체 상관계수 0에 근접</div>'
+            f'<div class="fs">16개국 방향 상이<br><span style="white-space:nowrap">(<b style="color:{RED}">양의 상관 {c_plus}개국</b> / '
+            f'<b style="color:{BLUE}">음의 상관 {c_minus}개국</b>)</span><br>전체 집계 시 상쇄 가능성</div>'
             '</div>'
 
             '<div class="farr">&rsaquo;</div>'
@@ -917,8 +923,8 @@ def page_4_conclusion():
             '<div class="fc dark">'
             '<div class="fn" style="color:#8b98ad">3. 종합 해석</div>'
             f'<div class="fbig">{gif_icon("think.gif")}</div>'
-            '<div class="ft">국가별 시점과 여건 고려</div>'
-            f'<div class="fs">국가별 급증 시점·주문 변화·거래 여건을 종합한 <b>사례별 해석 필요</b></div>'
+            '<div class="ft">갈등은 수요를, 여건은 거래를 결정</div>'
+            '<div class="fs">전체 집계만으로 관계 판단에 한계<br><b>국가별 해석 필요</b></div>'
             '</div>'
 
             '</div>', unsafe_allow_html=True)
