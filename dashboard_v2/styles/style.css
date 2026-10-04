@@ -3108,7 +3108,11 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
   display: flex;
   align-items: center;
   gap: 24px;
-  background: linear-gradient(135deg, #131d33 0%, #0f1729 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-main-dark-740) 35%, transparent),
+    color-mix(in srgb, var(--color-main-bg-940) 80%, transparent)
+  );
   border: 1px solid var(--color-main-dark-820);
   border-radius: 18px;
   padding: 22px 26px;
@@ -3156,7 +3160,7 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 .cstat {
-  background: rgba(148, 163, 184, 0.07);
+  background: rgba(0, 0, 0, 0.2);
   border: 1px solid var(--color-main-dark-820);
   border-radius: 12px;
   padding: 12px 14px;
