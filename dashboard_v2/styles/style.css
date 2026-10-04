@@ -1622,6 +1622,117 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
   }
 }
 
+/* 국가별 리스크·무기 수입: 제목과 그래프를 감싸는 박스 */
+[data-testid="stMain"] [class*="st-key-ra_annual_"] {
+  background: var(--color-main-bg-930);
+  border: 1px solid var(--color-main-dark-820);
+  border-radius: 16px;
+  padding: 24px;
+  gap: 12px;
+}
+
+/* 그래프에 적용되는 기존 내부 박스를 제거 */
+[data-testid="stMain"]
+  [class*="st-key-ra_annual_"]
+  [data-testid="stElementContainer"]:has([data-testid="stPlotlyChart"]) {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+/* 왼쪽 제목과 오른쪽 요약 배지 */
+.ra-chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--color-main-dark-820);
+}
+
+.ra-chart-heading {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.ra-chart-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-main-40);
+  word-break: keep-all;
+}
+
+.ra-chart-sub {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-main-dark-250);
+  word-break: keep-all;
+}
+
+.ra-chart-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* 요약 배지 */
+.ra-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid color-mix(in srgb, var(--stat-color) 30%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--stat-color) 8%, transparent);
+  color: var(--color-main-40);
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.ra-stat i {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--stat-color);
+}
+
+.ra-stat b {
+  font-weight: 800;
+}
+
+.ra-stat-risk {
+  --stat-color: var(--color-main-350);
+}
+
+/* 좁은 화면에서는 요약 배지를 제목 아래에 배치 */
+@media (max-width: 640px) {
+  [data-testid="stMain"] [class*="st-key-ra_annual_"] {
+    padding: 16px;
+  }
+
+  .ra-chart-heading {
+    flex-basis: 100%;
+  }
+
+  .ra-chart-stats {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+
+  .ra-chart-title {
+    font-size: 19px;
+  }
+}
+
 /* ---------------------------------------------------------------- 처음 보는 사람용 (2026-09-30)
    페이지 질문 한 줄(.pq) · 시작하기 페이지(.st-*, .rk-*, .mn-*) · 사이드바 용어 풀이(.gl) */
 .pq {

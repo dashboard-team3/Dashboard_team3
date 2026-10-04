@@ -177,12 +177,85 @@ def page():
         with st.container(horizontal=True, horizontal_alignment="right", width="stretch"):
             show_ev = st.toggle(f"급증 기준 연도 표시 ({len(d['events'])}건)", value=True, key="card_surge",
                                 help="해당 국가의 리스크 급증 기준 연도(0년)를 금색 세로 점선으로 표시")
+    # 제목, 요약 배지, 그래프를 담는 공통 박스
+    chart_box = st.container(key=f"ra_annual_{code}")
+
+    if not g.empty:
+        peak_year = int(g.set_index("year")["tiv"].idxmax())
+
+        stats_html = (
+            '<span class="ra-stat ra-stat-risk" '
+            f'style="--stat-color: {C_RISK};">'
+            f'<i></i>연간 리스크 평균 <b>{g["risk"].mean():.3f}</b>'
+            '</span>'
+            '<span class="ra-stat ra-stat-arms" '
+            f'style="--stat-color: {C_COOP};">'
+            f'<i></i>무기 수입 합계 <b>{g["tiv"].sum():,.0f} TIV</b>'
+            '</span>'
+            '<span class="ra-stat ra-stat-peak" '
+            f'style="--stat-color: {theme.C["accent-cyan"]};">'
+            f'<i></i>최대 주문 <b>{peak_year}년</b>'
+            '</span>'
+        )
+    else:
+        stats_html = '<span class="ra-stat ra-stat-risk">주문 자료 없음</span>'
+
+    event_text = " · 점선 = 급증한 해" if show_ev else ""
+
+    chart_box.markdown(
+        '<div class="ra-chart-head">'
+        '<div class="ra-chart-heading">'
+        f'<div class="ra-chart-title">{names[code]} 리스크와 무기 수입</div>'
+        '<div class="ra-chart-sub">'
+        f'1980-01–{d["last"]:%Y-%m} · 선 = 12개월 이동평균 · '
+        f'막대 = 주문 TIV({years[0]}~){event_text}'
+        '</div>'
+        '</div>'
+        f'<div class="ra-chart-stats">{stats_html}</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
     sm = relations.smooth(d["series"], HOW)
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    fig.add_trace(go.Bar(x=[pd.Timestamp(int(y), 7, 1) for y in g["year"]], y=g["tiv"],
-                         name="무기 수입 (주문 TIV)", marker_color=C_COOP, opacity=0.75,
-                         width=1000 * 60 * 60 * 24 * 300,          # 막대 폭 ≈ 300일 (연 단위라 한 해에 하나)
-                         hovertemplate="%{x|%Y}년 · 수입 %{y:,.0f} TIV<extra></extra>"), secondary_y=False)
+    # 최대 주문 막대의 위치와 테마 강조색
+    peak_index = (
+        int(g["tiv"].reset_index(drop=True).idxmax())
+        if not g.empty else None
+    )
+    peak_color = theme.C["accent-cyan"]
+
+    accent = peak_color.lstrip("#")
+    rgb = [int(accent[i:i + 2], 16) for i in (0, 2, 4)]
+
+    bar_colors = [
+        peak_color if i == peak_index else C_COOP
+        for i in range(len(g))
+    ]
+    bar_borders = [
+        2 if i == peak_index else 0
+        for i in range(len(g))
+    ]
+
+    fig.add_trace(
+        go.Bar(
+            x=[pd.Timestamp(int(y), 7, 1) for y in g["year"]],
+            y=g["tiv"],
+            name="무기 수입 (주문 TIV)",
+            marker=dict(
+                color=bar_colors,
+                line=dict(
+                    color="#ffffffed",
+                    width=bar_borders,
+                ),
+            ),
+            opacity=0.75,
+            width=1000 * 60 * 60 * 24 * 300,
+            hovertemplate="%{x|%Y}년 · 수입 %{y:,.0f} TIV<extra></extra>",
+        ),
+        secondary_y=False,
+    )
+ 
     fig.add_trace(go.Scatter(x=sm.index, y=sm.values, mode="lines", name="종합 리스크 (12개월 이동평균)",
                              line=dict(color=C_RISK, width=3),
                              hovertemplate="%{x|%Y-%m} · 리스크 %{y:.3f}<extra></extra>"), secondary_y=True)
@@ -191,23 +264,65 @@ def page():
             fig.add_vline(x=pd.Timestamp(y, 7, 1), line=dict(color="#f5c542", width=1.2, dash="dot"))
             fig.add_annotation(x=pd.Timestamp(y, 7, 1), y=1.0, yref="paper", yanchor="bottom",
                                text=f"{y}", showarrow=False, font=dict(size=8, color="#f5c542"))
-    fig.update_layout(**DARK_LAYOUT, height=420, hovermode="x unified", bargap=0.1,
-                      margin=dict(l=10, r=10, t=96, b=10),
-                      title=dict(text=ctitle(f"{names[code]} 리스크와 무기 수입",
-                                             f"1980-01–{d['last']:%Y-%m} · 선 = 12개월 이동평균 · "
-                                             f"막대 = 주문 TIV({years[0]}~)" + (" · 점선 = 급증한 해" if show_ev else "")),
-                                 font=dict(size=17, color=C_TEXT), x=0),
-                      legend=dict(orientation="h", y=1.06, yanchor="bottom", x=0, font=dict(size=14)))
+    # 최대 주문 막대 위에 강조 라벨 표시
+    if peak_index is not None:
+        peak_row = g.iloc[peak_index]
+        peak_year = int(peak_row["year"])
+
+        fig.add_annotation(
+            x=pd.Timestamp(peak_year, 7, 1),
+            y=float(peak_row["tiv"]),
+            xref="x",
+            yref="y",
+            text=f"<b style='font-size:10px;'>최대 주문</b>",
+            showarrow=True,
+            arrowhead=0,
+            arrowwidth=1.5,
+            arrowcolor=peak_color,
+            ax=0,
+            ay=-32,
+            bgcolor=theme.C["main-bg-940"],
+            bordercolor=peak_color,
+            borderwidth=1.5,
+            borderpad=2,
+            font=dict(
+                size=12,
+                color=peak_color,
+            ),
+        )
+    fig.update_layout(
+        **DARK_LAYOUT,
+        height=420,
+        hovermode="x unified",
+        bargap=0.1,
+        margin=dict(l=10, r=10, t=70, b=10),
+        legend=dict(
+            orientation="h",
+            y=1.06,
+            yanchor="bottom",
+            x=0,
+            font=dict(size=14),
+        ),
+    )
+   
     fig.update_xaxes(gridcolor="#1f2b44", tickformat="%Y", title_text="연도", title_font=dict(size=13))
     fig.update_yaxes(title_text="무기 수입 (TIV)", gridcolor="#1f2b44", secondary_y=False, tickfont=dict(size=14))
     fig.update_yaxes(title_text="리스크 (0~1)", range=[0, 1], showgrid=False, secondary_y=True, tickfont=dict(size=14))
-    st.plotly_chart(theme.adapt(fig), width="stretch", config=CHART_CONFIG)
 
-    # ── 시차 상관 («리스크와 무기 거래» 쪽과 같은 함수. 막대 묶음은 위에 합쳤으므로 annual=False)
-    if not g.empty:
-        st.markdown(f'<div class="summary"><b>{names[code]}</b> {years[0]}–{years[1]}: 연간 리스크 평균 '
-                    f'<b>{g["risk"].mean():.3f}</b> · 무기 수입 합 <b>{g["tiv"].sum():,.0f} TIV</b> '
-                    f'(최대 주문 연도 {int(g.set_index("year")["tiv"].idxmax())}년)</div>', unsafe_allow_html=True)
+    fig = theme.adapt(fig)
+    fig.update_layout(
+        title=dict(text=""),
+        paper_bgcolor="rgba(0, 0, 0, 0)",
+        plot_bgcolor="rgba(0, 0, 0, 0)",
+    )
+
+    chart_box.plotly_chart(
+        fig,
+        width="stretch",
+        config=CHART_CONFIG,
+        key=f"cty_risk_arms_chart_{code}",
+    )
+
     risk_arms_view.country_sections(code, years, no=2, annual=False)
 
     st.caption(f"리스크 · GDELT 1.0 국가별 월별 · 무기 · SIPRI 주문 연도 TIV (중고 {d['used']}건 포함) · "
