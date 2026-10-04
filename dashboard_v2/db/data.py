@@ -9,14 +9,32 @@ from core.paths import ENV_FILE          # 원본 pjL/.env (폴더를 옮겨도 
 load_dotenv(ENV_FILE)                    # 접속 정보는 원본 것을 읽음 (비밀번호를 복사하지 않음)
 
 
+def _cfg(key, default=None):
+    """접속 정보 한 항목. 환경변수(.env) → Streamlit secrets 순서.
+    Streamlit Community Cloud 는 .env 대신 앱 설정의 Secrets(TOML) 로 값을 주므로, 거기에
+    DB_HOST · DB_PORT · DB_USER · DB_PASSWORD · DB_NAME 을 적어 두면 그대로 읽는다 (2026-10-04)."""
+    val = os.environ.get(key)
+    if val is None:
+        try:
+            import streamlit as st
+            val = st.secrets.get(key)             # secrets 파일이 없으면 여기서 예외 → None
+        except Exception:
+            val = None
+    if val is None:
+        if default is None:
+            raise KeyError(key)
+        return default
+    return val
+
+
 def get_connection():
     """RDS MySQL 연결 (SSL: global-bundle.pem)"""
     return pymysql.connect(
-        host=os.environ["DB_HOST"],
-        port=int(os.getenv("DB_PORT", 3306)),
-        user=os.environ["DB_USER"],
-        password=os.environ["DB_PASSWORD"],
-        database=os.getenv("DB_NAME") or None,
+        host=_cfg("DB_HOST"),
+        port=int(_cfg("DB_PORT", 3306)),
+        user=_cfg("DB_USER"),
+        password=_cfg("DB_PASSWORD"),
+        database=_cfg("DB_NAME", "") or None,
         charset="utf8mb4",
         ssl={"ca": str(BASE_DIR / "global-bundle.pem")},
         connect_timeout=10,

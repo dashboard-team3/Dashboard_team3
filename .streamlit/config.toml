@@ -1,0 +1,3 @@
+# Streamlit Community Cloud 는 저장소 맨 위의 이 파일을 읽는다 (dashboard_v2/.streamlit/config.toml 과 같은 내용)
+[theme]
+base = "dark"
