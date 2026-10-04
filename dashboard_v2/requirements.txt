@@ -4,6 +4,7 @@ pandas>=3.0
 numpy>=2.0
 plotly>=7.0
 pyarrow>=20          # Streamlit 표
+Pillow>=10.0         # gif
 
 # DB (실시간 모니터링이 RDS 를 먼저 읽음, 없으면 data/realtime 파일로)
 PyMySQL>=1.1
