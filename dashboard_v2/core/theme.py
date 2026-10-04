@@ -41,6 +41,13 @@ C = {
     "main-bg-930": "#13142a",      # 다크: 카드 · 칸 · 지도 땅 기본 바탕
     "main-bg-940": "#10111f",      # 다크: 사이드바 · 무기 거래 수치 칸 · 묶음 바탕
     "main-bg-960": "#0b0c16",      # 다크: 화면 전체 바탕 · 밝은 칸 위 진한 글자
+
+    # 패턴 유형: 기존 그래프 색상과 동일하게 사용
+    "pattern-a": "#0072b2",
+    "pattern-b": "#56b4e9",
+    "pattern-c": "#009e73",
+
+    "accent-cyan": "#06b6d4",
 }
 COLOR_CSS = ":root {" + " ".join(f"--color-{k}: {v};" for k, v in C.items()) + "}"
 

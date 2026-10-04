@@ -1495,7 +1495,14 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
   padding: 12px 14px 8px;
 }
 
-/* (2026-10-02) 실시간 지도 · 네트워크도 그래프처럼 상자 안 — 바탕 · 테두리를 지우던 규칙 뺌 */
+/* 증가케이스, 감소케이스 버블차트 박스 배경 적용 */
+[data-testid="stMain"]
+  [data-testid="stElementContainer"]:is(
+    [class*="st-key-up_timeline_"],
+    .st-key-down_timeline
+  ):has(> [data-testid="stFullScreenFrame"] > [data-testid="stPlotlyChart"]) {
+  background: var(--color-main-bg-960);
+}
 
 /* 여백: 소제목 상자 위아래를 넉넉히 → 구역이 덩어리로 보이게 */
 .sec {
@@ -2290,86 +2297,88 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
   flex-wrap: nowrap !important; /* 최소 폭 때문에 카드 단이 아래로 떨어지지 않게 */
 }
 
-/* ================================================================ 중동 무기 거래 분석 (2026-10-01)
-   종합 분석: [그래프 | 설명] · [표 | 설명] 두 줄의 위아래 끝 맞춤 (글은 그대로, 상자 높이만) */
+/* ================================================================
+   종합 분석: 그래프·표와 설명을 함께 배치한 줄의 높이 맞춤
+*/
+/* 선정 기준 설명의 아래 음수 여백 제거 */
 .st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note):has(
-    [data-testid="stPlotlyChart"]
-  ),
+  [data-testid="stExpanderDetails"]
+  [data-testid="stMarkdownContainer"]:has(.note) {
+  margin-bottom: 0 !important;
+}
+
 .st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note):has(
-    [data-testid="stDataFrame"]
+  [data-testid="stHorizontalBlock"]:has(.note):is(
+    :has([data-testid="stPlotlyChart"]),
+    :has([data-testid="stDataFrame"])
   ) {
   align-items: stretch !important;
 }
+
 .st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note):has(
-    [data-testid="stPlotlyChart"]
+  [data-testid="stHorizontalBlock"]:has(.note):is(
+    :has([data-testid="stPlotlyChart"]),
+    :has([data-testid="stDataFrame"])
   )
-  [data-testid="stVerticalBlock"],
-.st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"])
   [data-testid="stVerticalBlock"] {
   height: 100%;
 }
+
 /* 설명 쪽: 마지막 설명 상자가 남는 높이를 채움 */
 .st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note):has(
-    [data-testid="stPlotlyChart"]
+  [data-testid="stHorizontalBlock"]:has(.note):is(
+    :has([data-testid="stPlotlyChart"]),
+    :has([data-testid="stDataFrame"])
   )
-  [data-testid="stElementContainer"]:has(.note):not(
-    :has(~ [data-testid="stElementContainer"] .note)
-  ),
-.st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"])
   [data-testid="stElementContainer"]:has(.note):not(
     :has(~ [data-testid="stElementContainer"] .note)
   ) {
   flex-grow: 1;
 }
+
 .st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note)
+  [data-testid="stHorizontalBlock"]:has(.note):is(
+    :has([data-testid="stPlotlyChart"]),
+    :has([data-testid="stDataFrame"])
+  )
   [data-testid="stElementContainer"]:has(.note):not(
     :has(~ [data-testid="stElementContainer"] .note)
   )
-  [data-testid="stMarkdown"],
-.st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note)
-  [data-testid="stElementContainer"]:has(.note):not(
-    :has(~ [data-testid="stElementContainer"] .note)
-  )
-  [data-testid="stMarkdown"]
-  > div,
-.st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note)
-  [data-testid="stElementContainer"]:has(.note):not(
-    :has(~ [data-testid="stElementContainer"] .note)
-  )
-  [data-testid="stMarkdownContainer"],
-.st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note)
-  [data-testid="stElementContainer"]:has(.note):not(
-    :has(~ [data-testid="stElementContainer"] .note)
-  )
-  .note {
+  :is(
+    [data-testid="stMarkdown"],
+    [data-testid="stMarkdown"] > div,
+    [data-testid="stMarkdownContainer"]
+  ) {
   height: 100%;
   box-sizing: border-box;
 }
+
 .st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note)
+  [data-testid="stHorizontalBlock"]:has(.note):is(
+    :has([data-testid="stPlotlyChart"]),
+    :has([data-testid="stDataFrame"])
+  )
   [data-testid="stElementContainer"]:first-child
   .note {
   margin-top: 0;
 }
+
+/* 마지막 설명 박스의 높이와 아래 여백 */
 .st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note)
+  [data-testid="stHorizontalBlock"]:has(.note):is(
+    :has([data-testid="stPlotlyChart"]),
+    :has([data-testid="stDataFrame"])
+  )
   [data-testid="stElementContainer"]:has(.note):not(
     :has(~ [data-testid="stElementContainer"] .note)
   )
   .note {
+  height: calc(100% - 8px);
+  box-sizing: border-box;
   margin-bottom: 0;
 }
-/* 표 쪽: 표를 카드 상자에 넣어 설명 상자와 높이를 맞춤 (표 아래는 카드 배경) */
+
+/* 표 쪽: 설명 상자와 높이를 맞추는 카드 */
 .st-key-surge_app
   [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"])
   > [data-testid="stColumn"]:has([data-testid="stDataFrame"])
@@ -2380,90 +2389,205 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
   padding: 12px;
   box-sizing: border-box;
 }
-/* Streamlit 글 칸의 아래 -16px 만큼 넘치므로 마지막 설명 상자는 그만큼 짧게 */
-.st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note)
-  [data-testid="stElementContainer"]:has(.note):not(
-    :has(~ [data-testid="stElementContainer"] .note)
-  )
-  .note {
-  height: calc(100% - 8px);
-}
-/* 표 옆 설명은 하나뿐: 위 여백 없이 표 카드와 같은 높이 */
+
+/* 표 옆 설명은 글이 길면 내용에 맞춰 늘어남 */
 .st-key-surge_app
   [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"])
   .note {
   margin: 0 !important;
-  height: auto !important; /* 글이 길면 상자가 글만큼 늘어나고 (안 잘림), 짧으면 표 카드 높이까지 */
+  height: auto !important;
   min-height: 100%;
 }
+
+/* 그래프·표 옆 설명을 위쪽에 정렬 */
 .st-key-surge_app
-  [data-testid="stHorizontalBlock"]:has(.note)
+  [data-testid="stHorizontalBlock"]:has(.note):is(
+    :has([data-testid="stPlotlyChart"]),
+    :has([data-testid="stDataFrame"])
+  )
   [data-testid="stMarkdown"]
   > div {
-  align-items: flex-start !important; /* 설명 상자를 칸 가운데가 아니라 위에 붙임 */
+  align-items: flex-start !important;
 }
+
+/* 표 옆 Markdown의 아래 여백 제거 */
 .st-key-surge_app
   [data-testid="stHorizontalBlock"]:has(.note):has([data-testid="stDataFrame"])
   [data-testid="stMarkdownContainer"] {
-  margin-bottom: 0 !important; /* 글 칸의 아래 -16px 를 없애야 설명 상자 전체 높이로 줄 높이가 정해진다 */
+  margin-bottom: 0 !important;
 }
 
-/* ---------------------------------------------------------------- 세부 분석 › A·B·C 고르기 단추 (2026-10-01)
-   유형 색을 단추에 그대로 입혀, 단추가 곧 타임라인·격자의 범례가 되게 한다.
-   고른 것은 색을 채우고(primary), 끈 것은 테두리만 남긴다(secondary). */
+/* 펼침 영역의 설명 박스를 국가 요약 카드와 동일하게 표시 */
+.st-key-surge_app [data-testid="stExpanderDetails"] .note {
+  background: var(--color-main-bg-930);
+  border: 1px solid var(--color-main-dark-820);
+  border-radius: 14px;
+  padding: 16px 18px;
+
+  width: 100%;
+  min-width: 0;
+  height: auto !important;
+  min-height: 0;
+  max-height: none;
+  box-sizing: border-box;
+  font-size: 15px !important;
+  line-height: 1.65;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.st-key-surge_app [data-testid="stExpanderDetails"] .note b {
+  font-size: inherit !important;
+}
+
+/* 선정 기준의 두 설명 박스 높이 맞춤 */
+.st-key-surge_app
+  [data-testid="stExpanderDetails"]
+  [data-testid="stHorizontalBlock"]:has(.note) {
+  align-items: stretch !important;
+  row-gap: 16px !important;
+}
+
+/* 열 안의 포장 요소들이 남는 높이를 채우도록 설정 */
+.st-key-surge_app
+  [data-testid="stExpanderDetails"]
+  [data-testid="stColumn"]:has(.note),
+.st-key-surge_app
+  [data-testid="stExpanderDetails"]
+  [data-testid="stColumn"]:has(.note)
+  :is(
+    [data-testid="stVerticalBlock"],
+    [data-testid="stElementContainer"],
+    [data-testid="stMarkdown"],
+    [data-testid="stMarkdown"] > div,
+    [data-testid="stMarkdownContainer"]
+  ) {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: auto !important;
+  min-height: 0;
+}
+
+/* Markdown 아래 여백이 바깥 패딩을 침범하지 않도록 제거 */
+.st-key-surge_app
+  [data-testid="stExpanderDetails"]
+  [data-testid="stMarkdownContainer"]:has(.note) {
+  margin-bottom: 0 !important;
+}
+
+/* 설명 박스가 열의 남는 높이를 채움 */
+.st-key-surge_app [data-testid="stExpanderDetails"] .note {
+  flex-grow: 1;
+  height: auto !important;
+  margin: 0;
+}
+
+/* 선정 기준 설명이 세로로 배치될 때 박스 사이 간격 */
+@media (max-width: 640px) {
+  .st-key-surge_app
+    [data-testid="stExpanderDetails"]
+    [data-testid="stHorizontalBlock"]:has(.note) {
+    row-gap: 16px !important;
+  }
+}
+
+/* ------------------------------------------------------------ */
+/* --------------------종합분석 증가 사례 탭-------------------- */
+
+/* 유형별 색상 연결 */
+[class*="st-key-shapebtn-A"] {
+  --pattern-color: var(--color-pattern-a);
+}
+[class*="st-key-shapebtn-B"] {
+  --pattern-color: var(--color-pattern-b);
+}
+[class*="st-key-shapebtn-C"] {
+  --pattern-color: var(--color-pattern-c);
+}
+
+/* 패턴 필터 버튼 공통 디자인 */
+[class*="st-key-shapebtn-"] button {
+  border-radius: 8px !important;
+  padding: 6px 14px !important;
+  background: color-mix(
+    in srgb,
+    var(--pattern-color) 15%,
+    transparent
+  ) !important;
+  border: 1px solid color-mix(in srgb, var(--pattern-color) 25%, transparent) !important;
+  box-shadow: 0 1px 3px
+    color-mix(in srgb, var(--color-main-bg-960) 20%, transparent) !important;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
 [class*="st-key-shapebtn-"] button p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
   font-size: 14px !important;
-  font-weight: 700 !important;
+  font-weight: 400 !important;
+  color: color-mix(
+    in srgb,
+    var(--pattern-color) 20%,
+    var(--color-main-40) 50%
+  ) !important;
 }
 
-[class*="st-key-shapebtn-A"] button[kind="primary"],
-[class*="st-key-shapebtn-A"] button[data-testid$="-primary"] {
-  background: #0072b2 !important;
-  border-color: #0072b2 !important;
+/* 버튼 앞의 유형 색상 점 */
+[class*="st-key-shapebtn-"] button p::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 50%;
+  background: var(--pattern-color);
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--pattern-color) 50%, transparent);
 }
 
-[class*="st-key-shapebtn-B"] button[kind="primary"],
-[class*="st-key-shapebtn-B"] button[data-testid$="-primary"] {
-  background: #56b4e9 !important;
-  border-color: #56b4e9 !important;
-  color: var(--color-main-bg-960) !important;
+/* 활성화된 유형 */
+[class*="st-key-shapebtn-"] button[kind="primary"] {
+  background: color-mix(
+    in srgb,
+    var(--pattern-color) 50%,
+    transparent
+  ) !important;
+  border-color: color-mix(
+    in srgb,
+    var(--pattern-color) 50%,
+    transparent
+  ) !important;
+  border-color: var(--pattern-color) !important;
+}
+[class*="st-key-shapebtn-"] button[kind="primary"] p {
+  font-weight: 600 !important;
+  color: color-mix(
+    in srgb,
+    var(--pattern-color) 30%,
+    var(--color-main-40) 70%
+  ) !important;
 }
 
-[class*="st-key-shapebtn-C"] button[kind="primary"],
-[class*="st-key-shapebtn-C"] button[data-testid$="-primary"] {
-  background: #009e73 !important;
-  border-color: #009e73 !important;
+/* 마우스를 올린 유형 */
+[class*="st-key-shapebtn-"] button:hover {
+  background: color-mix(
+    in srgb,
+    var(--pattern-color) 25%,
+    transparent
+  ) !important;
+  border-color: var(--pattern-color) !important;
 }
 
-[class*="st-key-shapebtn-B"] button[kind="primary"] p,
-[class*="st-key-shapebtn-B"] button[data-testid$="-primary"] p {
-  color: var(--color-main-bg-960) !important;
-}
-
-[class*="st-key-shapebtn-A"] button[kind="secondary"],
-[class*="st-key-shapebtn-A"] button[data-testid$="-secondary"] {
-  border-color: #0072b2 !important;
-}
-
-[class*="st-key-shapebtn-B"] button[kind="secondary"],
-[class*="st-key-shapebtn-B"] button[data-testid$="-secondary"] {
-  border-color: #56b4e9 !important;
-}
-
-[class*="st-key-shapebtn-C"] button[kind="secondary"],
-[class*="st-key-shapebtn-C"] button[data-testid$="-secondary"] {
-  border-color: #009e73 !important;
-}
-
-[class*="st-key-shapebtn-A"] button[kind="secondary"] p {
-  color: #0072b2 !important;
-}
-[class*="st-key-shapebtn-B"] button[kind="secondary"] p {
-  color: #56b4e9 !important;
-}
-[class*="st-key-shapebtn-C"] button[kind="secondary"] p {
-  color: #009e73 !important;
+/* 건수 강조 */
+[class*="st-key-shapebtn-"] button p strong {
+  font-weight: 800;
+  color: inherit;
 }
 
 /* 작은 쪽(격자 펼치기) 단추는 글자·여백을 줄인다 */
@@ -2474,6 +2598,14 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 
 [class*="st-key-shapebtn-"][class*="-sm"] button p {
   font-size: 13px !important;
+}
+
+/* 유형 필터 버튼 아래 안내 문구 */
+.shape-filter-hint {
+  margin-top: -10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-main-dark-250);
 }
 
 /* ---------------------------------------------------------------- 사례 카드 두 칸 높이 맞추기 (2026-10-01)
@@ -2501,11 +2633,24 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
 }
 
 .st-key-casechart {
-  background: var(--color-main-bg-930);
+  background: var(--color-main-bg-960);
   border: 1px solid var(--color-main-dark-820);
   border-radius: 14px;
   justify-content: center;
   padding: 4px 8px;
+}
+
+/* 공통 그래프 스타일로 생기는 내부 박스 제거 */
+[data-testid="stMain"]
+  .st-key-casechart
+  [data-testid="stElementContainer"]:has(
+    > [data-testid="stFullScreenFrame"] > [data-testid="stPlotlyChart"]
+  ) {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
 }
 
 .st-key-casechart [data-testid="stElementContainer"] {
@@ -2538,6 +2683,24 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
   flex: 1 1 auto !important;
   display: flex !important;
   flex-direction: column !important;
+}
+
+/* ------------------------------------------------------------ */
+/* --------------------종합분석 감소 사례 탭-------------------- */
+/* 감소 사례가 펼쳐진 상태만 보라색 적용 */
+.st-key-down_grid_btn button[kind="primary"] {
+  background: var(--color-main-570) !important;
+  border-color: var(--color-main-570) !important;
+  color: var(--color-main-40) !important;
+}
+
+.st-key-down_grid_btn button[kind="primary"] p {
+  color: inherit !important;
+}
+
+.st-key-down_grid_btn button[kind="primary"]:hover {
+  background: var(--color-main-740) !important;
+  border-color: var(--color-main-570) !important;
 }
 
 /* ================================================================ 무기 거래 추이 · 추이 탭 오른쪽 상자 (2026-10-01)
@@ -3195,6 +3358,15 @@ html[data-map-ready="1"] .st-key-live_map_chart .js-plotly-plot {
   ) !important;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23a78bfa'%3E%3Cpath d='M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z'/%3E%3C/svg%3E") !important;
 }
+/* 특정 아코디언의 헤더에 체크 원형 아이콘 적용 */
+[data-testid="stMain"]
+  .st-key-info_accordion
+  [data-testid="stExpander"]
+  summary
+  [data-testid="stMarkdownContainer"]
+  p::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23a78bfa'%3E%3Cpath d='M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16'/%3E%3Cpath d='m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05'/%3E%3C/svg%3E") !important;
+}
 /* 띠 모양 고르기(국가쌍/국가별 · Comtrade/SIPRI): 고른 칸을 보라 그라데이션으로 */
 [class*="st-key-tabbar-"]
   [data-testid="stButtonGroup"]
@@ -3833,4 +4005,20 @@ html:not([data-theme="light"]) .ld-card {
   flex: 0 0 auto !important;
   width: max-content !important;
   margin-left: auto !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* --------------------- 종합 분석 종합 결론 gif --------------------- */
+/* 투명 배경의 흰색 애니메이션 아이콘 */
+.st-key-surge_app .flow .fbig {
+  background: transparent !important;
+  mix-blend-mode: normal !important;
+}
+
+.st-key-surge_app .flow img.flow-gif {
+  display: inline-block;
+  object-fit: contain;
+  background: transparent !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
 }

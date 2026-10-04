@@ -1,27 +1,12 @@
-"""리스크와 무기 거래 › 세부 분석 결과 탭 화면 (계산은 dashboard/surge.py). app2.py 가 page() 를 부른다.
-
-2026-09-29 팀원의 급증과_무기거래/app.py 를 옮겼다 (원본은 unused_data/급증과_무기거래_원본/).
-글 · 숫자 · 그래프 · 쪽 구성은 원본 그대로. 대시보드 안에서 돌도록 바꾼 것만:
-  - st.set_page_config 뺌 (페이지 설정은 app2.py 한 곳)
-  - CSS 는 이 탭 상자(.st-key-surge_app) 안에만 먹게 가둠. 페이지 전체를 바꾸던 규칙
-    (.stApp 배경 · .block-container 폭 1500px · ⋮ 메뉴 숨김 · h1~h3 색) 은 뺌
-  - 그래프는 theme.adapt 를 거쳐 내보냄 (글꼴 · 밝은 테마 색), use_container_width → width="stretch"
-  - 맨 위 물음은 st.title → st.subheader (페이지 제목은 하나만)
-  - 자료 계산(M · C · UP …)은 이 탭을 그릴 때 page() 안에서 (원본은 파일을 읽자마자)
-  - 쪽 고르기 위젯: 빈 이름표 "" → "쪽 고르기"(숨김), 세션 키 "page" → "surge_page"
-  밝은 테마 글 상자 색은 dashboard/style_light.css 맨 끝 "세부 분석 결과 탭" 규칙.
-
-[원본 설명]
-갈등 급증과 무기 수입 — 총량이 아니라 «시점»이 바뀐다.
-
-한 가지 물음만 따라갑니다.
-    갈등이 크게 튄 뒤 무기 수입은 어떻게 움직이는가.
-답은 «늘지도 줄지도 않는다» 가 아니라 «일시에 집중적으로 구매한 후 수입을 중단한다» 입니다.
-"""
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+import base64
+from io import BytesIO
+from pathlib import Path
+
+from PIL import Image, ImageOps, ImageSequence
 
 from sources import surge as A      # 원본: import analysis as A
 from core import theme           # 그래프 글꼴 · 밝은 테마 색 (theme.adapt)
@@ -63,9 +48,43 @@ CSS = f"""
 
   /* 결론 쪽 3단 흐름 — 착시 → 상반된 두 현상 → 시사점 */
   .flow {{display:flex; align-items:stretch; gap:.7rem; margin:.4rem 0 1.2rem 0;}}
-  .fc {{flex:1; background:{CARD}; border:1px solid {LINE}; border-radius:14px;
-        padding:1.1rem 1.2rem; display:flex; flex-direction:column;}}
-  .fc.dark {{background:#060c18; border-color:{GOLD};}}
+    .fc {{
+        flex: 1;
+        min-width: 0;
+        background: {CARD};
+        border: 1px solid {LINE};
+        border-radius: 14px;
+        padding: 1.1rem 1.2rem;
+        display: flex;
+        flex-direction: column;
+    }}
+
+    /* 흐름의 마지막 카드만 투명 배경 적용 */
+    .flow > .fc:last-child {{
+        position: relative;
+        background: transparent;
+        border: none;
+    }}
+
+    /* 마지막 카드만 보라색·청록색 그라데이션 테두리 */
+    .flow > .fc:last-child::before {{
+        content: "";
+        position: absolute;
+        inset: 0;
+        padding: 1.5px;
+        border-radius: inherit;
+        pointer-events: none;
+        background: linear-gradient(
+            135deg,
+            var(--color-main-480),
+            var(--color-accent-cyan)
+        );
+        -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+    }}
   .fn {{font-size:14px; font-weight:700; color:{MUTE}; margin-bottom:.8rem;
         letter-spacing:.04em;}}
   .fbig {{font-family:Cambria,serif; font-size:28px; font-weight:700; line-height:1;
@@ -75,9 +94,7 @@ CSS = f"""
         word-break:keep-all;}}
   .farr {{display:flex; align-items:center; justify-content:center; color:{GOLD};
           font-size:28px; font-weight:700; flex:0 0 auto; width:1.4rem; opacity:.75;}}
-  .fbox {{border-radius:10px; padding:.75rem .9rem; margin-bottom:.55rem;
-          background:#0d1526; border-left:4px solid {MUTE};}}
-  .fbox.up {{border-left-color:{RED};}} .fbox.dn {{border-left-color:{BLUE};}}
+  .fbox {{background: color-mix(in srgb, var(--color-main-dark-820) 35%, transparent); border: 1px solid var(--color-main-dark-820); border-radius:10px; padding:.75rem .9rem; margin-bottom:.55rem;}}
   .fbox .tag {{font-size:14px; font-weight:700; margin-bottom:.25rem;}}
   .fbox .h {{font-size:16px; font-weight:700; color:{INK};}}
   .fbox .d {{font-size:14px; color:{MUTE}; margin-top:.25rem; line-height:1.55;
@@ -92,17 +109,11 @@ CSS = f"""
   .case-x {{background:{CARD}; border:1px solid {LINE}; border-radius:14px;
             padding:1.1rem 1.3rem; height:100%;}}
   .case-h {{font-size:19px; font-weight:800; color:#fff; margin-bottom:.8rem;}}
-  .case-r {{font-size:16px; color:#cbd5e1; padding-bottom:.8rem; border-bottom:1px solid {LINE};}}
-  .case-r b {{font-size:21px; color:{GOLD}; font-variant-numeric:tabular-nums;}}
-  .case-r span {{display:block; font-size:14px; color:{MUTE}; margin-top:.2rem;}}
-  .case-p {{padding:.8rem 0; border-bottom:1px solid {LINE};}}
   .case-p span {{display:flex; align-items:center; gap:.55rem; font-size:16px;
                  color:{INK}; margin-bottom:.35rem;}}
   .case-p i {{font-style:normal; font-size:12px; font-weight:700; color:{BG};
               background:{MUTE}; border-radius:50%; width:1.2rem; height:1.2rem;
               display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto;}}
-  .case-p b {{margin-left:auto; color:{RED}; font-variant-numeric:tabular-nums;}}
-  .case-p em {{display:block; font-style:normal; font-size:14px; color:{MUTE}; margin-top:.3rem;}}
   .case-e {{margin-top:.8rem; display:inline-block; font-size:14px; font-weight:700;
             color:{BG}; background:{GOLD}; border-radius:6px; padding:.15rem .5rem;}}
   .case-w {{margin-top:.8rem; font-size:16px; color:#cbd5e1; line-height:1.65;
@@ -110,7 +121,84 @@ CSS = f"""
   .case-w span {{display:block; font-size:13px; color:{MUTE}; margin-top:.35rem;}}
   .case-n {{margin-top:.9rem; padding-top:.8rem; border-top:1px solid {LINE};
             font-size:13px; color:{MUTE}; line-height:1.6; word-break:keep-all;}}
+    /* 제목은 왼쪽, 수치는 오른쪽, 설명은 다음 줄 */
+    .case-r {{
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: .3rem 1rem;
+        font-size: 16px;
+        padding-bottom: .8rem;
+        border-bottom: 1px solid {LINE};
+    }}
 
+    .case-r b {{
+        grid-column: 2;
+        grid-row: 1 / 3;
+        font-size: 32px;
+        text-align: right;
+        color: {GOLD}
+    }}
+
+    .case-r span {{
+        grid-column: 1;
+        font-size: 14px;
+    }}    
+    .case-p em {{
+        display: block;
+        font-style: normal;
+        font-size: 15px;
+        font-weight: 700;
+        color: {MUTE};
+        margin: .7rem 0;
+    }}            
+    /* 상대국별 배경 카드 */
+    .case-peer {{
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        margin-bottom: .5rem;
+        padding: .75rem .85rem;
+        background: color-mix(
+            in srgb, var(--color-main-dark-820) 35%, transparent
+        );
+        border: 1px solid var(--color-main-dark-820);
+        border-radius: 12px;
+    }}
+
+    .case-peer-name {{
+        flex: 1;
+        min-width: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--color-main-40);
+        word-break: keep-all;
+    }}
+
+    /* 리스크 0~1 기준의 작은 막대 */
+    .case-peer-track {{
+        flex: 0 1 90px;
+        min-width: 30px;
+        height: 7px;
+        overflow: hidden;
+        background: var(--color-main-dark-740);
+        border-radius: 999px;
+    }}
+
+    .case-peer-fill {{
+        height: 100%;
+        background: {RED};
+        border-radius: inherit;
+    }}
+
+    .case-peer b {{
+        flex: 0 0 3.5ch;
+        margin-left: 0;
+        text-align: right;
+        font-size: 15px;
+        color: {RED};
+        font-variant-numeric: tabular-nums;
+    }}
 """
 
 # 중동 전체 결과 새 레이아웃 (2026-10-01) — 어두운 테마 기본값. 밝은 테마는 style_light.css «종합 분석 새 레이아웃»
@@ -165,15 +253,63 @@ OV_CSS = """
   /* (2026-10-02) 네 쪽 디자인 통일: 흐름 칸 · 사례 칸 = ov-note 처럼 테두리만, 칸 안 작은 상자 · 글 상자 = ov-info 처럼 */
   .fc {background:transparent; border:1px solid var(--color-main-dark-820); border-radius:12px;}
   .fc.dark {background:var(--color-main-870); border-color:var(--color-main-dark-820);}
-  .fbox {background:var(--color-main-870);}
   .case-x {background:transparent; border-color:var(--color-main-dark-820); border-radius:12px;}
   .note {background:var(--color-main-870); border-color:transparent;}
 """
 
-
 CFG = {"displayModeBar": False}
 SCOPE = ".st-key-surge_app"             # page() 가 이 이름표(key)를 단 상자 안에 그린다
 
+# gif 파일 가져오기 용
+ASSETS_DIR = Path(__file__).resolve().parents[1] / "assets"
+
+@st.cache_data
+def _transparent_icon(filename):
+    """흰 배경 GIF를 투명 배경의 흰색 애니메이션 아이콘으로 변환."""
+    frames = []
+    durations = []
+
+    with Image.open(ASSETS_DIR / filename) as source:
+        loop = source.info.get("loop", 0)
+        default_duration = source.info.get("duration", 170)
+
+        for frame in ImageSequence.Iterator(source):
+            # 검은 부분은 불투명하게, 흰 부분은 투명하게 처리
+            gray = ImageOps.grayscale(frame.convert("RGB"))
+            alpha = ImageOps.invert(gray)
+
+            # 아이콘 색은 흰색으로 설정하고 가장자리 투명도 유지
+            icon = Image.new("RGBA", frame.size, "white")
+            icon.putalpha(alpha)
+
+            frames.append(icon)
+            durations.append(
+                frame.info.get("duration", default_duration)
+            )
+
+    # 반투명 가장자리와 애니메이션을 지원하는 WebP로 변환
+    output = BytesIO()
+    frames[0].save(
+        output,
+        format="WEBP",
+        save_all=True,
+        append_images=frames[1:],
+        duration=durations,
+        loop=loop,
+        lossless=True,
+    )
+
+    return base64.b64encode(output.getvalue()).decode("ascii")
+
+
+def gif_icon(filename, size=40):
+    data = _transparent_icon(filename)
+
+    return (
+        f'<img class="flow-gif" '
+        f'src="data:image/webp;base64,{data}" '
+        f'width="{size}" height="{size}" alt="">'
+    )
 
 def _scoped_css(css):
     """규칙마다 선택자 앞에 SCOPE 를 붙인다 (@media 안쪽 규칙도). 대시보드의 같은 이름 .sec · .note 와 섞이지 않게."""
@@ -277,12 +413,27 @@ def timeline(rows, key="up_timeline", color_of=None, text_of=None):
         customdata=[[r["ko"], r["year"], A.SHAPES[r["shape"]][0], r["diff"]] for r in rows],
         hovertemplate="<b>%{customdata[0]} · %{customdata[1]}년</b><br>%{customdata[2]}"
                       "<br>표준화 주문 규모 변화 %{customdata[3]:+.2f} (표준편차 단위)<extra></extra>", showlegend=False))
-    fig.update_layout(paper_bgcolor=BG, plot_bgcolor=BG, height=70 + 44 * len(order),
-                      font=dict(color=INK, size=13, family="Malgun Gothic, sans-serif"),
-                      margin=dict(l=10, r=20, t=16, b=10), clickmode="event+select",
-                      xaxis=dict(gridcolor=GRID, zeroline=False, dtick=5, tickformat="d",
-                                 range=[min(r["year"] for r in rows) - 2, max(r["year"] for r in rows) + 2]),
-                      yaxis=dict(categoryorder="array", categoryarray=order, gridcolor=GRID, zeroline=False))
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",
+                      plot_bgcolor="rgba(0,0,0,0)", 
+                      height=70 + 44 * len(order),
+                      font=dict(color=INK, 
+                                size=13, 
+                                family="Malgun Gothic, sans-serif"
+                                ),
+                      margin=dict(l=10, r=20, t=16, b=10), 
+                      clickmode="event+select",
+                      xaxis=dict(gridcolor=GRID, 
+                                 zeroline=False, 
+                                 dtick=5, 
+                                 tickformat="d",
+                                 range=[min(r["year"] for r in rows) - 2, max(r["year"] for r in rows) + 2]
+                                 ),
+                      yaxis=dict(categoryorder="array", 
+                                 categoryarray=order, 
+                                 gridcolor=GRID, 
+                                 zeroline=False
+                                 )
+                    )
     ev = st.plotly_chart(theme.adapt(fig), width="stretch", config=CFG, on_select="rerun", key=key)
     pts = (ev or {}).get("selection", {}).get("points", []) if isinstance(ev, dict) else []
     return pts[0].get("point_index") if pts else None
@@ -305,27 +456,65 @@ def lag_buttons(ks, key="corr_lag"):
                     st.rerun()
     return cur
 
-
 def shape_filter(cnt, key, small=False, none_is_all=True):
-    """A·B·C 단추 한 줄 (2026-10-01). 단추가 곧 범례이자 거르개다 — 색은 그 유형의 그래프 색.
+    """타임라인은 여러 유형을 선택하고, 상세 격자는 한 유형을 선택한다."""
+    btn_types = ("A", "B", "C")
+    save_value = st.session_state.get(key)
 
-    누르면 «그 유형만» 켜진다. 켜진 것을 다시 누르면 원래대로 돌아간다.
-    none_is_all=True  고른 것이 없으면 «전부 보기» (타임라인)
-    none_is_all=False 고른 것이 없으면 «아무것도 안 보임» (아래 격자 — 눌러야 펼쳐진다)
-    고른 유형 한 글자, 또는 None 을 돌려준다."""
-    cur = st.session_state.get(key)
-    cols = st.columns([1, 1, 1, 5] if small else [1, 1, 1], gap="small", vertical_alignment="center")
-    for i, k in enumerate(("A", "B", "C")):
-        short, desc = A.SHAPES[k]
-        on = (none_is_all and cur is None) or cur == k
-        with cols[i]:
-            with st.container(key=f"shapebtn-{k}-{'sm' if small else 'big'}"):
-                if st.button(f"{k}형 {cnt[k]}건" if small else f"{k}형 · {short} {cnt[k]}건",
-                             key=f"btn_{key}_{k}", width="stretch",
-                             type="primary" if on else "secondary", help=f"{k}형 — {desc}"):
-                    st.session_state[key] = None if cur == k else k
+    if none_is_all:
+        # 처음에는 전체 선택, 기존 단일 선택값도 변환
+        if save_value is None:
+            select_type = set(btn_types)
+        elif isinstance(save_value, str):
+            select_type = {save_value}
+        else:
+            select_type = set(save_value)
+    else:
+        select_type = {save_value} if save_value else set()
+
+    # 버튼을 왼쪽부터 내용 너비에 맞춰 배치
+    with st.container(horizontal=True, gap="small"):
+        for k in btn_types:
+            short, desc = A.SHAPES[k]
+            on = k in select_type
+
+            with st.container(
+                key=f"shapebtn-{k}-{'sm' if small else 'big'}",
+                width="content",
+            ):
+                if st.button(
+                    f"{k}형 **{cnt[k]}건**"
+                    if small else f"{k}형 · {short} **{cnt[k]}건**",
+                    key=f"btn_{key}_{k}",
+                    width="content",
+                    type="primary" if on else "secondary",
+                    help=f"{k}형 — {desc}",
+                ):
+                    if none_is_all:
+                        # 누른 유형만 켜거나 끄고 다른 선택은 유지
+                        change_type = select_type.copy()
+                        if on:
+                            change_type.remove(k)
+                        else:
+                            change_type.add(k)
+
+                        st.session_state[key] = sorted(change_type)
+                    else:
+                        # 상세 격자는 한 유형만 선택
+                        st.session_state[key] = None if on else k
+
                     st.rerun()
-    return cur
+
+    # 버튼에 대한 안내 문구
+    if small:
+        st.markdown(
+            '<div class="shape-filter-hint">'
+            'A형·B형·C형 선택 시 해당 유형의 전체 사례 표시'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+
+    return select_type if none_is_all else save_value
 
 
 def case_card(r, sub_text=None, bar_color=None):
@@ -349,9 +538,24 @@ def case_card(r, sub_text=None, bar_color=None):
             f'<div class="case-x"><div class="case-h">{r["ko"]} · {int(r["year"])}년</div>'
             f'<div class="case-r">해당 연도 종합 리스크 <b>{risk:.3f}</b>'
             f'<span>0~1 · 해당 연도의 일별 평균</span></div>'
-            + '<div class="case-p">' + "".join(
-                f'<span><i>{i + 1}</i>{ko}<b>{v:.2f}</b></span>' for i, (_, ko, v) in enumerate(tops))
-            + '<em>상위 리스크 상대국</em></div>'
+            # + '<div class="case-p">' + "".join(
+            #     f'<span><i>{i + 1}</i>{ko}<b>{v:.2f}</b></span>' for i, (_, ko, v) in enumerate(tops))
+            # + '<em>상위 리스크 상대국</em></div>'
+            # 상대국별 배경 카드와 리스크 크기를 나타내는 막대 표시
+            + '<div class="case-p"><em>상위 리스크 상대국</em>'
+            + "".join(
+                f'<div class="case-peer">'
+                f'<i>{i + 1}</i>'
+                f'<span class="case-peer-name">{ko}</span>'
+                f'<div class="case-peer-track">'
+                f'<div class="case-peer-fill" '
+                f'style="width:{max(0, min(1, float(v))) * 100:.1f}%"></div>'
+                f'</div>'
+                f'<b>{v:.2f}</b>'
+                f'</div>'
+                for i, (_, ko, v) in enumerate(tops)
+            )
+            + '</div>'
             + (f'<div class="case-e">{A.EMBARGO[(r["country"], int(r["year"]))]}</div>'
                if (r["country"], int(r["year"])) in A.EMBARGO else "")
             + (f'<div class="case-w">{A.EVENTS[(r["country"], int(r["year"]))]}</div>'
@@ -407,7 +611,12 @@ def grid(rows, cols=5, bar_color=None, sub=None, height_per_row=290, mark_year=F
     fig.update_layout(annotations=ann, paper_bgcolor=BG, plot_bgcolor=BG,
                       font=dict(color=INK, size=14, family="Malgun Gothic, sans-serif"),
                       margin=dict(l=10, r=10, t=30, b=34 if mark_year else 10), height=height_per_row * nrow)
-    st.plotly_chart(theme.adapt(fig), width="stretch", config=CFG)
+    fig = theme.adapt(fig)
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+    )
+    st.plotly_chart(fig, width="stretch", config=CFG)
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -577,41 +786,68 @@ def page_2_up():
 
         card = sec_card("01", "주문 규모 증가 사례의 국가별 비교",
                         "급증 기준 연도 전후 3년의 주문 TIV·정점 시기 비교")
-        with card, st.expander("분석 대상과 급증 시점의 선정 기준"):
-            d1, d2 = st.columns(2, vertical_alignment="top")
-            with d1:
-                note(f"<b>급증</b>: 직전 12개월 평균 대비 상승폭이 표준편차의 {A.K:.0f}배 초과·"
-                     f"{A.MIN_JUMP} 이상이고, 리스크가 {A.FLOOR} 이상인 월 · 세 조건 동시 충족<br>"
-                     "최소 상승폭·리스크 수준 조건으로 소규모 변동의 과대 분류 방지")
-            with d2:
-                note("<b>0년</b>: 급증 월의 연간 <b>상승폭 합</b>을 기준으로 선정한 상위 25% 연도<br>"
-                     "국가별로 선정 · 급증 발생 연도가 부족한 경우 해당 연도만 포함")
-        lab = {k: f"{k}형 {v[0]}" for k, v in A.SHAPES.items()}
+        with card:
+            with st.container(key="info_accordion"):
+                with st.expander("분석 대상과 급증 시점의 선정 기준"):
+                    d1, d2 = st.columns(2, vertical_alignment="top")
 
-        # (2026-10-01) 위 단추 = 타임라인 거르개. 누른 유형«만» 남는다 (안 누르면 전부).
-        #   D형(어디에도 맞지 않는 것)은 읽을 것이 없어 두 곳 모두에서 뺀다.
+                    with d1:
+                        note(
+                            f"<b>급증</b>: 직전 12개월 평균 대비 상승폭이 "
+                            f"표준편차의 {A.K:.0f}배 초과·"
+                            f"{A.MIN_JUMP} 이상이고, 리스크가 {A.FLOOR} 이상인 월 "
+                            "· 세 조건 동시 충족<br>"
+                            "최소 상승폭·리스크 수준 조건으로 소규모 변동의 과대 분류 방지"
+                        )
+
+                    with d2:
+                        note(
+                            "<b>0년</b>: 급증 월의 연간 <b>상승폭 합</b>을 기준으로 "
+                            "선정한 상위 25% 연도<br>"
+                            "국가별로 선정 · 급증 발생 연도가 부족한 경우 해당 연도만 포함"
+                        )
+        lab = {k: f"{k}형 {v[0]}" for k, v in A.SHAPES.items()}
         cnt = {k: sum(1 for r in UP if r["shape"] == k) for k in A.SHAPES}
         with card:
-            tl_pick = shape_filter(cnt, "up_shape_tl")
-            keep = {"A", "B", "C"} if tl_pick is None else {tl_pick}
-            ups = sorted([r for r in UP if r["shape"] in keep], key=lambda r: (r["year"], r["ko"]))
+            keep = shape_filter(cnt, "up_shape_tl")
 
-            # 거르개를 바꾸면 고른 점의 번호가 가리키는 사례가 달라지므로, 상자 이름에 넣어 선택을 비운다
-            picked = timeline(ups, key="up_timeline_" + "".join(sorted(keep)))
-            if picked is None or picked >= len(ups):
-                picked = max(range(len(ups)), key=lambda i: ups[i]["diff"])   # 처음에는 증가폭이 가장 큰 사례
-            case_card(ups[picked])
+            ups = sorted(
+                [r for r in UP if r["shape"] in keep],
+                key=lambda r: (r["year"], r["ko"]),
+            )
 
-        # 사례를 한꺼번에 늘어놓은 격자는 접어 둔다 — 단추를 눌러야 그 유형만 펼쳐진다
+            if ups:
+                picked = timeline(
+                    ups,
+                    key="up_timeline_" + "".join(sorted(keep)),
+                )
+                if picked is None or picked >= len(ups):
+                    picked = max(range(len(ups)), key=lambda i: ups[i]["diff"])
+
+                case_card(ups[picked])
+            else:
+                st.info("표시할 유형을 하나 이상 선택해 주세요.")
+
+        # 사례그래프는 디폴트로 접어두고, 버튼 클릭 시 해당 유형 펼쳐짐
         with sec_card("02", "유형별 사례 비교", "급증 이후 주문 규모의 변화 양상에 따른 유형별 비교"):
             g_pick = shape_filter(cnt, "up_shape_grid", small=True, none_is_all=False)
-            if g_pick is None:
-                note("<b>A형·B형·C형</b> 선택 시 해당 유형의 전체 사례 표시")
-            else:
-                grid(sorted([r for r in UP if r["shape"] == g_pick], key=lambda r: -r["diff"]),
-                     bar_color=A.SHAPE_COLOR[g_pick], mark_year=True, height_per_row=330,
-                     sub=lambda r: f"{lab[r['shape']]}")
-        # 맨 아래 정리 글 두 개는 뺐다 — «모양 · 건수 · 뜻» 표와 함께 단추·결론 쪽과 겹쳤다 (2026-10-01)
+            # if g_pick is None:
+            #     note("<b>A형·B형·C형</b> 선택 시 해당 유형의 전체 사례 표시")
+            # else:
+            #     grid(sorted([r for r in UP if r["shape"] == g_pick], key=lambda r: -r["diff"]),
+            #          bar_color=A.SHAPE_COLOR[g_pick], mark_year=True, height_per_row=330,
+            #          sub=lambda r: f"{lab[r['shape']]}")
+            if g_pick is not None:
+                grid(
+                    sorted(
+                        [r for r in UP if r["shape"] == g_pick],
+                        key=lambda r: -r["diff"],
+                    ),
+                    bar_color=A.SHAPE_COLOR[g_pick],
+                    mark_year=True,
+                    height_per_row=330,
+                    sub=lambda r: f"{lab[r['shape']]}",
+                )
 
 
     # ══ 3. 감소 케이스 ══════════════════════════════════════════════════════
@@ -684,7 +920,7 @@ def page_4_conclusion():
 
             '<div class="fc dark">'
             '<div class="fn" style="color:#8b98ad">3. 종합 해석</div>'
-            '<div class="fbig" style="color:#f5c542; font-size:28px">&#9679;</div>'
+            f'<div class="fbig">{gif_icon("think.gif")}</div>'
             '<div class="ft">국가별 시점과 여건 고려</div>'
             f'<div class="fs">국가별 급증 시점·주문 변화·거래 여건을 종합한 <b>사례별 해석 필요</b></div>'
             '</div>'
@@ -698,7 +934,7 @@ def page_4_conclusion():
 
             '<div class="fc">'
             f'<div class="fn" style="color:{BLUE}">1. 실시간 모니터링</div>'
-            '<div class="fbig" style="font-size:28px">📈</div>'
+            f'<div class="fbig">{gif_icon("update.gif")}</div>'
             '<div class="ft">갈등 리스크 지속적 갱신</div>'
             '<div class="fs">실시간 갈등 사건·월별 리스크를 통한 중동 16개국의 갈등 변화 확인</div>'
             '</div>'
@@ -707,7 +943,7 @@ def page_4_conclusion():
 
             '<div class="fc">'
             f'<div class="fn" style="color:{BLUE}">2. 갈등 징후 확인</div>'
-            '<div class="fbig" style="font-size:28px">✔️</div>'
+            f'<div class="fbig">{gif_icon("check.gif")}</div>'
             '<div class="ft">갈등 사건의 증가와</br>발생 국가 확인</div>'
             '<div class="fs">실시간 사건 건수·유형·관여 국가를 통한 국가별·국가쌍별 갈등 징후 파악</div>'
             '</div>'
@@ -716,7 +952,7 @@ def page_4_conclusion():
 
             '<div class="fc dark" style="border-color:#60a5fa">'
             f'<div class="fn" style="color:{BLUE}">3. 무기 거래 시점 분석</div>'
-            '<div class="fbig" style="color:#60a5fa; font-size:28px">&#128197;</div>'
+            f'<div class="fbig">{gif_icon("calendar.gif")}</div>'
             '<div class="ft" style="color:#60a5fa">무기 거래 시점 분석을 위한</br>자료 제공</div>'
             f'<div class="fs">리스크 급증 시점·과거 주문 변화의 연계 비교를 통한 거래 집중 시기 탐색'
             '</div>'
