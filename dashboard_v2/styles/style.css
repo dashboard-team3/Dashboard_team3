@@ -3948,13 +3948,16 @@ html:not([data-theme="light"]) .ld-n {
     font-size: 23px !important;
   }
 }
-/* 리스크와 무기 거래 요약 카드 접이식: 필터 깔때기 아이콘은 빼고 열고 닫는 화살표만 */
-.st-key-cty_acc
+
+/* 국가 요약 카드 아코디언: 체크 원형 아이콘 표시 */
+[data-testid="stMain"]
+  .st-key-cty_acc
   [data-testid="stExpander"]
   summary
   [data-testid="stMarkdownContainer"]
   p::before {
-  display: none !important;
+  display: inline-block !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23a78bfa'%3E%3Cpath d='M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16'/%3E%3Cpath d='m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05'/%3E%3C/svg%3E") !important;
 }
 
 /* 국가 요약 카드: Markdown 아래 음수 여백 제거 */
