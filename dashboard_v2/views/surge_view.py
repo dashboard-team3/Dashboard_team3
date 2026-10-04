@@ -831,18 +831,14 @@ def page_2_up():
         # 사례그래프는 디폴트로 접어두고, 버튼 클릭 시 해당 유형 펼쳐짐
         with sec_card("02", "유형별 사례 비교", "급증 이후 주문 규모의 변화 양상에 따른 유형별 비교"):
             g_pick = shape_filter(cnt, "up_shape_grid", small=True, none_is_all=False)
-            # if g_pick is None:
-            #     note("<b>A형·B형·C형</b> 선택 시 해당 유형의 전체 사례 표시")
-            # else:
-            #     grid(sorted([r for r in UP if r["shape"] == g_pick], key=lambda r: -r["diff"]),
-            #          bar_color=A.SHAPE_COLOR[g_pick], mark_year=True, height_per_row=330,
-            #          sub=lambda r: f"{lab[r['shape']]}")
+            
             if g_pick is not None:
                 grid(
                     sorted(
                         [r for r in UP if r["shape"] == g_pick],
                         key=lambda r: -r["diff"],
                     ),
+                    cols=4,
                     bar_color=A.SHAPE_COLOR[g_pick],
                     mark_year=True,
                     height_per_row=330,
