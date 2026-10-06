@@ -1,7 +1,4 @@
-# pjL_v2 · Conflict Risk & Arms Dashboard (디자인 시험판)
-
-원본 대시보드(`../pjL/app2.py`)를 복사해, 교수님 의견을 반영하고 **페이지마다 파일을 나눈** 판입니다.
-원본은 건드리지 않았고, 화면에 나오는 자료 · 숫자 · 그래프 내용은 원본과 같습니다.
+# Conflict Risk & Arms Dashboard
 
 ## 실행
 
