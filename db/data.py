@@ -27,18 +27,32 @@ def _cfg(key, default=None):
     return val
 
 
+def _use_ssl(host):
+    """RDS 는 SSL(global-bundle.pem) 로 붙고, 덤프를 복원한 로컬 MySQL(localhost) 은 SSL 없이 붙는다.
+    DB_SSL=0 / 1 로 강제할 수도 있다 (2026-10-06, 백업 덤프로 실시간 화면 보는 경우)."""
+    flag = str(_cfg("DB_SSL", "auto")).strip().lower()
+    if flag in ("0", "false", "off", "no"):
+        return False
+    if flag in ("1", "true", "on", "yes"):
+        return True
+    return host not in ("localhost", "127.0.0.1", "::1")
+
+
 def get_connection():
-    """RDS MySQL 연결 (SSL: global-bundle.pem)"""
-    return pymysql.connect(
-        host=_cfg("DB_HOST"),
+    """MySQL 연결. RDS 는 SSL(global-bundle.pem), 로컬(localhost) 은 SSL 없이."""
+    host = _cfg("DB_HOST")
+    kw = dict(
+        host=host,
         port=int(_cfg("DB_PORT", 3306)),
         user=_cfg("DB_USER"),
         password=_cfg("DB_PASSWORD"),
         database=_cfg("DB_NAME", "") or None,
         charset="utf8mb4",
-        ssl={"ca": str(BASE_DIR / "global-bundle.pem")},
         connect_timeout=10,
     )
+    if _use_ssl(host):
+        kw["ssl"] = {"ca": str(BASE_DIR / "global-bundle.pem")}
+    return pymysql.connect(**kw)
 
 
 if __name__ == "__main__":
